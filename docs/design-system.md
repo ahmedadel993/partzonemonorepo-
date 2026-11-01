@@ -59,3 +59,20 @@ The Marketing module supports binding blocks to:
 - `VehicleMake` — filters by vehicle make (Toyota, Kia, etc.)
 - `VehicleModel` — filters by vehicle model
 - `Url` — arbitrary URL (external or internal)
+
+## MOTION 2 Scope
+
+Scope: scroll-reveal on entry + purposeful transitions. No bounce, float, or gratuitous animation.
+
+| Component | Technique | Trigger | Duration |
+|---|---|---|---|
+| `ProductCard` | `opacity-0 → opacity-100` + `translateY(24px) → 0` | Intersection Observer (threshold 0.1, rootMargin -40px) | 500ms ease-out |
+| Filter panel (future) | `translateX(-100%) → 0` | Toggle click | 300ms ease-out |
+| Product gallery | Cross-fade between images (`opacity` swap) | Thumbnail click | 400ms ease-in-out |
+| Cart drawer (future) | `translateX(100%) → 0` | Add-to-cart / cart icon | 300ms ease-out |
+
+**Implementation notes:**
+- Intersection Observer is created in `useEffect`, disconnected after first intersection (`observer.disconnect()`)
+- `priority={true}` prop skips the observer and shows the card immediately for above-the-fold items (first 8 on list pages)
+- CSS transitions are set on the element, not via JS — ensures graceful degradation if JS is slow
+- No `will-change: transform` added globally; only consider it per-component if profiling shows paint cost

@@ -53,3 +53,19 @@
 **Decision:** `Brand` = part manufacturer (Bosch, Mann, KYB). `VehicleMake` = vehicle brand (Toyota, Kia, BMW). Never merged.
 
 **Reason:** These are fundamentally different entities. A product has a `Brand` (who made the part) and a `ProductFitment` (which vehicles it fits). Merging them would corrupt catalog queries. Page blocks can bind to either `Brand` or `VehicleMake` for marketing flexibility.
+
+## ADR-009: Schema-First HotChocolate (SDL Files)
+
+**Decision:** Use `.graphql` SDL files loaded as embedded resources via `Assembly.GetManifestResourceStream()`. Root schema defines `type Query { _placeholder: Boolean } type Mutation { _placeholder: Boolean }`. Modules extend via `extend type Query / extend type Mutation`. Resolvers are bound via `[ExtendObjectType("Query")]` / `[ExtendObjectType("Mutation")]` attribute classes registered with `.AddTypeExtension<T>()`.
+
+**Reason:** Explicit SDL is readable without running the server. Schema-first GraphQL makes the contract the primary artifact. Easier to version-control field additions. Team can review SDL diffs in PRs without understanding C# resolver classes.
+
+**Trade-off:** SDL and resolver signatures must stay in sync manually. Mitigated by compile-time failures when resolver argument names diverge from SDL field names (HotChocolate convention binding throws at startup).
+
+## ADR-010: Per-App Design Tokens (No Shared Preset)
+
+**Decision:** Each frontend owns its `@theme {}` block in its own `globals.css` / `index.css`. `packages/shared` exports only Zod schemas. `tokens.ts` and `tailwind.preset.ts` are removed.
+
+**Reason:** Storefront (Next.js / Vercel) and Admin Dashboard (Vite / IIS) have different token requirements — admin has sidebar/panel-specific vars, storefront has RTL-first product-card vars. Forced sharing creates friction when one app needs to diverge. A single `globals.css` per app is the single source of truth for that app's colors and typography. Tailwind v4 + `@import "tailwindcss"` + `@theme {}` makes this trivial.
+
+**Trade-off:** If accent color changes, it must be updated in two files. Mitigated by both files being small and documented in `docs/design-system.md`.
