@@ -1,5 +1,6 @@
 using PartZone.Catalog.Application.Interfaces;
 using PartZone.Shared.Kernel.Abstractions;
+using PartZone.Shared.Kernel.Results;
 
 namespace PartZone.Catalog.Application.Queries;
 
@@ -8,10 +9,10 @@ public sealed record GetProductBySlugQuery(string Slug) : IQuery<ProductDetailDt
 internal sealed class GetProductBySlugHandler(ICatalogReadRepository repo)
     : IQueryHandler<GetProductBySlugQuery, ProductDetailDto?>
 {
-    public async Task<ProductDetailDto?> Handle(GetProductBySlugQuery request, CancellationToken ct)
+    public async Task<Result<ProductDetailDto?>> Handle(GetProductBySlugQuery request, CancellationToken ct)
     {
         var p = await repo.GetProductBySlugAsync(request.Slug, ct);
-        return p is null ? null : MapDetail(p);
+        return Result.Success<ProductDetailDto?>(p is null ? null : MapDetail(p));
     }
 
     internal static ProductDetailDto MapDetail(PartZone.Catalog.Domain.Entities.Product p)
