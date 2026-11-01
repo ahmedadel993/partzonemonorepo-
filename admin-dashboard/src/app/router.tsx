@@ -16,8 +16,8 @@ const layoutRoute = createRoute({
   ),
 });
 
-const DashboardPage  = lazy(() => import("@/features/catalog/components/DashboardStub"));
-const LoginPage      = lazy(() => import("@/features/catalog/components/LoginStub"));
+const DashboardPage  = lazy(() => import("@/features/dashboard/components/DashboardStub"));
+const LoginPage      = lazy(() => import("@/features/auth/components/LoginStub"));
 const CatalogPage    = lazy(() => import("@/features/catalog/components/CatalogPage"));
 const MarketingPage  = lazy(() => import("@/features/marketing/components/MarketingStub"));
 const OrdersPage     = lazy(() => import("@/features/orders/components/OrdersStub"));
