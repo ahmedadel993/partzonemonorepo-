@@ -1,0 +1,6 @@
+@PartZone.Host_HostAddress = http://localhost:5049
+
+GET {{PartZone.Host_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

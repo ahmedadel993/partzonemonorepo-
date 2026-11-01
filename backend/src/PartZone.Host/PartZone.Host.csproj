@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.12.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.12.0" />
+    <PackageReference Include="HotChocolate.AspNetCore" Version="14.3.0" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.33" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.14">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.14">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.14" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modules\Identity\PartZone.Identity.Api\PartZone.Identity.Api.csproj" />
+    <ProjectReference Include="..\Modules\Identity\PartZone.Identity.Infrastructure\PartZone.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Catalog\PartZone.Catalog.Api\PartZone.Catalog.Api.csproj" />
+    <ProjectReference Include="..\Modules\Catalog\PartZone.Catalog.Infrastructure\PartZone.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Orders\PartZone.Orders.Api\PartZone.Orders.Api.csproj" />
+    <ProjectReference Include="..\Modules\Orders\PartZone.Orders.Infrastructure\PartZone.Orders.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Marketing\PartZone.Marketing.Api\PartZone.Marketing.Api.csproj" />
+    <ProjectReference Include="..\Modules\Marketing\PartZone.Marketing.Infrastructure\PartZone.Marketing.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\StoreSettings\PartZone.StoreSettings.Api\PartZone.StoreSettings.Api.csproj" />
+    <ProjectReference Include="..\Modules\StoreSettings\PartZone.StoreSettings.Infrastructure\PartZone.StoreSettings.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Vendors\PartZone.Vendors.Api\PartZone.Vendors.Api.csproj" />
+    <ProjectReference Include="..\Modules\Vendors\PartZone.Vendors.Infrastructure\PartZone.Vendors.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Cart\PartZone.Cart.Api\PartZone.Cart.Api.csproj" />
+    <ProjectReference Include="..\Modules\Cart\PartZone.Cart.Infrastructure\PartZone.Cart.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Checkout\PartZone.Checkout.Api\PartZone.Checkout.Api.csproj" />
+    <ProjectReference Include="..\Modules\Checkout\PartZone.Checkout.Infrastructure\PartZone.Checkout.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Erp\PartZone.Erp.Api\PartZone.Erp.Api.csproj" />
+    <ProjectReference Include="..\Modules\Erp\PartZone.Erp.Infrastructure\PartZone.Erp.Infrastructure.csproj" />
+    <ProjectReference Include="..\PartZone.Shared.Kernel\PartZone.Shared.Kernel.csproj" />
+  </ItemGroup>
+
+</Project>

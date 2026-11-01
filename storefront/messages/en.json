@@ -1,0 +1,36 @@
+{
+  "common": {
+    "appName": "PartZone",
+    "addToCart": "Add to Cart",
+    "viewAll": "View All",
+    "search": "Search for a part or vehicle",
+    "chooseCar": "Choose Your Car",
+    "myAccount": "My Account",
+    "cart": "Cart",
+    "loading": "Loading...",
+    "currency": "EGP"
+  },
+  "nav": {
+    "home": "Home",
+    "catalog": "Catalog",
+    "brands": "Brands",
+    "orders": "My Orders",
+    "account": "Account"
+  },
+  "home": {
+    "heroTitle": "Genuine Parts for Your Car",
+    "heroSubtitle": "The largest selection of spare parts at the best prices",
+    "heroCta": "Shop Now",
+    "trustOriginal": "Original parts guaranteed",
+    "trustShipping": "Fast shipping to all governorates",
+    "trustReturns": "7-day returns"
+  },
+  "product": {
+    "bestSeller": "Best Seller",
+    "specialOffer": "Special Offer",
+    "original": "Original",
+    "aftermarket": "Aftermarket",
+    "used": "Used",
+    "fitsYourCar": "Fits Your Car"
+  }
+}

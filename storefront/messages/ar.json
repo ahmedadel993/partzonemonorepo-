@@ -1,0 +1,36 @@
+{
+  "common": {
+    "appName": "بارت زون",
+    "addToCart": "أضف إلى السلة",
+    "viewAll": "عرض الكل",
+    "search": "ابحث عن قطعة أو سيارة",
+    "chooseCar": "اختر سيارتك",
+    "myAccount": "حسابي",
+    "cart": "السلة",
+    "loading": "جار التحميل...",
+    "currency": "ج.م"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "catalog": "الكتالوج",
+    "brands": "الماركات",
+    "orders": "طلباتي",
+    "account": "الحساب"
+  },
+  "home": {
+    "heroTitle": "قطع غيار أصلية لسيارتك",
+    "heroSubtitle": "أكبر تشكيلة قطع غيار بأفضل الأسعار",
+    "heroCta": "تسوق الآن",
+    "trustOriginal": "قطع أصلية مضمونة",
+    "trustShipping": "توصيل سريع لجميع المحافظات",
+    "trustReturns": "إرجاع خلال 7 أيام"
+  },
+  "product": {
+    "bestSeller": "الأكثر مبيعاً",
+    "specialOffer": "عرض خاص",
+    "original": "أصلي",
+    "aftermarket": "بديل",
+    "used": "مستعمل",
+    "fitsYourCar": "يناسب سيارتك"
+  }
+}

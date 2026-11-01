@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# dotnet / backend
+**/bin/Debug/
+**/bin/Release/
+**/obj/
+backend/**/*.user
+backend/**/*.suo
+backend/.vs/
+*.nupkg
+
+# EF Core migrations snapshot included (not ignored)
+# but not build output from migrations
+
+# Turbo
+.turbo/
+
+# Env files (keep .env.example)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test coverage
+coverage/
+
+# pnpm store (local)
+.pnpm-store/
