@@ -2,7 +2,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PartZone.Catalog.Application\PartZone.Catalog.Application.csproj" />
+    <ProjectReference Include="..\PartZone.Catalog.Infrastructure\PartZone.Catalog.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\PartZone.Shared.Kernel\PartZone.Shared.Kernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HotChocolate.AspNetCore" Version="14.3.0" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Schemas\catalog.graphql" />
   </ItemGroup>
 
   <PropertyGroup>

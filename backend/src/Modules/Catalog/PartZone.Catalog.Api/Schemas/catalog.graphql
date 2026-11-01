@@ -1,0 +1,226 @@
+extend type Query {
+  brands: [BrandType!]!
+  brand(slug: String!): BrandType
+  categories: [CategoryType!]!
+  category(slug: String!): CategoryType
+  products(filter: ProductFilterInput!): ProductPageType!
+  product(slug: String!): ProductDetailType
+  vehicleMakes: [VehicleMakeType!]!
+  vehicleModels(makeId: ID!): [VehicleModelType!]!
+  vehicleYears(modelId: ID!): [VehicleYearRangeType!]!
+}
+
+extend type Mutation {
+  createBrand(input: CreateBrandInput!): BrandPayload!
+  updateBrand(input: UpdateBrandInput!): BrandPayload!
+  createCategory(input: CreateCategoryInput!): CategoryPayload!
+  createVehicleMake(input: CreateVehicleMakeInput!): VehicleMakePayload!
+  createVehicleModel(input: CreateVehicleModelInput!): VehicleModelPayload!
+  createProduct(input: CreateProductInput!): ProductPayload!
+  publishProduct(productId: ID!): ProductPayload!
+  unpublishProduct(productId: ID!): ProductPayload!
+  updateProductStock(input: UpdateProductStockInput!): ProductPayload!
+  addProductFitment(input: AddProductFitmentInput!): ProductPayload!
+}
+
+# ── Output types ──────────────────────────────────────────────────────────────
+# Field names match C# DTO property names for zero-friction schema-first binding.
+
+type BrandType {
+  id: ID!
+  name: String!
+  slug: String!
+  logoUrl: String
+  isActive: Boolean!
+}
+
+type CategoryType {
+  id: ID!
+  name: String!
+  slug: String!
+  imageUrl: String
+  sortOrder: Int!
+  parentId: ID
+  children: [CategoryType!]!
+}
+
+type VehicleMakeType {
+  id: ID!
+  name: String!
+  slug: String!
+  logoUrl: String
+}
+
+type VehicleModelType {
+  id: ID!
+  name: String!
+  slug: String!
+  vehicleMakeId: ID!
+}
+
+type VehicleYearRangeType {
+  id: ID!
+  yearFrom: Int!
+  yearTo: Int!
+  vehicleModelId: ID!
+}
+
+type ProductSummaryType {
+  id: ID!
+  sku: String!
+  slug: String!
+  name: String!
+  condition: String!
+  priceAmount: Float!
+  priceCurrency: String!
+  stock: Int!
+  isPublished: Boolean!
+  primaryImageUrl: String
+  categoryName: String!
+  brandName: String!
+}
+
+type ProductDetailType {
+  id: ID!
+  sku: String!
+  oemNumber: String!
+  slug: String!
+  name: String!
+  description: String
+  condition: String!
+  priceAmount: Float!
+  priceCurrency: String!
+  stock: Int!
+  isPublished: Boolean!
+  avgRating: Float!
+  reviewCount: Int!
+  brand: BrandType!
+  category: CategoryType!
+  images: [ProductImageType!]!
+  fitments: [ProductFitmentType!]!
+}
+
+type ProductImageType {
+  id: ID!
+  url: String!
+  altText: String
+  isPrimary: Boolean!
+}
+
+type ProductFitmentType {
+  id: ID!
+  modelId: ID!
+  modelName: String!
+  yearFrom: Int!
+  yearTo: Int!
+}
+
+type ProductPageType {
+  items: [ProductSummaryType!]!
+  totalCount: Int!
+  page: Int!
+  pageSize: Int!
+  totalPages: Int!
+}
+
+# ── Payloads ──────────────────────────────────────────────────────────────────
+
+type BrandPayload {
+  brand: BrandType
+  errors: [String!]!
+}
+
+type CategoryPayload {
+  category: CategoryType
+  errors: [String!]!
+}
+
+type VehicleMakePayload {
+  make: VehicleMakeType
+  errors: [String!]!
+}
+
+type VehicleModelPayload {
+  model: VehicleModelType
+  errors: [String!]!
+}
+
+type ProductPayload {
+  product: ProductDetailType
+  errors: [String!]!
+}
+
+# ── Input types ───────────────────────────────────────────────────────────────
+
+input ProductFilterInput {
+  q: String
+  categoryId: ID
+  brandId: ID
+  condition: String
+  vehicleModelId: ID
+  page: Int
+  pageSize: Int
+}
+
+input CreateBrandInput {
+  name: String!
+  slug: String!
+  logoUrl: String
+}
+
+input UpdateBrandInput {
+  id: ID!
+  name: String!
+  logoUrl: String
+}
+
+input CreateCategoryInput {
+  name: String!
+  slug: String!
+  iconUrl: String
+  sortOrder: Int!
+  parentId: ID
+}
+
+input CreateVehicleMakeInput {
+  name: String!
+  slug: String!
+  logoUrl: String
+}
+
+input CreateVehicleModelInput {
+  name: String!
+  slug: String!
+  vehicleMakeId: ID!
+}
+
+input CreateProductInput {
+  sku: String!
+  oemNumber: String!
+  slug: String!
+  condition: String!
+  priceAmount: Float!
+  priceCurrency: String!
+  stock: Int!
+  brandId: ID!
+  categoryId: ID!
+  translations: [ProductTranslationInputType!]!
+}
+
+input ProductTranslationInputType {
+  locale: String!
+  name: String!
+  description: String
+}
+
+input UpdateProductStockInput {
+  productId: ID!
+  newStock: Int!
+}
+
+input AddProductFitmentInput {
+  productId: ID!
+  vehicleModelId: ID!
+  yearFrom: Int!
+  yearTo: Int!
+}

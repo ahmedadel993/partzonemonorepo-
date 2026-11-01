@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PartZone.Catalog.Domain.Entities;
-using PartZone.Catalog.Infrastructure;
+using PartZone.Catalog.Infrastructure; // CatalogInfrastructureExtensions as assembly anchor
 using PartZone.Identity.Domain.Entities;
 using PartZone.Identity.Infrastructure.Data;
 
@@ -32,7 +32,7 @@ public sealed class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new AddressConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogModule).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogInfrastructureExtensions).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }

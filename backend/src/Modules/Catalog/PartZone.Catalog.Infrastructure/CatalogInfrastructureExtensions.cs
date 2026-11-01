@@ -1,17 +1,14 @@
-using HotChocolate.Execution.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PartZone.Catalog.Application.Interfaces;
 
 namespace PartZone.Catalog.Infrastructure;
 
-public static class CatalogModule
+public static class CatalogInfrastructureExtensions
 {
-    public static IRequestExecutorBuilder AddCatalogModule(
-        this IServiceCollection services,
-        IRequestExecutorBuilder graphql)
+    public static IServiceCollection AddCatalogInfrastructure(this IServiceCollection services)
     {
         services.AddScoped<ICatalogWriteRepository, CatalogWriteRepository>();
         services.AddScoped<ICatalogReadRepository, CatalogReadRepository>();
-        return graphql;
+        return services;
     }
 }

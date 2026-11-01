@@ -3,8 +3,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PartZone.Catalog.Api;
 using PartZone.Catalog.Application.Queries;
-using PartZone.Catalog.Infrastructure;
 using PartZone.Host.Data;
 using PartZone.Host.Middleware;
 using PartZone.Identity.Application;
@@ -118,6 +118,7 @@ app.MapGraphQL();
 
 // ── REST Endpoints ───────────────────────────────────────────────────────────
 app.MapGroup("/api/v1").WithTags("v1");
+app.MapCatalogEndpoints();
 
 // Serve admin SPA from wwwroot/admin (production — IIS handles SPA fallback)
 app.UseStaticFiles();
