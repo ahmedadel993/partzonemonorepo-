@@ -4,8 +4,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./tokens": "./src/tokens.ts",
-    "./tailwind-preset": "./src/tailwind.preset.ts",
     "./schemas": "./src/schemas/index.ts"
   },
   "scripts": {

@@ -70,11 +70,13 @@ builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>("database");
 
-// ── GraphQL (HotChocolate) ───────────────────────────────────────────────────
-builder.Services
+// ── GraphQL (HotChocolate — schema-first) ────────────────────────────────────
+// Root schema: empty Query/Mutation extended by each module's SDL file.
+// Each AddXModule(services, graphql) call appends its .graphql SDL and resolvers.
+var graphql = builder.Services
     .AddGraphQLServer()
-    .AddQueryType(d => d.Name("Query"))
-    .AddMutationType(d => d.Name("Mutation"));
+    .AddDocumentFromString(
+        "type Query { _placeholder: Boolean } type Mutation { _placeholder: Boolean }");
 
 // ── CORS (dev only) ──────────────────────────────────────────────────────────
 if (builder.Environment.IsDevelopment())

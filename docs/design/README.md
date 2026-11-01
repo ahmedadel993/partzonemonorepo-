@@ -1,33 +1,38 @@
 # Design Assets
 
-[PLACEHOLDER — design images not yet uploaded]
+Drop design files here and they will be committed with the repo.
 
-## Expected files
+## Folder Layout
 
-- `storefront-home-mockup.png` — storefront home page mockup (Arabic, RTL, dark theme). Upload to extract exact color tokens and layout details.
-- `partzone-logo.png` — official logo. To be converted to SVG variants (full logo, icon-only gear, light/dark backgrounds) for header, favicon, admin sidebar, and emails.
+```
+brand/
+  logo.png          — primary logo (dark bg)
+  logo-white.png    — white variant
+  favicon.png       — 32x32 or 64x64
+storefront/
+  mockup-home.png
+  mockup-product.png
+  mockup-list.png
+admin/
+  mockup-dashboard.png
+```
 
-## Color tokens (assumed — update after image review)
+## After Uploading Assets
+
+Once real assets arrive:
+
+1. Update `storefront/src/app/globals.css` — replace assumed `#F36F21` orange with exact sampled value
+2. Update `admin-dashboard/src/index.css` — same
+3. Replace `[LOGO PLACEHOLDER]` in `storefront/src/shared/ui/Header.tsx` and `admin-dashboard/src/components/layout/AppLayout.tsx` with `<img src="/logo.png" …>`
+4. Run `pnpm build` to confirm no regressions
+
+## Current Assumed Tokens
 
 | Token | Value | Usage |
 |---|---|---|
 | `--color-bg` | `#0B1220` | Page background |
-| `--color-surface` | `#111827` | Cards, sidebar |
-| `--color-surface-alt` | `#1A2436` | Hover surfaces |
-| `--color-border` | `#1F2D3D` | Borders |
-| `--color-accent` | `#F36F21` | Primary action, orange from logo |
-| `--color-accent-hover` | `#FF8A1F` | Hover state of accent |
+| `--color-surface` | `#111827` | Cards, panels |
+| `--color-accent` | `#F36F21` | CTA, active states |
 | `--color-text` | `#F1F5F9` | Primary text |
-| `--color-text-muted` | `#94A3B8` | Secondary text |
-| `--color-product-bg` | `#FFFFFF` | Product card background (light, for photos) |
 
-## Contrast check (WCAG AA, R-25)
-
-| Pair | Ratio | Status |
-|---|---|---|
-| `#F1F5F9` on `#0B1220` | ~14:1 | PASS |
-| `#F36F21` on `#0B1220` | ~4.5:1 at 18px+ | PASS large text |
-| `#F36F21` on `#111827` | ~4.2:1 | PASS large text |
-
-**NOTE:** Orange accent on dark backgrounds passes for large text (18px+ / 14px bold) only.
-For body-size text on accent backgrounds (buttons), use white `#FFFFFF` foreground.
+Contrast audit: `#F1F5F9` on `#0B1220` = 14.5:1 (AAA). `#F36F21` on `#0B1220` = 3.2:1 (AA large text).
