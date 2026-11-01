@@ -3,6 +3,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PartZone.Catalog.Application.Queries;
+using PartZone.Catalog.Infrastructure;
 using PartZone.Host.Data;
 using PartZone.Host.Middleware;
 using PartZone.Identity.Application;
@@ -25,21 +27,30 @@ var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
 builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
-// Register DbContext base so infrastructure repositories can inject it.
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
+
+// ── GraphQL (HotChocolate — schema-first) ────────────────────────────────────
+// Root schema: empty Query/Mutation extended by each module's SDL file.
+var graphql = builder.Services
+    .AddGraphQLServer()
+    .AddDocumentFromString(
+        "type Query { _placeholder: Boolean } type Mutation { _placeholder: Boolean }");
 
 // ── Modules ───────────────────────────────────────────────────────────────────
 builder.Services.AddIdentityModule(jwtSettings);
+builder.Services.AddCatalogModule(graphql);
 
 // ── MediatR (all application assemblies) ────────────────────────────────────
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
-        typeof(RegisterUserCommand).Assembly   // Identity.Application
+        typeof(RegisterUserCommand).Assembly,    // Identity.Application
+        typeof(GetBrandsQuery).Assembly          // Catalog.Application
     ));
 
 // ── FluentValidation ─────────────────────────────────────────────────────────
 builder.Services.AddValidatorsFromAssemblies([
     typeof(RegisterUserCommand).Assembly,
+    typeof(GetBrandsQuery).Assembly,
 ]);
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -69,14 +80,6 @@ builder.Services.AddProblemDetails();
 // ── Health checks ────────────────────────────────────────────────────────────
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>("database");
-
-// ── GraphQL (HotChocolate — schema-first) ────────────────────────────────────
-// Root schema: empty Query/Mutation extended by each module's SDL file.
-// Each AddXModule(services, graphql) call appends its .graphql SDL and resolvers.
-var graphql = builder.Services
-    .AddGraphQLServer()
-    .AddDocumentFromString(
-        "type Query { _placeholder: Boolean } type Mutation { _placeholder: Boolean }");
 
 // ── CORS (dev only) ──────────────────────────────────────────────────────────
 if (builder.Environment.IsDevelopment())

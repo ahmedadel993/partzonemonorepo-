@@ -22,6 +22,304 @@ namespace PartZone.Host.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.Brand", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Brands", "catalog");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Categories", "catalog");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<float>("AvgRating")
+                        .HasColumnType("real");
+
+                    b.Property<Guid>("BrandId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Condition")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OemNumber")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SKU")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("OemNumber");
+
+                    b.HasIndex("SKU")
+                        .IsUnique();
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Products", "catalog");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.ProductFitment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("VehicleModelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("YearFrom")
+                        .HasColumnType("int");
+
+                    b.Property<int>("YearTo")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "VehicleModelId", "YearFrom", "YearTo");
+
+                    b.ToTable("ProductFitments", "catalog");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.ProductImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AltText")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImages", "catalog");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.ProductTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "Locale")
+                        .IsUnique();
+
+                    b.ToTable("ProductTranslations", "catalog");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.VehicleMake", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("VehicleMakes", "catalog");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.VehicleModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("VehicleMakeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VehicleMakeId");
+
+                    b.ToTable("VehicleModels", "catalog");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.VehicleYearRange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("VehicleModelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("YearFrom")
+                        .HasColumnType("int");
+
+                    b.Property<int>("YearTo")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VehicleModelId");
+
+                    b.ToTable("VehicleYearRanges", "catalog");
+                });
+
             modelBuilder.Entity("PartZone.Identity.Domain.Entities.Address", b =>
                 {
                     b.Property<Guid>("Id")
@@ -152,6 +450,89 @@ namespace PartZone.Host.Data.Migrations
                     b.ToTable("Users", "identity");
                 });
 
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.Category", b =>
+                {
+                    b.HasOne("PartZone.Catalog.Domain.Entities.Category", null)
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.Product", b =>
+                {
+                    b.OwnsOne("PartZone.Catalog.Domain.ValueObjects.Money", "Price", b1 =>
+                        {
+                            b1.Property<Guid>("ProductId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("PriceAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("PriceCurrency");
+
+                            b1.HasKey("ProductId");
+
+                            b1.ToTable("Products", "catalog");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductId");
+                        });
+
+                    b.Navigation("Price")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.ProductFitment", b =>
+                {
+                    b.HasOne("PartZone.Catalog.Domain.Entities.Product", null)
+                        .WithMany("Fitments")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.ProductImage", b =>
+                {
+                    b.HasOne("PartZone.Catalog.Domain.Entities.Product", null)
+                        .WithMany("Images")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.ProductTranslation", b =>
+                {
+                    b.HasOne("PartZone.Catalog.Domain.Entities.Product", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.VehicleModel", b =>
+                {
+                    b.HasOne("PartZone.Catalog.Domain.Entities.VehicleMake", null)
+                        .WithMany("Models")
+                        .HasForeignKey("VehicleMakeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.VehicleYearRange", b =>
+                {
+                    b.HasOne("PartZone.Catalog.Domain.Entities.VehicleModel", null)
+                        .WithMany("YearRanges")
+                        .HasForeignKey("VehicleModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("PartZone.Identity.Domain.Entities.Address", b =>
                 {
                     b.HasOne("PartZone.Identity.Domain.Entities.User", null)
@@ -159,6 +540,30 @@ namespace PartZone.Host.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.Category", b =>
+                {
+                    b.Navigation("Children");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.Product", b =>
+                {
+                    b.Navigation("Fitments");
+
+                    b.Navigation("Images");
+
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.VehicleMake", b =>
+                {
+                    b.Navigation("Models");
+                });
+
+            modelBuilder.Entity("PartZone.Catalog.Domain.Entities.VehicleModel", b =>
+                {
+                    b.Navigation("YearRanges");
                 });
 
             modelBuilder.Entity("PartZone.Identity.Domain.Entities.User", b =>
