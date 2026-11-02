@@ -125,3 +125,18 @@ export async function addAddress(
     return null;
   }
 }
+
+export async function cancelOrder(orderId: string): Promise<boolean> {
+  const headers = await getAuthHeaders();
+  if (!headers.Authorization) return false;
+  try {
+    const res = await fetch(`${API}/checkout/my-orders/${orderId}/cancel`, {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}

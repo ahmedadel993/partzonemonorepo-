@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using PartZone.Checkout.Application.Commands;
 using PartZone.Checkout.Application.Queries;
+using PartZone.Shared.Kernel.Results;
 
 namespace PartZone.Checkout.Api;
 
@@ -43,6 +44,18 @@ internal static class CheckoutEndpoints
         var userId = GetUserId(user);
         var result = await mediator.Send(new GetOrderByIdQuery(id, userId), ct);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound();
+    }
+
+    internal static async Task<IResult> CancelOrderAsync(
+        Guid id, ClaimsPrincipal user, IMediator mediator, CancellationToken ct)
+    {
+        var userId = GetUserId(user);
+        var result = await mediator.Send(new CancelOrderCommand(id, userId), ct);
+        return result.IsSuccess ? Results.NoContent()
+            : result.Error.Code == "Checkout.OrderNotFound" ? Results.NotFound()
+            : result.Error.Type == ErrorType.Unauthorized ? Results.Forbid()
+            : Results.Problem(result.Error.Description,
+                statusCode: StatusCodes.Status422UnprocessableEntity);
     }
 
     private static Guid GetUserId(ClaimsPrincipal user) =>

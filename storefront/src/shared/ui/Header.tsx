@@ -7,12 +7,16 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CartIconButton } from "@/shared/ui/CartIconButton";
 import { CartDrawer } from "@/modules/cart/components/CartDrawer";
+import { VehiclePickerModal } from "@/shared/ui/VehiclePickerModal";
+import { useVehicleStore } from "@/shared/stores/useVehicleStore";
 
 export function Header() {
   const t = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const { selectedVehicle, clearVehicle } = useVehicleStore();
 
   return (
     <>
@@ -40,13 +44,30 @@ export function Header() {
             />
           </div>
 
-          {/* Choose car button */}
-          <button
-            type="button"
-            className="hidden sm:flex items-center gap-2 h-10 px-4 rounded-md border border-border text-text-muted text-sm hover:border-accent hover:text-text transition-colors"
-          >
-            {t("chooseCar")}
-          </button>
+          {/* Choose car / selected vehicle chip */}
+          {selectedVehicle ? (
+            <div className="hidden sm:flex items-center gap-1 h-10 px-3 rounded-md border border-accent bg-accent/5 text-text text-sm">
+              <span className="truncate max-w-[140px]">
+                {selectedVehicle.makeName} {selectedVehicle.modelName}
+              </span>
+              <button
+                type="button"
+                onClick={clearVehicle}
+                aria-label="مسح الاختيار"
+                className="text-text-muted hover:text-danger transition-colors ms-1 text-base leading-none"
+              >
+                ×
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsPickerOpen(true)}
+              className="hidden sm:flex items-center gap-2 h-10 px-4 rounded-md border border-border text-text-muted text-sm hover:border-accent hover:text-text transition-colors"
+            >
+              {t("chooseCar")}
+            </button>
+          )}
 
           {/* Account icon */}
           <Link href={`/${locale}/account`} aria-label="حسابي" className="text-text-muted hover:text-text transition-colors">
@@ -61,6 +82,11 @@ export function Header() {
         </div>
       </header>
       <CartDrawer />
+      <VehiclePickerModal
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        locale={locale}
+      />
     </>
   );
 }

@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/shared/ui/Header";
 import { CartDrawer } from "@/modules/cart/components/CartDrawer";
-import { getCurrentUser } from "@/modules/auth/actions/authActions";
+import { redirect } from "next/navigation";
+import { getCurrentUser, cancelOrder } from "@/modules/auth/actions/authActions";
 import { getOrderById } from "@/modules/checkout/actions/checkoutActions";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -33,6 +34,13 @@ export default async function OrderPage({ params }: Props) {
 
   const statusLabel = STATUS_LABELS[order.status] ?? order.status;
   const statusColor = STATUS_COLORS[order.status] ?? "bg-surface-alt text-text-muted";
+  const canCancel = order.status === "Pending" || order.status === "Confirmed";
+
+  async function handleCancel() {
+    "use server";
+    await cancelOrder(id);
+    redirect(`/${locale}/orders/${id}`);
+  }
 
   return (
     <>
@@ -110,6 +118,16 @@ export default async function OrderPage({ params }: Props) {
               <Link href={`/${locale}`} className="w-full h-10 bg-accent hover:bg-accent-hover text-accent-fg text-sm font-semibold rounded-lg transition-colors flex items-center justify-center">
                 تسوق مجدداً
               </Link>
+              {canCancel && (
+                <form action={handleCancel}>
+                  <button
+                    type="submit"
+                    className="w-full h-10 border border-danger/40 text-danger hover:bg-danger/5 text-sm font-medium rounded-lg transition-colors"
+                  >
+                    إلغاء الطلب
+                  </button>
+                </form>
+              )}
             </div>
           </aside>
         </div>

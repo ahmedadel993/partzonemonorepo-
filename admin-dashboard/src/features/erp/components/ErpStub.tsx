@@ -10,6 +10,15 @@ interface LowStockProduct {
   stock: number;
 }
 
+interface AdjustmentRecord {
+  id: string;
+  productId: string;
+  delta: number;
+  reason: string;
+  adminUserId: string;
+  adjustedAt: string;
+}
+
 const API = import.meta.env.VITE_API_URL ?? "/api/v1";
 
 function authHeaders(): HeadersInit {
@@ -129,11 +138,79 @@ function AdjustmentDrawer({
   );
 }
 
+// ── History tab ───────────────────────────────────────────────────────────────
+
+function HistoryTab() {
+  const [adjustments, setAdjustments] = useState<AdjustmentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`${API}/admin/erp/adjustments`, { headers: authHeaders() })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json() as Promise<AdjustmentRecord[]>;
+      })
+      .then(setAdjustments)
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (error) return <p className="text-danger text-sm">{error}</p>;
+
+  if (loading) return (
+    <div className="space-y-3">
+      {[1, 2, 3, 4].map((i) => <div key={i} className="h-12 bg-surface-alt rounded animate-pulse" />)}
+    </div>
+  );
+
+  return (
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b border-border text-text-muted text-right">
+          <th className="pb-3 font-medium pe-4">التاريخ</th>
+          <th className="pb-3 font-medium pe-4">المنتج</th>
+          <th className="pb-3 font-medium pe-4">الفرق</th>
+          <th className="pb-3 font-medium">السبب</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-border">
+        {adjustments.map((a) => (
+          <tr key={a.id} className="hover:bg-surface-alt transition-colors">
+            <td className="py-3 pe-4 text-text-muted text-xs">
+              {new Date(a.adjustedAt).toLocaleString("ar-EG")}
+            </td>
+            <td className="py-3 pe-4 font-mono text-xs text-text-muted" dir="ltr">
+              {a.productId.slice(0, 8)}…
+            </td>
+            <td className="py-3 pe-4">
+              <span className={a.delta > 0 ? "text-success font-semibold" : "text-danger font-semibold"}>
+                {a.delta > 0 ? `+${a.delta}` : a.delta}
+              </span>
+            </td>
+            <td className="py-3 text-text text-xs">{a.reason}</td>
+          </tr>
+        ))}
+        {adjustments.length === 0 && (
+          <tr>
+            <td colSpan={4} className="py-8 text-center text-text-muted text-sm">
+              لا توجد تعديلات مسجّلة بعد
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 const THRESHOLD = 10;
+type ErpTab = "inventory" | "history";
 
 export default function ErpStub() {
+  const [activeTab, setActiveTab] = useState<ErpTab>("inventory");
   const [products, setProducts] = useState<LowStockProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -153,68 +230,96 @@ export default function ErpStub() {
 
   useEffect(load, []);
 
+  const tabs: { id: ErpTab; label: string }[] = [
+    { id: "inventory", label: "المخزون المنخفض" },
+    { id: "history",   label: "سجل التعديلات" },
+  ];
+
   return (
     <div dir="rtl">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-lg font-semibold text-text">إدارة المخزون</h2>
-          <p className="text-xs text-text-muted mt-0.5">المنتجات ذات المخزون ≤ {THRESHOLD}</p>
-        </div>
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className="bg-accent text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-accent/90 transition-colors"
-        >
-          + تعديل مخزون
-        </button>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-text">إدارة المخزون</h2>
+        {activeTab === "inventory" && (
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="bg-accent text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-accent/90 transition-colors"
+          >
+            + تعديل مخزون
+          </button>
+        )}
       </div>
 
-      {error && (
-        <p className="text-danger text-sm mb-4">خطأ في تحميل المخزون: {error}</p>
-      )}
+      {/* Tab bar */}
+      <div className="flex gap-1 border-b border-border mb-6">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={[
+              "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
+              activeTab === tab.id
+                ? "border-accent text-text"
+                : "border-transparent text-text-muted hover:text-text",
+            ].join(" ")}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-12 bg-surface-alt rounded animate-pulse" />
-          ))}
-        </div>
+      {activeTab === "history" ? (
+        <HistoryTab />
       ) : (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-text-muted text-right">
-              <th className="pb-3 font-medium pe-4">SKU</th>
-              <th className="pb-3 font-medium pe-4">الاسم</th>
-              <th className="pb-3 font-medium pe-4">المخزون</th>
-              <th className="pb-3 font-medium">الحالة</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {products.map((p) => (
-              <tr key={p.id} className="hover:bg-surface-alt transition-colors">
-                <td className="py-3 pe-4 font-mono text-xs text-text-muted" dir="ltr">{p.sku}</td>
-                <td className="py-3 pe-4 text-text">{p.name}</td>
-                <td className="py-3 pe-4 text-text font-semibold">{p.stock}</td>
-                <td className="py-3">
-                  <span className={[
-                    "px-2 py-0.5 rounded text-xs font-medium",
-                    p.stock <= 5
-                      ? "bg-danger/15 text-danger"
-                      : "bg-warning/15 text-warning",
-                  ].join(" ")}>
-                    {p.stock <= 5 ? "حرج" : "منخفض"}
-                  </span>
-                </td>
-              </tr>
-            ))}
-            {products.length === 0 && (
-              <tr>
-                <td colSpan={4} className="py-8 text-center text-text-muted text-sm">
-                  جميع المنتجات لديها مخزون كافٍ
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <>
+          {error && (
+            <p className="text-danger text-sm mb-4">خطأ في تحميل المخزون: {error}</p>
+          )}
+
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-12 bg-surface-alt rounded animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-text-muted text-right">
+                  <th className="pb-3 font-medium pe-4">SKU</th>
+                  <th className="pb-3 font-medium pe-4">الاسم</th>
+                  <th className="pb-3 font-medium pe-4">المخزون</th>
+                  <th className="pb-3 font-medium">الحالة</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {products.map((p) => (
+                  <tr key={p.id} className="hover:bg-surface-alt transition-colors">
+                    <td className="py-3 pe-4 font-mono text-xs text-text-muted" dir="ltr">{p.sku}</td>
+                    <td className="py-3 pe-4 text-text">{p.name}</td>
+                    <td className="py-3 pe-4 text-text font-semibold">{p.stock}</td>
+                    <td className="py-3">
+                      <span className={[
+                        "px-2 py-0.5 rounded text-xs font-medium",
+                        p.stock <= 5
+                          ? "bg-danger/15 text-danger"
+                          : "bg-warning/15 text-warning",
+                      ].join(" ")}>
+                        {p.stock <= 5 ? "حرج" : "منخفض"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {products.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-text-muted text-sm">
+                      جميع المنتجات لديها مخزون كافٍ
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </>
       )}
 
       <Drawer open={drawerOpen} title="تسجيل تعديل مخزون" onClose={() => setDrawerOpen(false)}>

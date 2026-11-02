@@ -15,6 +15,10 @@ internal sealed class StockAdjustmentRepository : IErpRepository
     public StockAdjustmentRepository(DbContext ctx) => _ctx = ctx;
 
     public void AddAdjustment(StockAdjustment adj) => _ctx.Set<StockAdjustment>().Add(adj);
+
+    public async Task<IReadOnlyList<StockAdjustment>> GetAdjustmentsAsync(CancellationToken ct = default)
+        => await _ctx.Set<StockAdjustment>().OrderByDescending(a => a.AdjustedAt).ToListAsync(ct);
+
     public Task SaveChangesAsync(CancellationToken ct = default) => _ctx.SaveChangesAsync(ct);
 }
 

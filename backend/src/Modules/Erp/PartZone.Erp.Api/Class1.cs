@@ -21,6 +21,13 @@ internal static class ErpEndpoints
         return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Description);
     }
 
+    internal static async Task<IResult> GetAdjustmentHistoryAsync(
+        IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetStockAdjustmentHistoryQuery(), ct);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Description);
+    }
+
     internal static async Task<IResult> CreateAdjustmentAsync(
         StockAdjustmentRequest req, ClaimsPrincipal user, IMediator mediator, CancellationToken ct)
     {
@@ -49,6 +56,8 @@ public static class ErpApiModule
     public static IEndpointRouteBuilder MapErpEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/api/v1/admin/erp/inventory", ErpEndpoints.GetInventoryAsync)
+            .RequireAuthorization("Admin");
+        app.MapGet("/api/v1/admin/erp/adjustments", ErpEndpoints.GetAdjustmentHistoryAsync)
             .RequireAuthorization("Admin");
         app.MapPost("/api/v1/admin/erp/adjustments", ErpEndpoints.CreateAdjustmentAsync)
             .RequireAuthorization("Admin");

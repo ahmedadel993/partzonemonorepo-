@@ -20,6 +20,7 @@ public static class CheckoutModule
         group.MapPost("/place-order", CheckoutEndpoints.PlaceOrderAsync);
         group.MapGet("/my-orders", CheckoutEndpoints.GetMyOrdersAsync);
         group.MapGet("/my-orders/{id}", CheckoutEndpoints.GetOrderByIdAsync);
+        group.MapPost("/my-orders/{id:guid}/cancel", CheckoutEndpoints.CancelOrderAsync);
 
         return app;
     }

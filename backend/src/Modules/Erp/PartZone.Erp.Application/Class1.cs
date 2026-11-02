@@ -10,6 +10,7 @@ namespace PartZone.Erp.Application;
 public interface IErpRepository
 {
     void AddAdjustment(StockAdjustment adj);
+    Task<IReadOnlyList<StockAdjustment>> GetAdjustmentsAsync(CancellationToken ct = default);
     Task SaveChangesAsync(CancellationToken ct = default);
 }
 
@@ -24,9 +25,27 @@ public interface IInventoryProductRepository
 
 public sealed record LowStockProductDto(Guid Id, string Sku, string Name, int Stock);
 
+public sealed record StockAdjustmentDto(
+    Guid Id, Guid ProductId, int Delta, string Reason, Guid AdminUserId, DateTime AdjustedAt);
+
 // ── Queries ───────────────────────────────────────────────────────────────────
 
 public sealed record GetLowStockProductsQuery(int Threshold = 5) : IQuery<IReadOnlyList<LowStockProductDto>>;
+
+public sealed record GetStockAdjustmentHistoryQuery : IQuery<IReadOnlyList<StockAdjustmentDto>>;
+
+internal sealed class GetStockAdjustmentHistoryHandler(IErpRepository repo)
+    : IQueryHandler<GetStockAdjustmentHistoryQuery, IReadOnlyList<StockAdjustmentDto>>
+{
+    public async Task<Result<IReadOnlyList<StockAdjustmentDto>>> Handle(
+        GetStockAdjustmentHistoryQuery request, CancellationToken ct)
+    {
+        var adjustments = await repo.GetAdjustmentsAsync(ct);
+        var dtos = adjustments.Select(a => new StockAdjustmentDto(
+            a.Id, a.ProductId, a.Delta, a.Reason, a.AdminUserId, a.AdjustedAt)).ToList();
+        return Result.Success<IReadOnlyList<StockAdjustmentDto>>(dtos.AsReadOnly());
+    }
+}
 
 internal sealed class GetLowStockProductsHandler(IInventoryProductRepository repo)
     : IQueryHandler<GetLowStockProductsQuery, IReadOnlyList<LowStockProductDto>>
