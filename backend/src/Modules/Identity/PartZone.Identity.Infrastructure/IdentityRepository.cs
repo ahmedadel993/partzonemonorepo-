@@ -43,6 +43,8 @@ public sealed class IdentityRepository : IIdentityRepository
     public async Task AddAddressAsync(Address address, CancellationToken ct) =>
         await _ctx.Set<Address>().AddAsync(address, ct);
 
+    public void UpdateUser(User user) => _ctx.Set<User>().Update(user);
+
     public Task SaveChangesAsync(CancellationToken ct) =>
         _ctx.SaveChangesAsync(ct);
 }

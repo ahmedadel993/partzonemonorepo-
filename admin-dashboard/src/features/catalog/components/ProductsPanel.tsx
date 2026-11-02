@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   GET_PRODUCTS,
   GET_BRANDS,
   GET_CATEGORIES,
   PUBLISH_PRODUCT,
   UNPUBLISH_PRODUCT,
+  CREATE_PRODUCT,
 } from "../graphql/catalogApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -44,6 +48,192 @@ const CONDITION_COLORS: Record<string, string> = {
   Aftermarket: "bg-warning/15 text-warning",
   Used: "bg-surface-alt text-text-muted",
 };
+
+// ── Create Product form ────────────────────────────────────────────────────────
+
+function Drawer({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <>
+      {open && <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />}
+      <aside className={[
+        "fixed top-0 end-0 h-full w-[32rem] bg-surface border-s border-border z-50",
+        "transition-transform duration-300",
+        open ? "translate-x-0" : "translate-x-full rtl:-translate-x-full",
+      ].join(" ")}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-border">
+          <h2 className="font-semibold text-text">{title}</h2>
+          <button onClick={onClose} className="text-text-muted hover:text-text text-xl leading-none">×</button>
+        </div>
+        <div className="p-6 overflow-y-auto h-[calc(100%-4rem)]">{children}</div>
+      </aside>
+    </>
+  );
+}
+
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-4">
+      <label className="block text-sm text-text-muted mb-1">{label}</label>
+      {children}
+      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
+    </div>
+  );
+}
+
+const inputCls =
+  "w-full bg-surface-alt border border-border rounded-md px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors";
+
+const productSchema = z.object({
+  sku:           z.string().min(1, "مطلوب").max(100),
+  oemNumber:     z.string().max(100).default(""),
+  slug:          z.string().min(1, "مطلوب").max(200).regex(/^[a-z0-9-]+$/, "lowercase، أرقام، شرطات فقط"),
+  nameAr:        z.string().min(1, "مطلوب").max(300),
+  descriptionAr: z.string().max(2000).default(""),
+  nameEn:        z.string().max(300).default(""),
+  condition:     z.enum(["Original", "Aftermarket", "Used"]),
+  brandId:       z.string().uuid("اختر الماركة"),
+  categoryId:    z.string().uuid("اختر الفئة"),
+  priceAmount:   z.coerce.number().min(0.01, "السعر > 0"),
+  priceCurrency: z.string().min(1).default("EGP"),
+  stock:         z.coerce.number().int().min(0),
+});
+type ProductForm = z.infer<typeof productSchema>;
+
+function CreateProductDrawer({
+  onClose, onDone, brands, categories,
+}: {
+  onClose: () => void;
+  onDone: () => void;
+  brands: { id: string; name: string }[];
+  categories: { id: string; name: string }[];
+}) {
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [createProduct] = useMutation(CREATE_PRODUCT);
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ProductForm>({
+    resolver: zodResolver(productSchema),
+    defaultValues: { oemNumber: "", descriptionAr: "", nameEn: "", priceCurrency: "EGP", stock: 0 },
+  });
+
+  const onSubmit = async (data: ProductForm) => {
+    setServerError(null);
+    const translations = [{ locale: "ar", name: data.nameAr, description: data.descriptionAr || null }];
+    if (data.nameEn) translations.push({ locale: "en", name: data.nameEn, description: null });
+
+    const { data: result, errors: gqlErrors } = await createProduct({
+      variables: {
+        input: {
+          sku: data.sku,
+          oemNumber: data.oemNumber || "",
+          slug: data.slug,
+          condition: data.condition,
+          priceAmount: data.priceAmount,
+          priceCurrency: data.priceCurrency,
+          stock: data.stock,
+          brandId: data.brandId,
+          categoryId: data.categoryId,
+          translations,
+        },
+      },
+    });
+
+    if (gqlErrors?.length) {
+      setServerError(gqlErrors[0].message);
+      return;
+    }
+    const payload = result?.createProduct;
+    if (payload?.errors?.length) {
+      setServerError(payload.errors[0]);
+      return;
+    }
+    onDone();
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div className="grid grid-cols-2 gap-x-4">
+        <Field label="SKU" error={errors.sku?.message}>
+          <input {...register("sku")} className={inputCls} placeholder="BOSCH-0001" dir="ltr" />
+        </Field>
+        <Field label="رقم OEM" error={errors.oemNumber?.message}>
+          <input {...register("oemNumber")} className={inputCls} placeholder="اختياري" dir="ltr" />
+        </Field>
+      </div>
+
+      <Field label="Slug (الرابط)" error={errors.slug?.message}>
+        <input {...register("slug")} className={inputCls} placeholder="bosch-brake-pad-0001" dir="ltr" />
+      </Field>
+
+      <Field label="الاسم بالعربية" error={errors.nameAr?.message}>
+        <input {...register("nameAr")} className={inputCls} placeholder="وسادة الفرامل بوش" />
+      </Field>
+
+      <Field label="وصف (عربي، اختياري)" error={errors.descriptionAr?.message}>
+        <textarea {...register("descriptionAr")} rows={2} className={inputCls} placeholder="وصف المنتج…" />
+      </Field>
+
+      <Field label="الاسم بالإنجليزية (اختياري)" error={errors.nameEn?.message}>
+        <input {...register("nameEn")} className={inputCls} placeholder="Bosch Brake Pad" dir="ltr" />
+      </Field>
+
+      <Field label="حالة القطعة" error={errors.condition?.message}>
+        <select {...register("condition")} className={inputCls}>
+          <option value="">— اختر —</option>
+          <option value="Original">أصلي (Original)</option>
+          <option value="Aftermarket">بديل (Aftermarket)</option>
+          <option value="Used">مستعمل (Used)</option>
+        </select>
+      </Field>
+
+      <div className="grid grid-cols-2 gap-x-4">
+        <Field label="الماركة" error={errors.brandId?.message}>
+          <select {...register("brandId")} className={inputCls}>
+            <option value="">— اختر —</option>
+            {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        </Field>
+        <Field label="الفئة" error={errors.categoryId?.message}>
+          <select {...register("categoryId")} className={inputCls}>
+            <option value="">— اختر —</option>
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-x-4">
+        <Field label="السعر" error={errors.priceAmount?.message}>
+          <input type="number" step="0.01" {...register("priceAmount")} className={inputCls} placeholder="0.00" dir="ltr" />
+        </Field>
+        <Field label="العملة" error={errors.priceCurrency?.message}>
+          <input {...register("priceCurrency")} className={inputCls} placeholder="EGP" dir="ltr" />
+        </Field>
+      </div>
+
+      <Field label="المخزون الابتدائي" error={errors.stock?.message}>
+        <input type="number" {...register("stock")} className={inputCls} placeholder="0" dir="ltr" />
+      </Field>
+
+      {serverError && <p className="text-danger text-xs mb-4">{serverError}</p>}
+
+      <div className="flex gap-3 pt-2">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex-1 bg-accent text-white rounded-md py-2 text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
+        >
+          {isSubmitting ? "جارٍ الحفظ…" : "إنشاء المنتج"}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 bg-surface-alt text-text rounded-md py-2 text-sm font-medium hover:bg-border transition-colors"
+        >
+          إلغاء
+        </button>
+      </div>
+    </form>
+  );
+}
 
 // ── Pagination ────────────────────────────────────────────────────────────────
 
@@ -88,6 +278,7 @@ export function ProductsPanel() {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [brandId, setBrandId] = useState<string | null>(null);
   const [condition, setCondition] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const filter = {
     q: q || null,
@@ -139,11 +330,17 @@ export function ProductsPanel() {
     <div dir="rtl">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-text">المنتجات</h2>
-        {paged && (
-          <span className="text-sm text-text-muted">
-            {paged.totalCount} منتج
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {paged && (
+            <span className="text-sm text-text-muted">{paged.totalCount} منتج</span>
+          )}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="bg-accent text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-accent/90 transition-colors"
+          >
+            + منتج جديد
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -294,6 +491,21 @@ export function ProductsPanel() {
           )}
         </>
       )}
+
+      <Drawer open={drawerOpen} title="منتج جديد" onClose={() => setDrawerOpen(false)}>
+        {drawerOpen && (
+          <CreateProductDrawer
+            brands={brandsData?.brands ?? []}
+            categories={catsData?.categories ?? []}
+            onClose={() => setDrawerOpen(false)}
+            onDone={() => {
+              setDrawerOpen(false);
+              // refetch current page
+              setPage((p) => p);
+            }}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }

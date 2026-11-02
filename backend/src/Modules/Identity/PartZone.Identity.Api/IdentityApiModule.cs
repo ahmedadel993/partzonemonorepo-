@@ -17,6 +17,8 @@ public static class IdentityApiModule
 
         app.MapGet("/api/v1/admin/users", IdentityEndpoints.GetAllUsersAsync)
             .RequireAuthorization("Admin");
+        app.MapPut("/api/v1/admin/users/{id:guid}/role", IdentityEndpoints.ChangeUserRoleAsync)
+            .RequireAuthorization("Admin");
 
         return app;
     }

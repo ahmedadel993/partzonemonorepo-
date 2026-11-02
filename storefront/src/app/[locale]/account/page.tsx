@@ -50,6 +50,13 @@ export default async function AccountPage({ params }: Props) {
           <span className="font-medium text-text">طلباتي</span>
           <span className="text-text-muted group-hover:text-text transition-colors">←</span>
         </Link>
+        <Link
+          href={`/${locale}/account/addresses`}
+          className="flex items-center justify-between bg-surface border border-border rounded-xl px-5 py-4 hover:bg-surface-alt transition-colors group"
+        >
+          <span className="font-medium text-text">عناويني</span>
+          <span className="text-text-muted group-hover:text-text transition-colors">←</span>
+        </Link>
       </div>
 
       {/* Logout */}

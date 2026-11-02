@@ -13,22 +13,27 @@ const API = import.meta.env.VITE_API_URL ?? "/api/v1";
 
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem("pz_access_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } : {};
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  Admin:    "bg-danger/15 text-danger",
-  Vendor:   "bg-accent/15 text-accent",
-  Customer: "bg-surface-alt text-text-muted",
+  Admin:          "bg-danger/15 text-danger",
+  Vendor:         "bg-accent/15 text-accent",
+  ContentManager: "bg-sky-500/15 text-sky-500",
+  Customer:       "bg-surface-alt text-text-muted",
 };
+
+const ROLES = ["Customer", "Vendor", "ContentManager", "Admin"];
 
 export default function UsersStub() {
   const [users, setUsers] = useState<UserAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [changingRole, setChangingRole] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
     fetch(`${API}/admin/users`, { headers: authHeaders() })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -37,7 +42,9 @@ export default function UsersStub() {
       .then(setUsers)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(load, []);
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
@@ -47,6 +54,23 @@ export default function UsersStub() {
       u.lastName.toLowerCase().includes(q)
     );
   });
+
+  const changeRole = async (userId: string, newRole: string) => {
+    setChangingRole(userId);
+    try {
+      const r = await fetch(`${API}/admin/users/${userId}/role`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify({ role: newRole }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, role: newRole } : u));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setChangingRole(null);
+    }
+  };
 
   return (
     <div dir="rtl">
@@ -61,7 +85,7 @@ export default function UsersStub() {
       </div>
 
       {error && (
-        <p className="text-danger text-sm mb-4">خطأ في تحميل المستخدمين: {error}</p>
+        <p className="text-danger text-sm mb-4">خطأ: {error}</p>
       )}
 
       {loading ? (
@@ -77,6 +101,7 @@ export default function UsersStub() {
               <th className="pb-3 font-medium pe-4">البريد الإلكتروني</th>
               <th className="pb-3 font-medium pe-4">الاسم</th>
               <th className="pb-3 font-medium pe-4">الدور</th>
+              <th className="pb-3 font-medium pe-4">تغيير الدور</th>
               <th className="pb-3 font-medium">تاريخ التسجيل</th>
             </tr>
           </thead>
@@ -97,6 +122,26 @@ export default function UsersStub() {
                     {u.role}
                   </span>
                 </td>
+                <td className="py-3 pe-4">
+                  <div className="flex items-center gap-2">
+                    <select
+                      defaultValue={u.role}
+                      onChange={(e) => {
+                        const newRole = e.target.value;
+                        if (newRole !== u.role) changeRole(u.id, newRole);
+                      }}
+                      disabled={changingRole === u.id}
+                      className="bg-surface-alt border border-border rounded px-2 py-1 text-xs text-text focus:outline-none focus:border-accent disabled:opacity-50"
+                    >
+                      {ROLES.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                    {changingRole === u.id && (
+                      <span className="text-xs text-text-muted">جارٍ…</span>
+                    )}
+                  </div>
+                </td>
                 <td className="py-3 text-text-muted text-xs">
                   {new Date(u.createdAt).toLocaleDateString("ar-EG")}
                 </td>
@@ -104,7 +149,7 @@ export default function UsersStub() {
             ))}
             {filtered.length === 0 && !loading && (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-text-muted text-sm">
+                <td colSpan={5} className="py-8 text-center text-text-muted text-sm">
                   لا توجد نتائج
                 </td>
               </tr>

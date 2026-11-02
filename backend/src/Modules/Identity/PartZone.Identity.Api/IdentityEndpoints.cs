@@ -64,6 +64,18 @@ internal static class IdentityEndpoints
         var result = await mediator.Send(new GetAllUsersQuery(), ct);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Description);
     }
+
+    internal static async Task<IResult> ChangeUserRoleAsync(
+        Guid id, ChangeRoleRequest req, IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ChangeUserRoleCommand(id, req.Role), ct);
+        return result.IsSuccess
+            ? Results.NoContent()
+            : Results.Problem(result.Error.Description,
+                statusCode: result.Error.Code == "Identity.UserNotFound"
+                    ? StatusCodes.Status404NotFound
+                    : StatusCodes.Status422UnprocessableEntity);
+    }
 }
 
 internal sealed record RegisterRequest(string Email, string Password, string FirstName, string LastName);
@@ -71,3 +83,4 @@ internal sealed record LoginRequest(string Email, string Password);
 internal sealed record AddAddressRequest(
     string Label, string StreetLine1, string? StreetLine2,
     string City, string Governorate, string PostalCode, bool IsDefault = false);
+internal sealed record ChangeRoleRequest(string Role);

@@ -102,7 +102,7 @@ export const UPDATE_CATEGORY = gql`
 export const CREATE_VEHICLE_MAKE = gql`
   mutation CreateVehicleMake($input: CreateVehicleMakeInput!) {
     createVehicleMake(input: $input) {
-      vehicleMake { id name slug }
+      make { id name slug }
       errors
     }
   }
@@ -111,7 +111,7 @@ export const CREATE_VEHICLE_MAKE = gql`
 export const CREATE_VEHICLE_MODEL = gql`
   mutation CreateVehicleModel($input: CreateVehicleModelInput!) {
     createVehicleModel(input: $input) {
-      vehicleModel { id name slug }
+      model { id name slug }
       errors
     }
   }
