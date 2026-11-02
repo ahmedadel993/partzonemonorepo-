@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PartZone.Catalog.Domain\PartZone.Catalog.Domain.csproj" />
     <ProjectReference Include="..\..\..\PartZone.Shared.Kernel\PartZone.Shared.Kernel.csproj" />
+    <ProjectReference Include="..\..\Checkout\PartZone.Checkout.Domain\PartZone.Checkout.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

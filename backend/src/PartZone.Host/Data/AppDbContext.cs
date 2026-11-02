@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using CartEntity = PartZone.Cart.Domain.Entities.Cart;
 using CartItemEntity = PartZone.Cart.Domain.Entities.CartItem;
@@ -10,12 +11,17 @@ using PartZone.Identity.Domain.Entities;
 using PartZone.Identity.Infrastructure.Data;
 using PartZone.Marketing.Domain.Entities;
 using PartZone.Marketing.Infrastructure;
+using PartZone.Orders.Infrastructure;
+using PartZone.Shared.Kernel.Domain;
 
 namespace PartZone.Host.Data;
 
 public sealed class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    private readonly IMediator _mediator;
+
+    public AppDbContext(DbContextOptions<AppDbContext> options, IMediator mediator) : base(options)
+        => _mediator = mediator;
 
     // Identity
     public DbSet<User> Users => Set<User>();
@@ -57,7 +63,27 @@ public sealed class AppDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MarketingInfrastructureExtensions).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CartInfrastructureExtensions).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CheckoutInfrastructureExtensions).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrdersInfrastructureExtensions).Assembly);
 
         base.OnModelCreating(modelBuilder);
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var aggregates = ChangeTracker.Entries<AggregateRoot<Guid>>()
+            .Where(e => e.Entity.DomainEvents.Count > 0)
+            .Select(e => e.Entity)
+            .ToList();
+
+        var events = aggregates.SelectMany(a => a.DomainEvents).ToList();
+        foreach (var agg in aggregates)
+            agg.ClearDomainEvents();
+
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        foreach (var ev in events)
+            await _mediator.Publish(ev, cancellationToken);
+
+        return result;
     }
 }

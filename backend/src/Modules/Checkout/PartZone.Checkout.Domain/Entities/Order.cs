@@ -53,7 +53,15 @@ public sealed class Order : AggregateRoot<Guid>
         order.ShippingFee = order.SubTotal - discountAmount >= 500m ? 0m : 15m;
         order.Total = order.SubTotal - discountAmount + order.ShippingFee;
 
+        order.RaiseDomainEvent(new OrderPlacedEvent(order.Id,
+            order._items.Select(i => new OrderPlacedItem(i.ProductId, i.Quantity)).ToList()));
+
         return order;
+    }
+
+    public void UpdateStatus(OrderStatus status)
+    {
+        Status = status;
     }
 
     public void Cancel(string? reason = null)

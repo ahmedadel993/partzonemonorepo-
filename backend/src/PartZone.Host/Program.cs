@@ -12,6 +12,8 @@ using PartZone.Checkout.Application.Commands;
 using PartZone.Identity.Api;
 using PartZone.Marketing.Api;
 using PartZone.Marketing.Application.Queries;
+using PartZone.Orders.Api;
+using PartZone.Orders.Application;
 using PartZone.Host.Data;
 using PartZone.Host.Middleware;
 using PartZone.Identity.Application;
@@ -49,6 +51,7 @@ builder.Services.AddCatalogModule(graphql);
 builder.Services.AddMarketingModule(graphql);
 builder.Services.AddCartModule();
 builder.Services.AddCheckoutModule();
+builder.Services.AddOrdersModule();
 
 // ── MediatR (all application assemblies) ────────────────────────────────────
 builder.Services.AddMediatR(cfg =>
@@ -57,7 +60,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(GetBrandsQuery).Assembly,             // Catalog.Application
         typeof(GetActivePageBlocksQuery).Assembly,   // Marketing.Application
         typeof(AddToCartCommand).Assembly,           // Cart.Application
-        typeof(PlaceOrderCommand).Assembly           // Checkout.Application
+        typeof(PlaceOrderCommand).Assembly,          // Checkout.Application
+        typeof(GetAllOrdersQuery).Assembly           // Orders.Application
     ));
 
 // ── FluentValidation ─────────────────────────────────────────────────────────
@@ -67,6 +71,7 @@ builder.Services.AddValidatorsFromAssemblies([
     typeof(GetActivePageBlocksQuery).Assembly,
     typeof(AddToCartCommand).Assembly,
     typeof(PlaceOrderCommand).Assembly,
+    typeof(GetAllOrdersQuery).Assembly,
 ]);
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -87,7 +92,8 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(opts =>
+    opts.AddPolicy("Admin", policy => policy.RequireRole("Admin")));
 
 // ── Exception handling ───────────────────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -139,6 +145,7 @@ app.MapCatalogEndpoints();
 app.MapMarketingEndpoints();
 app.MapCartEndpoints();
 app.MapCheckoutEndpoints();
+app.MapOrdersAdminEndpoints();
 
 // Serve admin SPA from wwwroot/admin (production — IIS handles SPA fallback)
 app.UseStaticFiles();

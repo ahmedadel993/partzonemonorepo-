@@ -3,6 +3,13 @@
   <ItemGroup>
     <ProjectReference Include="..\PartZone.Orders.Domain\PartZone.Orders.Domain.csproj" />
     <ProjectReference Include="..\..\..\PartZone.Shared.Kernel\PartZone.Shared.Kernel.csproj" />
+    <ProjectReference Include="..\..\Checkout\PartZone.Checkout.Domain\PartZone.Checkout.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.12.0" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
   </ItemGroup>
 
   <PropertyGroup>

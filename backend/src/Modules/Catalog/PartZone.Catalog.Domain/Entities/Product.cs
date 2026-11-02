@@ -63,6 +63,12 @@ public sealed class Product : AggregateRoot<Guid>
         RaiseDomainEvent(new ProductStockUpdatedEvent(Id, quantity));
     }
 
+    public void DecrementStock(int qty)
+    {
+        Stock = Math.Max(0, Stock - qty);
+        RaiseDomainEvent(new ProductStockUpdatedEvent(Id, Stock));
+    }
+
     public void Update(string slug, Guid brandId, Guid categoryId, PartCondition condition, Money price)
     {
         Slug = slug;

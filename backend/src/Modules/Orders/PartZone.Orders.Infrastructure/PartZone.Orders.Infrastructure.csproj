@@ -3,6 +3,13 @@
   <ItemGroup>
     <ProjectReference Include="..\PartZone.Orders.Application\PartZone.Orders.Application.csproj" />
     <ProjectReference Include="..\PartZone.Orders.Domain\PartZone.Orders.Domain.csproj" />
+    <ProjectReference Include="..\..\Checkout\PartZone.Checkout.Domain\PartZone.Checkout.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
   </ItemGroup>
 
   <PropertyGroup>
