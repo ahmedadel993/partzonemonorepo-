@@ -125,6 +125,38 @@ export const CREATE_VEHICLE_MODEL = gql`
   }
 `;
 
+export const UPDATE_VEHICLE_MAKE = gql`
+  mutation UpdateVehicleMake($input: UpdateVehicleMakeInput!) {
+    updateVehicleMake(input: $input) {
+      errors
+    }
+  }
+`;
+
+export const DELETE_VEHICLE_MAKE = gql`
+  mutation DeleteVehicleMake($id: ID!) {
+    deleteVehicleMake(id: $id) {
+      errors
+    }
+  }
+`;
+
+export const UPDATE_VEHICLE_MODEL = gql`
+  mutation UpdateVehicleModel($input: UpdateVehicleModelInput!) {
+    updateVehicleModel(input: $input) {
+      errors
+    }
+  }
+`;
+
+export const DELETE_VEHICLE_MODEL = gql`
+  mutation DeleteVehicleModel($id: ID!) {
+    deleteVehicleModel(id: $id) {
+      errors
+    }
+  }
+`;
+
 export const CREATE_PRODUCT = gql`
   mutation CreateProduct($input: CreateProductInput!) {
     createProduct(input: $input) {

@@ -16,10 +16,26 @@ internal sealed class GetProductBySlugHandler(ICatalogReadRepository repo)
         if (p is null) return Result.Success<ProductDetailDto?>(null);
         var brand = await repo.GetBrandByIdAsync(p.BrandId, ct);
         var category = await repo.GetCategoryByIdAsync(p.CategoryId, ct);
-        return Result.Success<ProductDetailDto?>(MapDetail(p, brand, category));
+        var modelNames = await LoadModelNamesAsync(repo, p.Fitments.Select(f => f.VehicleModelId), ct);
+        return Result.Success<ProductDetailDto?>(MapDetail(p, brand, category, modelNames));
     }
 
-    internal static ProductDetailDto MapDetail(Product p, Brand? brand, Category? category)
+    internal static async Task<Dictionary<Guid, string>> LoadModelNamesAsync(
+        ICatalogReadRepository repo,
+        IEnumerable<Guid> modelIds,
+        CancellationToken ct)
+    {
+        var result = new Dictionary<Guid, string>();
+        foreach (var id in modelIds.Distinct())
+        {
+            var m = await repo.GetVehicleModelByIdAsync(id, ct);
+            if (m is not null) result[id] = m.Name;
+        }
+        return result;
+    }
+
+    internal static ProductDetailDto MapDetail(Product p, Brand? brand, Category? category,
+        Dictionary<Guid, string>? modelNames = null)
     {
         var translation = p.Translations.FirstOrDefault(t => t.Locale == "ar")
                        ?? p.Translations.FirstOrDefault();
@@ -33,6 +49,9 @@ internal sealed class GetProductBySlugHandler(ICatalogReadRepository repo)
             new BrandDto(p.BrandId, brand?.Name ?? string.Empty, brand?.Slug ?? string.Empty, brand?.LogoUrl, brand?.IsActive ?? true),
             new CategoryDto(p.CategoryId, category?.Name ?? string.Empty, category?.Slug ?? string.Empty, category?.ImageUrl, category?.SortOrder ?? 0, category?.ParentId, []),
             p.Images.Select(i => new ProductImageDto(i.Id, i.Url, i.AltText, i.IsPrimary)).ToList(),
-            p.Fitments.Select(f => new ProductFitmentDto(f.Id, f.VehicleModelId, string.Empty, f.YearFrom, f.YearTo)).ToList());
+            p.Fitments.Select(f => new ProductFitmentDto(
+                f.Id, f.VehicleModelId,
+                modelNames?.GetValueOrDefault(f.VehicleModelId) ?? string.Empty,
+                f.YearFrom, f.YearTo)).ToList());
     }
 }

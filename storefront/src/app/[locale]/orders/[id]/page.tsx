@@ -67,7 +67,11 @@ export default async function OrderPage({ params }: Props) {
             <ul className="divide-y divide-border border border-border rounded-xl overflow-hidden">
               {order.items.map((item) => (
                 <li key={item.id} className="flex items-center gap-4 p-4">
-                  <div className="w-14 h-14 bg-surface-alt rounded shrink-0" />
+                  {item.imageUrl
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={item.imageUrl} alt={item.name} className="w-14 h-14 object-cover rounded shrink-0" />
+                    : <div className="w-14 h-14 bg-surface-alt rounded shrink-0" />
+                  }
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-text line-clamp-1">{item.name}</p>
                     <p className="text-xs text-text-muted font-mono mt-0.5" dir="ltr">{item.sku} × {item.quantity}</p>

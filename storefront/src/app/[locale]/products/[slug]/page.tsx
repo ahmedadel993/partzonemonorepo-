@@ -74,6 +74,14 @@ export default async function ProductPage({ params }: Props) {
             {/* Name */}
             <h1 className="text-2xl font-bold text-text leading-snug">{product.name}</h1>
 
+            {/* Rating */}
+            {product.reviewCount > 0 && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-warning font-semibold">★ {product.avgRating.toFixed(1)}</span>
+                <span className="text-text-muted">({product.reviewCount} تقييم)</span>
+              </div>
+            )}
+
             {/* SKU / OEM */}
             <div className="flex flex-wrap gap-4 text-sm" dir="ltr">
               <span className="text-text-muted">

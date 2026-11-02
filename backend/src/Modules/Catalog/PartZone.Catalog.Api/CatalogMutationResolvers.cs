@@ -70,6 +70,24 @@ public sealed class CatalogMutationResolvers
             new VehicleMakeDto(result.Value!, input.Name, input.Slug, input.LogoUrl), []);
     }
 
+    public async Task<VehicleMakePayload> UpdateVehicleMakeAsync(
+        UpdateVehicleMakeGqlInput input,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new UpdateVehicleMakeCommand(input.Id, input.Name, input.LogoUrl), ct);
+        return result.IsSuccess
+            ? new VehicleMakePayload(null, [])
+            : new VehicleMakePayload(null, [result.Error.Description]);
+    }
+
+    public async Task<DeletePayload> DeleteVehicleMakeAsync(
+        Guid id,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeleteVehicleMakeCommand(id), ct);
+        return result.IsSuccess ? new DeletePayload([]) : new DeletePayload([result.Error.Description]);
+    }
+
     public async Task<VehicleModelPayload> CreateVehicleModelAsync(
         CreateVehicleModelGqlInput input,
         [Service] IMediator mediator, CancellationToken ct)
@@ -81,6 +99,24 @@ public sealed class CatalogMutationResolvers
 
         return new VehicleModelPayload(
             new VehicleModelDto(result.Value!, input.VehicleMakeId, input.Name, input.Slug), []);
+    }
+
+    public async Task<VehicleModelPayload> UpdateVehicleModelAsync(
+        UpdateVehicleModelGqlInput input,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new UpdateVehicleModelCommand(input.Id, input.Name), ct);
+        return result.IsSuccess
+            ? new VehicleModelPayload(null, [])
+            : new VehicleModelPayload(null, [result.Error.Description]);
+    }
+
+    public async Task<DeletePayload> DeleteVehicleModelAsync(
+        Guid id,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeleteVehicleModelCommand(id), ct);
+        return result.IsSuccess ? new DeletePayload([]) : new DeletePayload([result.Error.Description]);
     }
 
     public async Task<ProductPayload> CreateProductAsync(
@@ -187,7 +223,9 @@ public sealed record UpdateBrandGqlInput(Guid Id, string Name, string? LogoUrl);
 public sealed record CreateCategoryGqlInput(string Name, string Slug, string? IconUrl, int SortOrder, Guid? ParentId);
 public sealed record UpdateCategoryGqlInput(Guid Id, string Name, string? ImageUrl, int SortOrder);
 public sealed record CreateVehicleMakeGqlInput(string Name, string Slug, string? LogoUrl);
+public sealed record UpdateVehicleMakeGqlInput(Guid Id, string Name, string? LogoUrl);
 public sealed record CreateVehicleModelGqlInput(string Name, string Slug, Guid VehicleMakeId);
+public sealed record UpdateVehicleModelGqlInput(Guid Id, string Name);
 public sealed record ProductTranslationGqlInput(string Locale, string Name, string? Description);
 public sealed record CreateProductGqlInput(
     string Sku, string OemNumber, string Slug, string Condition,
@@ -223,6 +261,8 @@ public sealed record VehicleMakePayload(
 public sealed record VehicleModelPayload(
     PartZone.Catalog.Application.Queries.VehicleModelDto? Model,
     IReadOnlyList<string> Errors);
+
+public sealed record DeletePayload(IReadOnlyList<string> Errors);
 
 public sealed record ProductPayload(
     PartZone.Catalog.Application.Queries.ProductDetailDto? Product,

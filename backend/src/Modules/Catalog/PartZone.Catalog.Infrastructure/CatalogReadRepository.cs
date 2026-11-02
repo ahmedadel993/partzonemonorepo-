@@ -108,6 +108,12 @@ internal sealed class CatalogReadRepository(DbContext db) : ICatalogReadReposito
         return new PagedResult<ProductSummaryDto>(items, total, filter.Page, filter.PageSize);
     }
 
+    public Task<VehicleMake?> GetVehicleMakeByIdAsync(Guid id, CancellationToken ct) =>
+        db.Set<VehicleMake>().AsNoTracking().FirstOrDefaultAsync(m => m.Id == id, ct);
+
+    public Task<VehicleModel?> GetVehicleModelByIdAsync(Guid id, CancellationToken ct) =>
+        db.Set<VehicleModel>().AsNoTracking().FirstOrDefaultAsync(m => m.Id == id, ct);
+
     public async Task<IReadOnlyList<VehicleMake>> GetVehicleMakesAsync(CancellationToken ct) =>
         await db.Set<VehicleMake>().AsNoTracking().OrderBy(m => m.Name).ToListAsync(ct);
 

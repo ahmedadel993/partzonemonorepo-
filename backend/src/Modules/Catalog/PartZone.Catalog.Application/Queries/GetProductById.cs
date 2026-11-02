@@ -15,6 +15,7 @@ internal sealed class GetProductByIdHandler(ICatalogReadRepository repo)
         if (p is null) return Result.Success<ProductDetailDto?>(null);
         var brand = await repo.GetBrandByIdAsync(p.BrandId, ct);
         var category = await repo.GetCategoryByIdAsync(p.CategoryId, ct);
-        return Result.Success<ProductDetailDto?>(GetProductBySlugHandler.MapDetail(p, brand, category));
+        var modelNames = await GetProductBySlugHandler.LoadModelNamesAsync(repo, p.Fitments.Select(f => f.VehicleModelId), ct);
+        return Result.Success<ProductDetailDto?>(GetProductBySlugHandler.MapDetail(p, brand, category, modelNames));
     }
 }

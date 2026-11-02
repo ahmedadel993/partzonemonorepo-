@@ -15,4 +15,6 @@ public sealed class VehicleModel : Entity<Guid>
 
     public static VehicleModel Create(Guid makeId, string name, string slug) =>
         new() { Id = Guid.NewGuid(), VehicleMakeId = makeId, Name = name, Slug = slug };
+
+    public void Update(string name) { Name = name; }
 }

@@ -13,7 +13,11 @@ internal sealed class CatalogWriteRepository(DbContext db) : ICatalogWriteReposi
     public void AddProduct(Product product) => db.Set<Product>().Add(product);
     public void UpdateProduct(Product product) => db.Set<Product>().Update(product);
     public void AddVehicleMake(VehicleMake make) => db.Set<VehicleMake>().Add(make);
+    public void UpdateVehicleMake(VehicleMake make) => db.Set<VehicleMake>().Update(make);
+    public void RemoveVehicleMake(VehicleMake make) => db.Set<VehicleMake>().Remove(make);
     public void AddVehicleModel(VehicleModel model) => db.Set<VehicleModel>().Add(model);
+    public void UpdateVehicleModel(VehicleModel model) => db.Set<VehicleModel>().Update(model);
+    public void RemoveVehicleModel(VehicleModel model) => db.Set<VehicleModel>().Remove(model);
     public void AddVehicleYearRange(VehicleYearRange range) => db.Set<VehicleYearRange>().Add(range);
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         db.SaveChangesAsync(cancellationToken);

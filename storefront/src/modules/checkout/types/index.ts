@@ -30,6 +30,7 @@ export interface OrderItem {
   unitPrice: number;
   quantity: number;
   subTotal: number;
+  imageUrl?: string | null;
 }
 
 export interface OrderSummary {

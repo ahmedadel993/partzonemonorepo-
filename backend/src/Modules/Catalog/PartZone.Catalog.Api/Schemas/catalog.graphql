@@ -16,7 +16,11 @@ extend type Mutation {
   createCategory(input: CreateCategoryInput!): CategoryPayload!
   updateCategory(input: UpdateCategoryInput!): CategoryPayload!
   createVehicleMake(input: CreateVehicleMakeInput!): VehicleMakePayload!
+  updateVehicleMake(input: UpdateVehicleMakeInput!): VehicleMakePayload!
+  deleteVehicleMake(id: ID!): DeletePayload!
   createVehicleModel(input: CreateVehicleModelInput!): VehicleModelPayload!
+  updateVehicleModel(input: UpdateVehicleModelInput!): VehicleModelPayload!
+  deleteVehicleModel(id: ID!): DeletePayload!
   createProduct(input: CreateProductInput!): ProductPayload!
   updateProduct(input: UpdateProductInput!): ProductPayload!
   publishProduct(productId: ID!): ProductPayload!
@@ -149,6 +153,10 @@ type VehicleModelPayload {
   errors: [String!]!
 }
 
+type DeletePayload {
+  errors: [String!]!
+}
+
 type ProductPayload {
   product: ProductDetailType
   errors: [String!]!
@@ -203,6 +211,17 @@ input CreateVehicleModelInput {
   name: String!
   slug: String!
   vehicleMakeId: ID!
+}
+
+input UpdateVehicleMakeInput {
+  id: ID!
+  name: String!
+  logoUrl: String
+}
+
+input UpdateVehicleModelInput {
+  id: ID!
+  name: String!
 }
 
 input CreateProductInput {

@@ -20,6 +20,8 @@ public interface ICatalogReadRepository
     Task<bool> ProductSkuExistsAsync(string sku, CancellationToken ct = default);
     Task<bool> ProductSlugExistsAsync(string slug, CancellationToken ct = default);
 
+    Task<VehicleMake?> GetVehicleMakeByIdAsync(Guid id, CancellationToken ct = default);
+    Task<VehicleModel?> GetVehicleModelByIdAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<VehicleMake>> GetVehicleMakesAsync(CancellationToken ct = default);
     Task<IReadOnlyList<VehicleModel>> GetVehicleModelsByMakeAsync(Guid makeId, CancellationToken ct = default);
     Task<IReadOnlyList<VehicleYearRange>> GetVehicleYearsByModelAsync(Guid modelId, CancellationToken ct = default);
