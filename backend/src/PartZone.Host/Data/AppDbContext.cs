@@ -1,6 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using CartEntity = PartZone.Cart.Domain.Entities.Cart;
+using CartItemEntity = PartZone.Cart.Domain.Entities.CartItem;
+using PartZone.Cart.Infrastructure;
 using PartZone.Catalog.Domain.Entities;
 using PartZone.Catalog.Infrastructure;
+using PartZone.Checkout.Domain.Entities;
+using PartZone.Checkout.Infrastructure;
 using PartZone.Identity.Domain.Entities;
 using PartZone.Identity.Infrastructure.Data;
 using PartZone.Marketing.Domain.Entities;
@@ -34,6 +39,14 @@ public sealed class AppDbContext : DbContext
     public DbSet<ProductTranslation> ProductTranslations => Set<ProductTranslation>();
     public DbSet<ProductFitment> ProductFitments => Set<ProductFitment>();
 
+    // Cart
+    public DbSet<CartEntity> Carts => Set<CartEntity>();
+    public DbSet<CartItemEntity> CartItems => Set<CartItemEntity>();
+
+    // Orders (owned by Checkout module)
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new UserConfiguration());
@@ -42,6 +55,8 @@ public sealed class AppDbContext : DbContext
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogInfrastructureExtensions).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MarketingInfrastructureExtensions).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CartInfrastructureExtensions).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CheckoutInfrastructureExtensions).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }

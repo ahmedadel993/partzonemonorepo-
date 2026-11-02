@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Header } from "@/shared/ui/Header";
 import { ProductGallery } from "@/modules/catalog/components/ProductGallery";
 import { getProductBySlug } from "@/modules/catalog/actions/catalogActions";
+import { AddToCartButton } from "@/modules/cart/components/AddToCartButton";
 
 const CONDITION_LABELS: Record<string, string> = {
   Original: "قطعة أصلية",
@@ -101,11 +102,17 @@ export default async function ProductPage({ params }: Props) {
             </p>
 
             {/* Add to cart */}
-            {product.stock > 0 && (
-              <button className="w-full h-12 bg-accent hover:bg-accent-hover text-accent-fg font-semibold rounded-lg transition-colors text-base">
-                أضف للسلة
-              </button>
-            )}
+            <AddToCartButton
+              product={{
+                id: product.id,
+                sku: product.sku,
+                name: product.name,
+                price: product.priceAmount,
+                stock: product.stock,
+                imageUrl: product.images[0]?.url ?? null,
+              }}
+              className="w-full h-12 bg-accent hover:bg-accent-hover text-accent-fg font-semibold rounded-lg transition-colors text-base"
+            />
 
             {/* Description */}
             {product.description && (

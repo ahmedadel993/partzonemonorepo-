@@ -25,6 +25,18 @@ public sealed class IdentityRepository : IIdentityRepository
     public Task<RefreshToken?> GetRefreshTokenAsync(string token, CancellationToken ct) =>
         _ctx.Set<RefreshToken>().FirstOrDefaultAsync(t => t.Token == token, ct);
 
+    public async Task<IReadOnlyList<Address>> GetAddressesByUserIdAsync(Guid userId, CancellationToken ct)
+    {
+        var list = await _ctx.Set<Address>()
+            .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.IsDefault)
+            .ToListAsync(ct);
+        return list.AsReadOnly();
+    }
+
+    public async Task AddAddressAsync(Address address, CancellationToken ct) =>
+        await _ctx.Set<Address>().AddAsync(address, ct);
+
     public Task SaveChangesAsync(CancellationToken ct) =>
         _ctx.SaveChangesAsync(ct);
 }

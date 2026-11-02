@@ -2,7 +2,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PartZone.Cart.Application\PartZone.Cart.Application.csproj" />
+    <ProjectReference Include="..\PartZone.Cart.Infrastructure\PartZone.Cart.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\PartZone.Shared.Kernel\PartZone.Shared.Kernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.5.0" />
   </ItemGroup>
 
   <PropertyGroup>

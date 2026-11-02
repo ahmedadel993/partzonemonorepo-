@@ -9,5 +9,7 @@ public interface IIdentityRepository
     Task AddAsync(User user, CancellationToken ct = default);
     Task AddRefreshTokenAsync(RefreshToken token, CancellationToken ct = default);
     Task<RefreshToken?> GetRefreshTokenAsync(string token, CancellationToken ct = default);
+    Task<IReadOnlyList<Address>> GetAddressesByUserIdAsync(Guid userId, CancellationToken ct = default);
+    Task AddAddressAsync(Address address, CancellationToken ct = default);
     Task SaveChangesAsync(CancellationToken ct = default);
 }

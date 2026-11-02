@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import type { ProductSummary } from "../types";
+import { AddToCartButton } from "@/modules/cart/components/AddToCartButton";
 
 const CONDITION_LABELS: Record<string, string> = {
   Original: "أصلي",
@@ -109,14 +110,16 @@ export function ProductCard({ product, priority = false }: Props) {
             {product.priceAmount.toFixed(2)}{" "}
             <span className="text-xs font-normal">{product.priceCurrency}</span>
           </span>
-          {product.stock > 0 && (
-            <button
-              className="text-xs px-3 py-1.5 bg-accent text-accent-fg rounded font-medium hover:bg-accent-hover transition-colors"
-              aria-label={`أضف ${product.name} للسلة`}
-            >
-              أضف للسلة
-            </button>
-          )}
+          <AddToCartButton
+            product={{
+              id: product.id,
+              sku: product.sku,
+              name: product.name,
+              price: product.priceAmount,
+              stock: product.stock,
+              imageUrl: product.primaryImageUrl,
+            }}
+          />
         </div>
       </div>
     </div>

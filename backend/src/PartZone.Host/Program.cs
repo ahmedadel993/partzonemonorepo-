@@ -3,8 +3,13 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PartZone.Cart.Api;
+using PartZone.Cart.Application.Commands;
 using PartZone.Catalog.Api;
 using PartZone.Catalog.Application.Queries;
+using PartZone.Checkout.Api;
+using PartZone.Checkout.Application.Commands;
+using PartZone.Identity.Api;
 using PartZone.Marketing.Api;
 using PartZone.Marketing.Application.Queries;
 using PartZone.Host.Data;
@@ -42,13 +47,17 @@ var graphql = builder.Services
 builder.Services.AddIdentityModule(jwtSettings);
 builder.Services.AddCatalogModule(graphql);
 builder.Services.AddMarketingModule(graphql);
+builder.Services.AddCartModule();
+builder.Services.AddCheckoutModule();
 
 // ── MediatR (all application assemblies) ────────────────────────────────────
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
         typeof(RegisterUserCommand).Assembly,        // Identity.Application
         typeof(GetBrandsQuery).Assembly,             // Catalog.Application
-        typeof(GetActivePageBlocksQuery).Assembly    // Marketing.Application
+        typeof(GetActivePageBlocksQuery).Assembly,   // Marketing.Application
+        typeof(AddToCartCommand).Assembly,           // Cart.Application
+        typeof(PlaceOrderCommand).Assembly           // Checkout.Application
     ));
 
 // ── FluentValidation ─────────────────────────────────────────────────────────
@@ -56,6 +65,8 @@ builder.Services.AddValidatorsFromAssemblies([
     typeof(RegisterUserCommand).Assembly,
     typeof(GetBrandsQuery).Assembly,
     typeof(GetActivePageBlocksQuery).Assembly,
+    typeof(AddToCartCommand).Assembly,
+    typeof(PlaceOrderCommand).Assembly,
 ]);
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -123,8 +134,11 @@ app.MapGraphQL();
 
 // ── REST Endpoints ───────────────────────────────────────────────────────────
 app.MapGroup("/api/v1").WithTags("v1");
+app.MapIdentityEndpoints();
 app.MapCatalogEndpoints();
 app.MapMarketingEndpoints();
+app.MapCartEndpoints();
+app.MapCheckoutEndpoints();
 
 // Serve admin SPA from wwwroot/admin (production — IIS handles SPA fallback)
 app.UseStaticFiles();
