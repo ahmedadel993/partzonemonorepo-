@@ -1,6 +1,7 @@
-import { createRouter, createRoute, createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRouter, createRoute, createRootRoute, Outlet, redirect } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
@@ -9,6 +10,10 @@ const rootRoute = createRootRoute({
 const layoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: "layout",
+  beforeLoad: () => {
+    if (!useAuthStore.getState().isAuthenticated())
+      throw redirect({ to: "/login" });
+  },
   component: () => (
     <AppLayout>
       <Outlet />
@@ -32,7 +37,15 @@ const wrap = (Component: React.LazyExoticComponent<() => JSX.Element>) => () => 
   </Suspense>
 );
 
-const loginRoute    = createRoute({ getParentRoute: () => rootRoute,  path: "/login",    component: wrap(LoginPage) });
+const loginRoute    = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/login",
+  beforeLoad: () => {
+    if (useAuthStore.getState().isAuthenticated())
+      throw redirect({ to: "/" });
+  },
+  component: wrap(LoginPage),
+});
 const indexRoute    = createRoute({ getParentRoute: () => layoutRoute, path: "/",         component: wrap(DashboardPage) });
 const catalogRoute  = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog",  component: wrap(CatalogPage) });
 const marketingRoute= createRoute({ getParentRoute: () => layoutRoute, path: "/marketing",component: wrap(MarketingPage) });

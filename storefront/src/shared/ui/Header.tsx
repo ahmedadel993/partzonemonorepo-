@@ -3,12 +3,16 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { CartIconButton } from "@/shared/ui/CartIconButton";
 import { CartDrawer } from "@/modules/cart/components/CartDrawer";
 
 export function Header() {
   const t = useTranslations("common");
   const locale = useLocale();
+  const router = useRouter();
+  const [query, setQuery] = useState("");
 
   return (
     <>
@@ -24,6 +28,12 @@ export function Header() {
           <div className="flex-1 max-w-2xl">
             <input
               type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && query.trim())
+                  router.push(`/${locale}/search?q=${encodeURIComponent(query.trim())}`);
+              }}
               placeholder={t("search")}
               aria-label={t("search")}
               className="w-full h-10 px-4 rounded-md bg-bg border border-border text-text text-sm placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
@@ -37,6 +47,14 @@ export function Header() {
           >
             {t("chooseCar")}
           </button>
+
+          {/* Account icon */}
+          <Link href={`/${locale}/account`} aria-label="حسابي" className="text-text-muted hover:text-text transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </svg>
+          </Link>
 
           {/* Cart icon with badge — opens drawer */}
           <CartIconButton label={t("cart")} />

@@ -1,5 +1,6 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useRouter } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const NAV_ITEMS = [
   { to: "/",          label: "Dashboard" },
@@ -14,6 +15,13 @@ const NAV_ITEMS = [
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
+  const router = useRouter();
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+
+  const handleLogout = () => {
+    clearAuth();
+    router.navigate({ to: "/login" });
+  };
 
   return (
     <div className="dark flex h-screen bg-bg text-text font-sans overflow-hidden">
@@ -47,6 +55,15 @@ export function AppLayout({ children }: { children: ReactNode }) {
             })}
           </ul>
         </nav>
+
+        <div className="p-3 border-t border-border">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded text-sm text-text-muted hover:bg-surface-alt hover:text-danger transition-colors"
+          >
+            تسجيل الخروج
+          </button>
+        </div>
       </aside>
 
       {/* Main content */}
