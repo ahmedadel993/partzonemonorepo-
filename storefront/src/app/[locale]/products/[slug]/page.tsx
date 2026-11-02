@@ -21,7 +21,7 @@ type Props = {
 };
 
 export default async function ProductPage({ params }: Props) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const product = await getProductBySlug(slug);
 
   if (!product || !product.isPublished) notFound();
@@ -32,9 +32,9 @@ export default async function ProductPage({ params }: Props) {
       <main className="max-w-screen-xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <nav className="text-sm text-text-muted mb-6 flex items-center gap-2 flex-wrap" aria-label="التنقل">
-          <a href="/" className="hover:text-text transition-colors">الرئيسية</a>
+          <a href={`/${locale}`} className="hover:text-text transition-colors">الرئيسية</a>
           <span>›</span>
-          <a href={`/categories/${product.category.slug}`} className="hover:text-text transition-colors">
+          <a href={`/${locale}/categories/${product.category.slug}`} className="hover:text-text transition-colors">
             {product.category.name}
           </a>
           <span>›</span>

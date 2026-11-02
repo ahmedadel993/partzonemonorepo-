@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useCartStore } from "@/shared/stores/useCartStore";
 import { placeOrder } from "@/modules/checkout/actions/checkoutActions";
-import { clearCart } from "@/modules/cart/actions/cartActions";
+import { getCart, clearCart } from "@/modules/cart/actions/cartActions";
 import { AddressSelector } from "./AddressSelector";
 import { CouponInput } from "@/modules/cart/components/CouponInput";
 import type { Address } from "@/modules/auth/types";
@@ -22,6 +22,12 @@ export function CheckoutForm({ addresses }: Props) {
   const locale = useLocale();
   const router = useRouter();
   const { cart, setCart } = useCartStore();
+
+  useEffect(() => {
+    if (!cart) {
+      getCart().then((c) => { if (c) setCart(c); });
+    }
+  }, [cart, setCart]);
 
   const [shippingAddress, setShippingAddress] = useState<ShippingAddressInput | null>(
     addresses[0]

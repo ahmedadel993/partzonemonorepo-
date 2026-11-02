@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "pz-auth",
-      partialize: (state) => ({ userId: state.userId, role: state.role }),
+      partialize: (state) => ({ userId: state.userId, role: state.role, accessToken: state.accessToken }),
     }
   )
 );

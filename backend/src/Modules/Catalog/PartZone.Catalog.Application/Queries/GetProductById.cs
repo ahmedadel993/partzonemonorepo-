@@ -12,6 +12,9 @@ internal sealed class GetProductByIdHandler(ICatalogReadRepository repo)
     public async Task<Result<ProductDetailDto?>> Handle(GetProductByIdQuery request, CancellationToken ct)
     {
         var p = await repo.GetProductByIdAsync(request.Id, ct);
-        return Result.Success<ProductDetailDto?>(p is null ? null : GetProductBySlugHandler.MapDetail(p));
+        if (p is null) return Result.Success<ProductDetailDto?>(null);
+        var brand = await repo.GetBrandByIdAsync(p.BrandId, ct);
+        var category = await repo.GetCategoryByIdAsync(p.CategoryId, ct);
+        return Result.Success<ProductDetailDto?>(GetProductBySlugHandler.MapDetail(p, brand, category));
     }
 }

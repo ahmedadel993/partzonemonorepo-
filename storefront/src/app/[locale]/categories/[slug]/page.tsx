@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default async function CategoryPage({ params, searchParams }: Props) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const { page: pageStr, condition } = await searchParams;
   const page = Number(pageStr ?? "1") || 1;
 
@@ -48,7 +48,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             {category.children.map((child) => (
               <a
                 key={child.id}
-                href={`/categories/${child.slug}`}
+                href={`/${locale}/categories/${child.slug}`}
                 className="px-4 py-2 text-sm rounded-full border border-border text-text-muted hover:border-accent hover:text-text transition-colors"
               >
                 {child.name}

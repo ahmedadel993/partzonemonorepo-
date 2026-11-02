@@ -1,4 +1,5 @@
 using PartZone.Catalog.Application.Interfaces;
+using PartZone.Catalog.Domain.Entities;
 using PartZone.Shared.Kernel.Abstractions;
 using PartZone.Shared.Kernel.Results;
 
@@ -12,10 +13,13 @@ internal sealed class GetProductBySlugHandler(ICatalogReadRepository repo)
     public async Task<Result<ProductDetailDto?>> Handle(GetProductBySlugQuery request, CancellationToken ct)
     {
         var p = await repo.GetProductBySlugAsync(request.Slug, ct);
-        return Result.Success<ProductDetailDto?>(p is null ? null : MapDetail(p));
+        if (p is null) return Result.Success<ProductDetailDto?>(null);
+        var brand = await repo.GetBrandByIdAsync(p.BrandId, ct);
+        var category = await repo.GetCategoryByIdAsync(p.CategoryId, ct);
+        return Result.Success<ProductDetailDto?>(MapDetail(p, brand, category));
     }
 
-    internal static ProductDetailDto MapDetail(PartZone.Catalog.Domain.Entities.Product p)
+    internal static ProductDetailDto MapDetail(Product p, Brand? brand, Category? category)
     {
         var translation = p.Translations.FirstOrDefault(t => t.Locale == "ar")
                        ?? p.Translations.FirstOrDefault();
@@ -26,8 +30,8 @@ internal sealed class GetProductBySlugHandler(ICatalogReadRepository repo)
             p.Condition.ToString(),
             p.Price.Amount, p.Price.Currency,
             p.Stock, p.IsPublished, p.AvgRating, p.ReviewCount,
-            new BrandDto(p.BrandId, string.Empty, string.Empty, null, true),
-            new CategoryDto(p.CategoryId, string.Empty, string.Empty, null, 0, null, []),
+            new BrandDto(p.BrandId, brand?.Name ?? string.Empty, brand?.Slug ?? string.Empty, brand?.LogoUrl, brand?.IsActive ?? true),
+            new CategoryDto(p.CategoryId, category?.Name ?? string.Empty, category?.Slug ?? string.Empty, category?.ImageUrl, category?.SortOrder ?? 0, category?.ParentId, []),
             p.Images.Select(i => new ProductImageDto(i.Id, i.Url, i.AltText, i.IsPrimary)).ToList(),
             p.Fitments.Select(f => new ProductFitmentDto(f.Id, f.VehicleModelId, string.Empty, f.YearFrom, f.YearTo)).ToList());
     }

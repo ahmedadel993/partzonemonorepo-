@@ -10,9 +10,10 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   locale: string;
+  initialMake?: VehicleMake;
 }
 
-export function VehiclePickerModal({ isOpen, onClose, locale }: Props) {
+export function VehiclePickerModal({ isOpen, onClose, locale, initialMake }: Props) {
   const router = useRouter();
   const { setVehicle } = useVehicleStore();
 
@@ -25,15 +26,17 @@ export function VehiclePickerModal({ isOpen, onClose, locale }: Props) {
 
   useEffect(() => {
     if (!isOpen) return;
-    setStep("make");
     setSelectedMake(null);
     setModels([]);
-    setLoadingMakes(true);
-    getVehicleMakes().then((data) => {
-      setMakes(data);
-      setLoadingMakes(false);
-    });
-  }, [isOpen]);
+    // Always load makes in background (needed for back-button navigation)
+    getVehicleMakes().then((data) => { setMakes(data); setLoadingMakes(false); });
+    if (initialMake) {
+      handleMakeSelect(initialMake);
+    } else {
+      setStep("make");
+      setLoadingMakes(true);
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMakeSelect = async (make: VehicleMake) => {
     setSelectedMake(make);

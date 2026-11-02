@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Header } from "@/shared/ui/Header";
+import { CartDrawer } from "@/modules/cart/components/CartDrawer";
 import { getCurrentUser } from "@/modules/auth/actions/authActions";
 import { getMyOrders } from "@/modules/checkout/actions/checkoutActions";
 
@@ -31,6 +33,9 @@ export default async function OrdersPage({ params }: Props) {
   const orders = await getMyOrders();
 
   return (
+    <>
+      <Header />
+      <CartDrawer />
     <main className="max-w-3xl mx-auto px-4 py-10 space-y-6">
       <h1 className="text-2xl font-bold text-text">طلباتي</h1>
 
@@ -81,5 +86,6 @@ export default async function OrdersPage({ params }: Props) {
         </div>
       )}
     </main>
+    </>
   );
 }
