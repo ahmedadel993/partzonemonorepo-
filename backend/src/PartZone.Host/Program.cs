@@ -16,6 +16,10 @@ using PartZone.Orders.Api;
 using PartZone.Orders.Application;
 using PartZone.StoreSettings.Api;
 using PartZone.StoreSettings.Application;
+using PartZone.Vendors.Api;
+using PartZone.Vendors.Application;
+using PartZone.Erp.Api;
+using PartZone.Erp.Application;
 using PartZone.Host.Data;
 using PartZone.Host.Middleware;
 using PartZone.Identity.Application;
@@ -55,6 +59,8 @@ builder.Services.AddCartModule();
 builder.Services.AddCheckoutModule();
 builder.Services.AddOrdersModule();
 builder.Services.AddStoreSettingsModule();
+builder.Services.AddVendorsModule();
+builder.Services.AddErpModule();
 
 // ── MediatR (all application assemblies) ────────────────────────────────────
 builder.Services.AddMediatR(cfg =>
@@ -65,7 +71,9 @@ builder.Services.AddMediatR(cfg =>
         typeof(AddToCartCommand).Assembly,           // Cart.Application
         typeof(PlaceOrderCommand).Assembly,          // Checkout.Application
         typeof(GetAllOrdersQuery).Assembly,          // Orders.Application
-        typeof(GetStoreSettingsQuery).Assembly       // StoreSettings.Application
+        typeof(GetStoreSettingsQuery).Assembly,      // StoreSettings.Application
+        typeof(RegisterVendorCommand).Assembly,      // Vendors.Application
+        typeof(CreateStockAdjustmentCommand).Assembly // Erp.Application
     ));
 
 // ── FluentValidation ─────────────────────────────────────────────────────────
@@ -77,6 +85,8 @@ builder.Services.AddValidatorsFromAssemblies([
     typeof(PlaceOrderCommand).Assembly,
     typeof(GetAllOrdersQuery).Assembly,
     typeof(GetStoreSettingsQuery).Assembly,
+    typeof(RegisterVendorCommand).Assembly,
+    typeof(CreateStockAdjustmentCommand).Assembly,
 ]);
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -152,6 +162,8 @@ app.MapCartEndpoints();
 app.MapCheckoutEndpoints();
 app.MapOrdersAdminEndpoints();
 app.MapStoreSettingsEndpoints();
+app.MapVendorsEndpoints();
+app.MapErpEndpoints();
 
 // Serve admin SPA from wwwroot/admin (production — IIS handles SPA fallback)
 app.UseStaticFiles();

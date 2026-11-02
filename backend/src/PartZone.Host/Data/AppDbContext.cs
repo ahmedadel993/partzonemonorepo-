@@ -15,6 +15,10 @@ using PartZone.Orders.Infrastructure;
 using PartZone.Shared.Kernel.Domain;
 using PartZone.StoreSettings.Domain;
 using PartZone.StoreSettings.Infrastructure;
+using PartZone.Vendors.Domain;
+using PartZone.Vendors.Infrastructure;
+using PartZone.Erp.Domain;
+using PartZone.Erp.Infrastructure;
 
 namespace PartZone.Host.Data;
 
@@ -58,6 +62,12 @@ public sealed class AppDbContext : DbContext
     // StoreSettings
     public DbSet<StoreSetting> StoreSettings => Set<StoreSetting>();
 
+    // Vendors
+    public DbSet<Vendor> Vendors => Set<Vendor>();
+
+    // ERP
+    public DbSet<StockAdjustment> StockAdjustments => Set<StockAdjustment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new UserConfiguration());
@@ -70,6 +80,8 @@ public sealed class AppDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CheckoutInfrastructureExtensions).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrdersInfrastructureExtensions).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(StoreSettingsInfrastructureExtensions).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(VendorsInfrastructureExtensions).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ErpInfrastructureExtensions).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }

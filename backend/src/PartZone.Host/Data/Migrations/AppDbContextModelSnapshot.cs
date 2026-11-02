@@ -474,6 +474,34 @@ namespace PartZone.Host.Data.Migrations
                     b.ToTable("OrderItems", "orders");
                 });
 
+            modelBuilder.Entity("PartZone.Erp.Domain.StockAdjustment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AdjustedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("AdminUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Delta")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StockAdjustments", "erp");
+                });
+
             modelBuilder.Entity("PartZone.Identity.Domain.Entities.Address", b =>
                 {
                     b.Property<Guid>("Id")
@@ -788,6 +816,46 @@ namespace PartZone.Host.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("StoreSettings", "settings");
+                });
+
+            modelBuilder.Entity("PartZone.Vendors.Domain.Vendor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("CommissionRate")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("decimal(5,4)");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TaxId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Vendors", "vendors");
                 });
 
             modelBuilder.Entity("PartZone.Cart.Domain.Entities.CartItem", b =>
