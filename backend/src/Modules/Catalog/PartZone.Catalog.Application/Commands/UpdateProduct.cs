@@ -50,7 +50,11 @@ internal sealed class UpdateProductHandler(
 
         if (req.Translations is not null)
             foreach (var t in req.Translations)
-                product.AddTranslation(t.Locale, t.Name, t.Description);
+            {
+                var existingDesc = product.Translations
+                    .FirstOrDefault(tr => tr.Locale == t.Locale)?.Description;
+                product.AddTranslation(t.Locale, t.Name, t.Description ?? existingDesc);
+            }
 
         write.UpdateProduct(product);
         await write.SaveChangesAsync(ct);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,6 +7,7 @@ import {
   GET_PRODUCTS,
   GET_BRANDS,
   GET_CATEGORIES,
+  GET_PRODUCT_BY_SLUG,
   PUBLISH_PRODUCT,
   UNPUBLISH_PRODUCT,
   CREATE_PRODUCT,
@@ -265,7 +266,7 @@ function EditProductDrawer({
   const [serverError, setServerError] = useState<string | null>(null);
   const [updateProduct] = useMutation(UPDATE_PRODUCT);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<EditProductForm>({
+  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<EditProductForm>({
     resolver: zodResolver(editProductSchema),
     defaultValues: {
       slug: product.slug,
@@ -279,6 +280,16 @@ function EditProductDrawer({
       priceCurrency: product.priceCurrency,
     },
   });
+
+  const { data: detailData, loading: detailLoading } = useQuery(GET_PRODUCT_BY_SLUG, {
+    variables: { slug: product.slug },
+  });
+
+  useEffect(() => {
+    if (detailData?.product) {
+      setValue("descriptionAr", detailData.product.description ?? "");
+    }
+  }, [detailData, setValue]);
 
   const onSubmit = async (data: EditProductForm) => {
     setServerError(null);
@@ -361,7 +372,7 @@ function EditProductDrawer({
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || detailLoading}
           className="flex-1 bg-accent text-white rounded-md py-2 text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
         >
           {isSubmitting ? "جارٍ الحفظ…" : "حفظ التغييرات"}
@@ -615,21 +626,13 @@ export function ProductsPanel() {
                     </button>
                   </td>
                   <td className="py-3 text-end pe-2">
-                    <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
-                      <button
-                        type="button"
-                        onClick={() => setEditProduct(p)}
-                        className="text-xs text-text-muted hover:text-accent"
-                      >
-                        تعديل
-                      </button>
-                      <a
-                        href={`/catalog/products/${p.slug}`}
-                        className="text-xs text-text-muted hover:text-accent"
-                      >
-                        تفاصيل
-                      </a>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditProduct(p)}
+                      className="text-xs text-text-muted hover:text-accent opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      تعديل
+                    </button>
                   </td>
                 </tr>
               ))}

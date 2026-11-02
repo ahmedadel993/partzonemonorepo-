@@ -55,10 +55,12 @@ export default async function SearchPage({ params, searchParams }: Props) {
           )}
         </div>
 
-        {!q ? (
+        {!q && !vehicleModelId ? (
           <p className="text-text-muted text-center py-16">أدخل كلمة بحث للمتابعة</p>
         ) : paged.items.length === 0 ? (
-          <p className="text-text-muted text-center py-16">لا توجد نتائج لـ &ldquo;{q}&rdquo;</p>
+          <p className="text-text-muted text-center py-16">
+            {q ? `لا توجد نتائج لـ "${q}"` : "لا توجد قطع غيار لهذه المركبة"}
+          </p>
         ) : (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

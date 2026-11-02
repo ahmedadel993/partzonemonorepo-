@@ -58,6 +58,14 @@ export const GET_VEHICLE_MODELS = gql`
   }
 `;
 
+export const GET_PRODUCT_BY_SLUG = gql`
+  query GetProductBySlug($slug: String!) {
+    product(slug: $slug) {
+      id slug description
+    }
+  }
+`;
+
 // ── Mutations ─────────────────────────────────────────────────────────────────
 
 export const CREATE_BRAND = gql`

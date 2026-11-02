@@ -156,6 +156,15 @@ export default function VendorsStub() {
                         تعليق
                       </button>
                     )}
+                    {v.status === "Suspended" && (
+                      <button
+                        onClick={() => doAction(v.id, "approve")}
+                        disabled={actionLoading === v.id + "approve"}
+                        className="px-3 py-1 text-xs rounded bg-success/15 text-success hover:bg-success/25 transition-colors disabled:opacity-50"
+                      >
+                        إعادة تفعيل
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

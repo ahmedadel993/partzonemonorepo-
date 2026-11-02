@@ -119,7 +119,7 @@ export function CouponsPanel() {
               <tr key={c.id} className="border-b border-border/50 hover:bg-surface-alt/50">
                 <td className="py-2 px-3 font-mono text-accent">{c.code}</td>
                 <td className="py-2 px-3 text-text-muted">
-                  {c.discountType === "Percentage" ? "%" : "ر.س"}
+                  {c.discountType === "Percentage" ? "%" : "ج.م"}
                 </td>
                 <td className="py-2 px-3 text-text">{c.value}</td>
                 <td className="py-2 px-3 text-text-muted">
