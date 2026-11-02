@@ -1,4 +1,5 @@
 import { Header } from "@/shared/ui/Header";
+import { CartDrawer } from "@/modules/cart/components/CartDrawer";
 import { PageBlockRenderer } from "@/modules/marketing/components/PageBlockRenderer";
 
 interface Props {
@@ -10,6 +11,7 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <Header />
+      <CartDrawer />
       <main>
         <PageBlockRenderer locale={locale} />
       </main>

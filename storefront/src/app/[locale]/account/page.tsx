@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser, logout } from "@/modules/auth/actions/authActions";
+import { Header } from "@/shared/ui/Header";
+import { CartDrawer } from "@/modules/cart/components/CartDrawer";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -20,7 +22,10 @@ export default async function AccountPage({ params }: Props) {
   }
 
   return (
-    <main className="max-w-lg mx-auto px-4 py-10 space-y-6">
+    <>
+      <Header />
+      <CartDrawer />
+      <main className="max-w-lg mx-auto px-4 py-10 space-y-6">
       <h1 className="text-2xl font-bold text-text">حسابي</h1>
 
       {/* Profile card */}
@@ -48,14 +53,14 @@ export default async function AccountPage({ params }: Props) {
           className="flex items-center justify-between bg-surface border border-border rounded-xl px-5 py-4 hover:bg-surface-alt transition-colors group"
         >
           <span className="font-medium text-text">طلباتي</span>
-          <span className="text-text-muted group-hover:text-text transition-colors">←</span>
+          <span className="text-text-muted group-hover:text-text transition-colors">→</span>
         </Link>
         <Link
           href={`/${locale}/account/addresses`}
           className="flex items-center justify-between bg-surface border border-border rounded-xl px-5 py-4 hover:bg-surface-alt transition-colors group"
         >
           <span className="font-medium text-text">عناويني</span>
-          <span className="text-text-muted group-hover:text-text transition-colors">←</span>
+          <span className="text-text-muted group-hover:text-text transition-colors">→</span>
         </Link>
       </div>
 
@@ -69,5 +74,6 @@ export default async function AccountPage({ params }: Props) {
         </button>
       </form>
     </main>
+    </>
   );
 }

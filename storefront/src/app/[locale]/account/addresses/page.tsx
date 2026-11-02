@@ -1,14 +1,18 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Header } from "@/shared/ui/Header";
+import { CartDrawer } from "@/modules/cart/components/CartDrawer";
 import { getCurrentUser, getMyAddresses, addAddress, deleteAddress } from "@/modules/auth/actions/authActions";
 import type { Address } from "@/modules/auth/types";
 
 interface Props {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ error?: string }>;
 }
 
-export default async function AddressesPage({ params }: Props) {
+export default async function AddressesPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { error: errorParam } = await searchParams;
   const user = await getCurrentUser();
   if (!user) redirect(`/${locale}/auth/login?redirect=/${locale}/account/addresses`);
 
@@ -32,139 +36,151 @@ export default async function AddressesPage({ params }: Props) {
       postalCode:  (formData.get("postalCode")  as string).trim(),
       isDefault:   formData.get("isDefault") === "on",
     };
-    await addAddress(input);
+    const result = await addAddress(input);
+    if (!result) redirect(`/${locale}/account/addresses?error=add_failed`);
     redirect(`/${locale}/account/addresses`);
   }
 
   return (
-    <main className="max-w-lg mx-auto px-4 py-10 space-y-6">
-      <div className="flex items-center gap-3">
-        <Link
-          href={`/${locale}/account`}
-          className="text-text-muted hover:text-text transition-colors text-sm"
-        >
-          ← حسابي
-        </Link>
-        <h1 className="text-2xl font-bold text-text">عناويني</h1>
-      </div>
-
-      {/* Saved addresses */}
-      {addresses.length > 0 ? (
-        <div className="space-y-3">
-          {addresses.map((addr) => (
-            <div
-              key={addr.id}
-              className="bg-surface border border-border rounded-xl p-5 space-y-1"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-semibold text-text">{addr.label}</p>
-                <div className="flex items-center gap-2">
-                  {addr.isDefault && (
-                    <span className="text-xs bg-accent/15 text-accent px-2 py-0.5 rounded-full font-medium">
-                      افتراضي
-                    </span>
-                  )}
-                  <form action={handleDelete}>
-                    <input type="hidden" name="addressId" value={addr.id} />
-                    <button
-                      type="submit"
-                      className="text-xs text-danger/70 hover:text-danger transition-colors"
-                    >
-                      حذف
-                    </button>
-                  </form>
-                </div>
-              </div>
-              <p className="text-sm text-text-muted">{addr.streetLine1}
-                {addr.streetLine2 ? `، ${addr.streetLine2}` : ""}
-              </p>
-              <p className="text-sm text-text-muted">{addr.city}، {addr.governorate} {addr.postalCode}</p>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-text-muted text-center py-6">لا توجد عناوين محفوظة بعد</p>
-      )}
-
-      {/* Add new address form */}
-      <div className="bg-surface border border-border rounded-xl p-5">
-        <h2 className="text-base font-semibold text-text mb-4">إضافة عنوان جديد</h2>
-        <form action={handleAdd} className="space-y-4">
-          <div>
-            <label className="block text-sm text-text-muted mb-1">الوصف (مثال: المنزل، العمل)</label>
-            <input
-              name="label"
-              required
-              className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
-              placeholder="المنزل"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-text-muted mb-1">العنوان السطر الأول</label>
-            <input
-              name="streetLine1"
-              required
-              className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
-              placeholder="شارع التحرير، بجوار ..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-text-muted mb-1">العنوان السطر الثاني (اختياري)</label>
-            <input
-              name="streetLine2"
-              className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
-              placeholder="الدور الثالث، شقة 12"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-text-muted mb-1">المدينة</label>
-              <input
-                name="city"
-                required
-                className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
-                placeholder="القاهرة"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-text-muted mb-1">المحافظة</label>
-              <input
-                name="governorate"
-                required
-                className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
-                placeholder="القاهرة"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm text-text-muted mb-1">الرمز البريدي</label>
-            <input
-              name="postalCode"
-              required
-              dir="ltr"
-              className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
-              placeholder="11511"
-            />
-          </div>
-
-          <label className="flex items-center gap-2 text-sm text-text cursor-pointer">
-            <input type="checkbox" name="isDefault" className="accent-accent w-4 h-4" />
-            تعيين كعنوان افتراضي
-          </label>
-
-          <button
-            type="submit"
-            className="w-full h-11 bg-accent hover:bg-accent/90 text-accent-fg text-sm font-semibold rounded-lg transition-colors"
+    <>
+      <Header />
+      <CartDrawer />
+      <main className="max-w-lg mx-auto px-4 py-10 space-y-6">
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/${locale}/account`}
+            className="text-text-muted hover:text-text transition-colors text-sm"
           >
-            حفظ العنوان
-          </button>
-        </form>
-      </div>
-    </main>
+            → حسابي
+          </Link>
+          <h1 className="text-2xl font-bold text-text">عناويني</h1>
+        </div>
+
+        {/* Saved addresses */}
+        {addresses.length > 0 ? (
+          <div className="space-y-3">
+            {addresses.map((addr) => (
+              <div
+                key={addr.id}
+                className="bg-surface border border-border rounded-xl p-5 space-y-1"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-semibold text-text">{addr.label}</p>
+                  <div className="flex items-center gap-2">
+                    {addr.isDefault && (
+                      <span className="text-xs bg-accent/15 text-accent px-2 py-0.5 rounded-full font-medium">
+                        افتراضي
+                      </span>
+                    )}
+                    <form action={handleDelete}>
+                      <input type="hidden" name="addressId" value={addr.id} />
+                      <button
+                        type="submit"
+                        className="text-xs text-danger/70 hover:text-danger transition-colors"
+                      >
+                        حذف
+                      </button>
+                    </form>
+                  </div>
+                </div>
+                <p className="text-sm text-text-muted">{addr.streetLine1}
+                  {addr.streetLine2 ? `، ${addr.streetLine2}` : ""}
+                </p>
+                <p className="text-sm text-text-muted">{addr.city}، {addr.governorate} {addr.postalCode}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-text-muted text-center py-6">لا توجد عناوين محفوظة بعد</p>
+        )}
+
+        {/* Add new address form */}
+        <div className="bg-surface border border-border rounded-xl p-5">
+          <h2 className="text-base font-semibold text-text mb-4">إضافة عنوان جديد</h2>
+
+          {errorParam === "add_failed" && (
+            <p className="text-sm text-danger bg-danger/10 border border-danger/20 rounded-lg px-4 py-3 mb-4">
+              تعذّر حفظ العنوان، يرجى المحاولة مجدداً.
+            </p>
+          )}
+
+          <form action={handleAdd} className="space-y-4">
+            <div>
+              <label className="block text-sm text-text-muted mb-1">الوصف (مثال: المنزل، العمل)</label>
+              <input
+                name="label"
+                required
+                className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+                placeholder="المنزل"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-text-muted mb-1">العنوان السطر الأول</label>
+              <input
+                name="streetLine1"
+                required
+                className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+                placeholder="شارع التحرير، بجوار ..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-text-muted mb-1">العنوان السطر الثاني (اختياري)</label>
+              <input
+                name="streetLine2"
+                className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+                placeholder="الدور الثالث، شقة 12"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-text-muted mb-1">المدينة</label>
+                <input
+                  name="city"
+                  required
+                  className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+                  placeholder="القاهرة"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-text-muted mb-1">المحافظة</label>
+                <input
+                  name="governorate"
+                  required
+                  className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+                  placeholder="القاهرة"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm text-text-muted mb-1">الرمز البريدي</label>
+              <input
+                name="postalCode"
+                required
+                dir="ltr"
+                className="w-full bg-surface-alt border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+                placeholder="11511"
+              />
+            </div>
+
+            <label className="flex items-center gap-2 text-sm text-text cursor-pointer">
+              <input type="checkbox" name="isDefault" className="accent-accent w-4 h-4" />
+              تعيين كعنوان افتراضي
+            </label>
+
+            <button
+              type="submit"
+              className="w-full h-11 bg-accent hover:bg-accent/90 text-accent-fg text-sm font-semibold rounded-lg transition-colors"
+            >
+              حفظ العنوان
+            </button>
+          </form>
+        </div>
+      </main>
+    </>
   );
 }
 

@@ -4,22 +4,7 @@ import { Header } from "@/shared/ui/Header";
 import { CartDrawer } from "@/modules/cart/components/CartDrawer";
 import { getCurrentUser } from "@/modules/auth/actions/authActions";
 import { getMyOrders } from "@/modules/checkout/actions/checkoutActions";
-
-const STATUS_LABELS: Record<string, string> = {
-  Pending:   "معلق",
-  Confirmed: "مؤكد",
-  Shipped:   "تم الشحن",
-  Delivered: "تم التسليم",
-  Cancelled: "ملغي",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  Pending:   "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-  Confirmed: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  Shipped:   "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400",
-  Delivered: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  Cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-};
+import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from "@/modules/checkout/constants/orderStatus";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -67,9 +52,9 @@ export default async function OrdersPage({ params }: Props) {
 
               <div className="flex items-center gap-4">
                 <span
-                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[order.status] ?? "bg-surface-alt text-text-muted"}`}
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${ORDER_STATUS_COLORS[order.status] ?? "bg-surface-alt text-text-muted"}`}
                 >
-                  {STATUS_LABELS[order.status] ?? order.status}
+                  {ORDER_STATUS_LABELS[order.status] ?? order.status}
                 </span>
                 <p className="font-semibold text-text text-sm" dir="ltr">
                   {order.total.toFixed(2)} ج.م

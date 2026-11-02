@@ -34,7 +34,7 @@ export async function login(
       sameSite: "lax",
     });
     cookieStore.set("auth_user", JSON.stringify(me), {
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24 * 7,
       path: "/",

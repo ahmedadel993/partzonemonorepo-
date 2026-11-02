@@ -1,39 +1,27 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 import { Header } from "@/shared/ui/Header";
 import { CartDrawer } from "@/modules/cart/components/CartDrawer";
-import { redirect } from "next/navigation";
 import { getCurrentUser, cancelOrder } from "@/modules/auth/actions/authActions";
 import { getOrderById } from "@/modules/checkout/actions/checkoutActions";
+import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from "@/modules/checkout/constants/orderStatus";
 
-const STATUS_LABELS: Record<string, string> = {
-  Pending: "قيد المراجعة",
-  Confirmed: "تم التأكيد",
-  Shipped: "في الطريق إليك",
-  Delivered: "تم التوصيل",
-  Cancelled: "ملغي",
+type Props = {
+  params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ new?: string }>;
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  Pending: "bg-warning/15 text-warning",
-  Confirmed: "bg-success/15 text-success",
-  Shipped: "bg-accent/15 text-accent",
-  Delivered: "bg-success/20 text-success",
-  Cancelled: "bg-danger/15 text-danger",
-};
-
-type Props = { params: Promise<{ locale: string; id: string }> };
-
-export default async function OrderPage({ params }: Props) {
+export default async function OrderPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
+  const { new: isNew } = await searchParams;
   const user = await getCurrentUser();
-  if (!user) notFound();
+  if (!user) redirect(`/${locale}/auth/login?redirect=/${locale}/orders/${id}`);
 
   const order = await getOrderById(id);
   if (!order) notFound();
 
-  const statusLabel = STATUS_LABELS[order.status] ?? order.status;
-  const statusColor = STATUS_COLORS[order.status] ?? "bg-surface-alt text-text-muted";
+  const statusLabel = ORDER_STATUS_LABELS[order.status] ?? order.status;
+  const statusColor = ORDER_STATUS_COLORS[order.status] ?? "bg-surface-alt text-text-muted";
   const canCancel = order.status === "Pending" || order.status === "Confirmed";
 
   async function handleCancel() {
@@ -47,18 +35,27 @@ export default async function OrderPage({ params }: Props) {
       <Header />
       <CartDrawer />
       <main className="max-w-screen-xl mx-auto px-4 py-8">
-        {/* Header card */}
-        <div className="bg-surface-alt rounded-xl p-6 border border-border mb-8 text-center space-y-3">
-          <div className="text-4xl">🎉</div>
-          <h1 className="text-xl font-bold text-text">شكراً لطلبك!</h1>
-          <p className="text-sm text-text-muted">
-            رقم الطلب:{" "}
-            <span className="font-mono font-semibold text-text" dir="ltr">{order.orderNumber}</span>
-          </p>
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusColor}`}>
-            {statusLabel}
-          </span>
-        </div>
+        {/* Post-checkout celebratory header — shown only when ?new=1 */}
+        {isNew === "1" ? (
+          <div className="bg-surface-alt rounded-xl p-6 border border-border mb-8 text-center space-y-3">
+            <div className="text-4xl">🎉</div>
+            <h1 className="text-xl font-bold text-text">شكراً لطلبك!</h1>
+            <p className="text-sm text-text-muted">
+              رقم الطلب:{" "}
+              <span className="font-mono font-semibold text-text" dir="ltr">{order.orderNumber}</span>
+            </p>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusColor}`}>
+              {statusLabel}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 mb-8">
+            <p className="font-mono text-sm font-semibold text-text" dir="ltr">{order.orderNumber}</p>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusColor}`}>
+              {statusLabel}
+            </span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Items */}

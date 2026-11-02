@@ -1,4 +1,5 @@
 import { Header } from "@/shared/ui/Header";
+import { CartDrawer } from "@/modules/cart/components/CartDrawer";
 import { ProductCard } from "@/modules/catalog/components/ProductCard";
 import { getProducts } from "@/modules/catalog/actions/catalogActions";
 
@@ -36,6 +37,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
   return (
     <>
       <Header />
+      <CartDrawer />
       <main className="max-w-screen-xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>

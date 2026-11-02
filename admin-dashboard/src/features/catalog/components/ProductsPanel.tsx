@@ -112,7 +112,9 @@ function CreateProductDrawer({
   categories: { id: string; name: string }[];
 }) {
   const [serverError, setServerError] = useState<string | null>(null);
-  const [createProduct] = useMutation(CREATE_PRODUCT);
+  const [createProduct] = useMutation(CREATE_PRODUCT, {
+    refetchQueries: ["GetProducts"],
+  });
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
@@ -264,7 +266,9 @@ function EditProductDrawer({
   categories: { id: string; name: string }[];
 }) {
   const [serverError, setServerError] = useState<string | null>(null);
-  const [updateProduct] = useMutation(UPDATE_PRODUCT);
+  const [updateProduct] = useMutation(UPDATE_PRODUCT, {
+    refetchQueries: ["GetProducts"],
+  });
 
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<EditProductForm>({
     resolver: zodResolver(editProductSchema),

@@ -74,7 +74,7 @@ export function CheckoutForm({ addresses }: Props) {
 
       await clearCart();
       setCart(null);
-      router.push(`/${locale}/orders/${result.orderId}`);
+      router.push(`/${locale}/orders/${result.orderId}?new=1`);
     });
   };
 

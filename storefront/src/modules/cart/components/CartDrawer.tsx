@@ -43,7 +43,7 @@ export function CartDrawer() {
         className={[
           "fixed top-0 end-0 z-50 h-full w-full max-w-sm bg-surface border-s border-border shadow-2xl",
           "flex flex-col transition-transform duration-300 ease-out",
-          isDrawerOpen ? "translate-x-0" : "translate-x-full",
+          isDrawerOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full",
         ].join(" ")}
       >
         {/* Header */}

@@ -197,11 +197,13 @@ export function CategoriesPanel() {
         title={editing ? "تعديل فئة" : "إضافة فئة جديدة"}
         onClose={() => setDrawerOpen(false)}
       >
-        <CategoryFormDrawer
-          editing={editing}
-          onClose={() => setDrawerOpen(false)}
-          onDone={() => setDrawerOpen(false)}
-        />
+        {drawerOpen && (
+          <CategoryFormDrawer
+            editing={editing}
+            onClose={() => setDrawerOpen(false)}
+            onDone={() => setDrawerOpen(false)}
+          />
+        )}
       </Drawer>
     </div>
   );

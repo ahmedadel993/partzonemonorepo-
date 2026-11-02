@@ -288,11 +288,13 @@ export function BrandsPanel() {
         title={editing ? "تعديل ماركة" : "إضافة ماركة جديدة"}
         onClose={closeDrawer}
       >
-        <BrandFormDrawer
-          editing={editing}
-          onClose={closeDrawer}
-          onDone={closeDrawer}
-        />
+        {drawerOpen && (
+          <BrandFormDrawer
+            editing={editing}
+            onClose={closeDrawer}
+            onDone={closeDrawer}
+          />
+        )}
       </Drawer>
     </div>
   );
