@@ -1,24 +1,17 @@
-import { useTranslations } from "next-intl";
 import { Header } from "@/shared/ui/Header";
+import { PageBlockRenderer } from "@/modules/marketing/components/PageBlockRenderer";
 
-// [Phase 2+] PageBlockRenderer will fetch and render dynamic page blocks from backend.
-function PageBlockRendererStub() {
-  return (
-    <section className="py-12 text-center space-y-4">
-      <p className="text-text-muted text-sm">
-        [Page blocks loaded from Marketing module — Phase 2+]
-      </p>
-    </section>
-  );
+interface Props {
+  params: Promise<{ locale: string }>;
 }
 
-export default function HomePage() {
+export default async function HomePage({ params }: Props) {
+  const { locale } = await params;
   return (
     <>
       <Header />
       <main>
-        {/* Hero — driven by PageBlock (Marketing module) */}
-        <PageBlockRendererStub />
+        <PageBlockRenderer locale={locale} />
       </main>
     </>
   );

@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using PartZone.Catalog.Domain.Entities;
-using PartZone.Catalog.Infrastructure; // CatalogInfrastructureExtensions as assembly anchor
+using PartZone.Catalog.Infrastructure;
 using PartZone.Identity.Domain.Entities;
 using PartZone.Identity.Infrastructure.Data;
+using PartZone.Marketing.Domain.Entities;
+using PartZone.Marketing.Infrastructure;
 
 namespace PartZone.Host.Data;
 
@@ -14,6 +16,12 @@ public sealed class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Address> Addresses => Set<Address>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    // Marketing
+    public DbSet<PageBlock> PageBlocks => Set<PageBlock>();
+    public DbSet<PageBlockTranslation> PageBlockTranslations => Set<PageBlockTranslation>();
+    public DbSet<Coupon> Coupons => Set<Coupon>();
+    public DbSet<CouponUsage> CouponUsages => Set<CouponUsage>();
 
     // Catalog
     public DbSet<Brand> Brands => Set<Brand>();
@@ -33,6 +41,7 @@ public sealed class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogInfrastructureExtensions).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(MarketingInfrastructureExtensions).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }

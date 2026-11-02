@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PartZone.Catalog.Api;
 using PartZone.Catalog.Application.Queries;
+using PartZone.Marketing.Api;
+using PartZone.Marketing.Application.Queries;
 using PartZone.Host.Data;
 using PartZone.Host.Middleware;
 using PartZone.Identity.Application;
@@ -39,18 +41,21 @@ var graphql = builder.Services
 // ── Modules ───────────────────────────────────────────────────────────────────
 builder.Services.AddIdentityModule(jwtSettings);
 builder.Services.AddCatalogModule(graphql);
+builder.Services.AddMarketingModule(graphql);
 
 // ── MediatR (all application assemblies) ────────────────────────────────────
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
-        typeof(RegisterUserCommand).Assembly,    // Identity.Application
-        typeof(GetBrandsQuery).Assembly          // Catalog.Application
+        typeof(RegisterUserCommand).Assembly,        // Identity.Application
+        typeof(GetBrandsQuery).Assembly,             // Catalog.Application
+        typeof(GetActivePageBlocksQuery).Assembly    // Marketing.Application
     ));
 
 // ── FluentValidation ─────────────────────────────────────────────────────────
 builder.Services.AddValidatorsFromAssemblies([
     typeof(RegisterUserCommand).Assembly,
     typeof(GetBrandsQuery).Assembly,
+    typeof(GetActivePageBlocksQuery).Assembly,
 ]);
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -119,6 +124,7 @@ app.MapGraphQL();
 // ── REST Endpoints ───────────────────────────────────────────────────────────
 app.MapGroup("/api/v1").WithTags("v1");
 app.MapCatalogEndpoints();
+app.MapMarketingEndpoints();
 
 // Serve admin SPA from wwwroot/admin (production — IIS handles SPA fallback)
 app.UseStaticFiles();

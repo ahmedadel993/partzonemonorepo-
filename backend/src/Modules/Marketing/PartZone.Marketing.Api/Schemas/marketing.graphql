@@ -1,0 +1,129 @@
+extend type Query {
+  pageBlocks(onlyActive: Boolean): [PageBlockType!]!
+  pageBlock(id: ID!): PageBlockType
+  coupons: [CouponType!]!
+  validateCoupon(code: String!, orderAmount: Float!): CouponValidationResultType!
+}
+
+extend type Mutation {
+  createPageBlock(input: CreatePageBlockInput!): PageBlockPayload!
+  updatePageBlock(input: UpdatePageBlockInput!): PageBlockPayload!
+  activatePageBlock(id: ID!): PageBlockPayload!
+  deactivatePageBlock(id: ID!): PageBlockPayload!
+  reorderPageBlocks(input: [ReorderItemInput!]!): [PageBlockType!]!
+  createCoupon(input: CreateCouponInput!): CouponPayload!
+  updateCoupon(input: UpdateCouponInput!): CouponPayload!
+  deactivateCoupon(id: ID!): CouponPayload!
+}
+
+type PageBlockType {
+  id: ID!
+  type: String!
+  sortOrder: Int!
+  isActive: Boolean!
+  activeFrom: String
+  activeTo: String
+  config: String!
+  bindingType: String!
+  targetId: ID
+  targetUrl: String
+  translations: [PageBlockTranslationType!]!
+}
+
+type PageBlockTranslationType {
+  locale: String!
+  title: String
+  subtitle: String
+  ctaText: String
+  configOverride: String
+}
+
+type CouponType {
+  id: ID!
+  code: String!
+  discountType: String!
+  value: Float!
+  minOrderAmount: Float
+  usageLimit: Int!
+  perUserLimit: Int!
+  usedCount: Int!
+  validFrom: String!
+  validTo: String!
+  isActive: Boolean!
+}
+
+type CouponValidationResultType {
+  isValid: Boolean!
+  discountType: String
+  value: Float
+  errorCode: String
+}
+
+type PageBlockPayload {
+  pageBlock: PageBlockType
+  errors: [String!]!
+}
+
+type CouponPayload {
+  coupon: CouponType
+  errors: [String!]!
+}
+
+input CreatePageBlockInput {
+  type: String!
+  sortOrder: Int!
+  config: String!
+  bindingType: String!
+  targetId: ID
+  targetUrl: String
+  activeFrom: String
+  activeTo: String
+  translations: [PageBlockTranslationInput!]!
+}
+
+input UpdatePageBlockInput {
+  id: ID!
+  config: String
+  bindingType: String
+  targetId: ID
+  targetUrl: String
+  activeFrom: String
+  activeTo: String
+  translations: [PageBlockTranslationInput!]
+}
+
+input PageBlockTranslationInput {
+  locale: String!
+  title: String
+  subtitle: String
+  ctaText: String
+  configOverride: String
+}
+
+input ReorderItemInput {
+  id: ID!
+  sortOrder: Int!
+}
+
+input CreateCouponInput {
+  code: String!
+  discountType: String!
+  value: Float!
+  minOrderAmount: Float
+  usageLimit: Int!
+  perUserLimit: Int!
+  validFrom: String!
+  validTo: String!
+}
+
+input UpdateCouponInput {
+  id: ID!
+  discountType: String
+  value: Float
+  minOrderAmount: Float
+  usageLimit: Int
+  perUserLimit: Int
+  validFrom: String
+  validTo: String
+  isActive: Boolean
+}
