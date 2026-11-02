@@ -10,6 +10,7 @@ import {
   PUBLISH_PRODUCT,
   UNPUBLISH_PRODUCT,
   CREATE_PRODUCT,
+  UPDATE_PRODUCT,
 } from "../graphql/catalogApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -27,6 +28,8 @@ interface ProductSummary {
   primaryImageUrl: string | null;
   brandName: string;
   categoryName: string;
+  brandId: string;
+  categoryId: string;
 }
 
 interface PagedResult {
@@ -235,6 +238,146 @@ function CreateProductDrawer({
   );
 }
 
+// ── Edit Product form ──────────────────────────────────────────────────────────
+
+const editProductSchema = z.object({
+  slug:          z.string().min(1, "مطلوب").max(200).regex(/^[a-z0-9-]+$/, "lowercase، أرقام، شرطات فقط"),
+  nameAr:        z.string().min(1, "مطلوب").max(300),
+  descriptionAr: z.string().max(2000).default(""),
+  nameEn:        z.string().max(300).default(""),
+  condition:     z.enum(["Original", "Aftermarket", "Used"]),
+  brandId:       z.string().uuid("اختر الماركة"),
+  categoryId:    z.string().uuid("اختر الفئة"),
+  priceAmount:   z.coerce.number().min(0.01, "السعر > 0"),
+  priceCurrency: z.string().min(1).default("EGP"),
+});
+type EditProductForm = z.infer<typeof editProductSchema>;
+
+function EditProductDrawer({
+  product, onClose, onDone, brands, categories,
+}: {
+  product: ProductSummary;
+  onClose: () => void;
+  onDone: () => void;
+  brands: { id: string; name: string }[];
+  categories: { id: string; name: string }[];
+}) {
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [updateProduct] = useMutation(UPDATE_PRODUCT);
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<EditProductForm>({
+    resolver: zodResolver(editProductSchema),
+    defaultValues: {
+      slug: product.slug,
+      nameAr: product.name,
+      descriptionAr: "",
+      nameEn: "",
+      condition: product.condition as EditProductForm["condition"],
+      brandId: product.brandId,
+      categoryId: product.categoryId,
+      priceAmount: product.priceAmount,
+      priceCurrency: product.priceCurrency,
+    },
+  });
+
+  const onSubmit = async (data: EditProductForm) => {
+    setServerError(null);
+    const translations = [{ locale: "ar", name: data.nameAr, description: data.descriptionAr || null }];
+    if (data.nameEn) translations.push({ locale: "en", name: data.nameEn, description: null });
+
+    const { data: result, errors: gqlErrors } = await updateProduct({
+      variables: {
+        input: {
+          productId: product.id,
+          slug: data.slug,
+          condition: data.condition,
+          priceAmount: data.priceAmount,
+          priceCurrency: data.priceCurrency,
+          brandId: data.brandId,
+          categoryId: data.categoryId,
+          translations,
+        },
+      },
+    });
+
+    if (gqlErrors?.length) { setServerError(gqlErrors[0].message); return; }
+    const payload = result?.updateProduct;
+    if (payload?.errors?.length) { setServerError(payload.errors[0]); return; }
+    onDone();
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <Field label="Slug (الرابط)" error={errors.slug?.message}>
+        <input {...register("slug")} className={inputCls} dir="ltr" />
+      </Field>
+
+      <Field label="الاسم بالعربية" error={errors.nameAr?.message}>
+        <input {...register("nameAr")} className={inputCls} />
+      </Field>
+
+      <Field label="وصف (عربي، اختياري)" error={errors.descriptionAr?.message}>
+        <textarea {...register("descriptionAr")} rows={2} className={inputCls} />
+      </Field>
+
+      <Field label="الاسم بالإنجليزية (اختياري)" error={errors.nameEn?.message}>
+        <input {...register("nameEn")} className={inputCls} dir="ltr" />
+      </Field>
+
+      <Field label="حالة القطعة" error={errors.condition?.message}>
+        <select {...register("condition")} className={inputCls}>
+          <option value="Original">أصلي (Original)</option>
+          <option value="Aftermarket">بديل (Aftermarket)</option>
+          <option value="Used">مستعمل (Used)</option>
+        </select>
+      </Field>
+
+      <div className="grid grid-cols-2 gap-x-4">
+        <Field label="الماركة" error={errors.brandId?.message}>
+          <select {...register("brandId")} className={inputCls}>
+            <option value="">— اختر —</option>
+            {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        </Field>
+        <Field label="الفئة" error={errors.categoryId?.message}>
+          <select {...register("categoryId")} className={inputCls}>
+            <option value="">— اختر —</option>
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-x-4">
+        <Field label="السعر" error={errors.priceAmount?.message}>
+          <input type="number" step="0.01" {...register("priceAmount")} className={inputCls} dir="ltr" />
+        </Field>
+        <Field label="العملة" error={errors.priceCurrency?.message}>
+          <input {...register("priceCurrency")} className={inputCls} dir="ltr" />
+        </Field>
+      </div>
+
+      {serverError && <p className="text-danger text-xs mb-4">{serverError}</p>}
+
+      <div className="flex gap-3 pt-2">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex-1 bg-accent text-white rounded-md py-2 text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
+        >
+          {isSubmitting ? "جارٍ الحفظ…" : "حفظ التغييرات"}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 bg-surface-alt text-text rounded-md py-2 text-sm font-medium hover:bg-border transition-colors"
+        >
+          إلغاء
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ── Pagination ────────────────────────────────────────────────────────────────
 
 function Pagination({
@@ -279,6 +422,7 @@ export function ProductsPanel() {
   const [brandId, setBrandId] = useState<string | null>(null);
   const [condition, setCondition] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState<ProductSummary | null>(null);
 
   const filter = {
     q: q || null,
@@ -471,12 +615,21 @@ export function ProductsPanel() {
                     </button>
                   </td>
                   <td className="py-3 text-end pe-2">
-                    <a
-                      href={`/catalog/products/${p.slug}`}
-                      className="text-xs text-text-muted hover:text-accent opacity-0 group-hover:opacity-100 transition-all"
-                    >
-                      تفاصيل
-                    </a>
+                    <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
+                      <button
+                        type="button"
+                        onClick={() => setEditProduct(p)}
+                        className="text-xs text-text-muted hover:text-accent"
+                      >
+                        تعديل
+                      </button>
+                      <a
+                        href={`/catalog/products/${p.slug}`}
+                        className="text-xs text-text-muted hover:text-accent"
+                      >
+                        تفاصيل
+                      </a>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -500,7 +653,21 @@ export function ProductsPanel() {
             onClose={() => setDrawerOpen(false)}
             onDone={() => {
               setDrawerOpen(false);
-              // refetch current page
+              setPage((p) => p);
+            }}
+          />
+        )}
+      </Drawer>
+
+      <Drawer open={editProduct !== null} title="تعديل المنتج" onClose={() => setEditProduct(null)}>
+        {editProduct && (
+          <EditProductDrawer
+            product={editProduct}
+            brands={brandsData?.brands ?? []}
+            categories={catsData?.categories ?? []}
+            onClose={() => setEditProduct(null)}
+            onDone={() => {
+              setEditProduct(null);
               setPage((p) => p);
             }}
           />

@@ -12,4 +12,6 @@ public sealed record ProductSummaryDto(
     bool IsPublished,
     string? PrimaryImageUrl,
     string BrandName,
-    string CategoryName);
+    string CategoryName,
+    Guid BrandId,
+    Guid CategoryId);

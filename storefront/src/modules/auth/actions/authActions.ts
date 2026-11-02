@@ -126,6 +126,21 @@ export async function addAddress(
   }
 }
 
+export async function deleteAddress(addressId: string): Promise<boolean> {
+  const headers = await getAuthHeaders();
+  if (!headers.Authorization) return false;
+  try {
+    const res = await fetch(`${API}/identity/me/addresses/${addressId}`, {
+      method: "DELETE",
+      headers,
+      cache: "no-store",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function cancelOrder(orderId: string): Promise<boolean> {
   const headers = await getAuthHeaders();
   if (!headers.Authorization) return false;

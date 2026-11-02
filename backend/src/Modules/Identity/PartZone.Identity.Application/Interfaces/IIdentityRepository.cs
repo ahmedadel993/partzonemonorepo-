@@ -12,6 +12,7 @@ public interface IIdentityRepository
     Task<IReadOnlyList<User>> GetAllAsync(CancellationToken ct = default);
     Task<IReadOnlyList<Address>> GetAddressesByUserIdAsync(Guid userId, CancellationToken ct = default);
     Task AddAddressAsync(Address address, CancellationToken ct = default);
+    Task<bool> DeleteAddressAsync(Guid addressId, Guid userId, CancellationToken ct = default);
     void UpdateUser(User user);
     Task SaveChangesAsync(CancellationToken ct = default);
 }

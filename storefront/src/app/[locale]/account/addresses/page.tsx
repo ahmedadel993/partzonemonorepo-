@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getCurrentUser, getMyAddresses, addAddress } from "@/modules/auth/actions/authActions";
+import { getCurrentUser, getMyAddresses, addAddress, deleteAddress } from "@/modules/auth/actions/authActions";
 import type { Address } from "@/modules/auth/types";
 
 interface Props {
@@ -13,6 +13,13 @@ export default async function AddressesPage({ params }: Props) {
   if (!user) redirect(`/${locale}/auth/login?redirect=/${locale}/account/addresses`);
 
   const addresses = await getMyAddresses();
+
+  async function handleDelete(formData: FormData) {
+    "use server";
+    const addressId = formData.get("addressId") as string;
+    if (addressId) await deleteAddress(addressId);
+    redirect(`/${locale}/account/addresses`);
+  }
 
   async function handleAdd(formData: FormData) {
     "use server";
@@ -51,11 +58,22 @@ export default async function AddressesPage({ params }: Props) {
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="font-semibold text-text">{addr.label}</p>
-                {addr.isDefault && (
-                  <span className="text-xs bg-accent/15 text-accent px-2 py-0.5 rounded-full font-medium">
-                    افتراضي
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {addr.isDefault && (
+                    <span className="text-xs bg-accent/15 text-accent px-2 py-0.5 rounded-full font-medium">
+                      افتراضي
+                    </span>
+                  )}
+                  <form action={handleDelete}>
+                    <input type="hidden" name="addressId" value={addr.id} />
+                    <button
+                      type="submit"
+                      className="text-xs text-danger/70 hover:text-danger transition-colors"
+                    >
+                      حذف
+                    </button>
+                  </form>
+                </div>
               </div>
               <p className="text-sm text-text-muted">{addr.streetLine1}
                 {addr.streetLine2 ? `، ${addr.streetLine2}` : ""}

@@ -18,6 +18,7 @@ extend type Mutation {
   createVehicleMake(input: CreateVehicleMakeInput!): VehicleMakePayload!
   createVehicleModel(input: CreateVehicleModelInput!): VehicleModelPayload!
   createProduct(input: CreateProductInput!): ProductPayload!
+  updateProduct(input: UpdateProductInput!): ProductPayload!
   publishProduct(productId: ID!): ProductPayload!
   unpublishProduct(productId: ID!): ProductPayload!
   updateProductStock(input: UpdateProductStockInput!): ProductPayload!
@@ -79,6 +80,8 @@ type ProductSummaryType {
   primaryImageUrl: String
   categoryName: String!
   brandName: String!
+  brandId: ID!
+  categoryId: ID!
 }
 
 type ProductDetailType {
@@ -231,4 +234,15 @@ input AddProductFitmentInput {
   vehicleModelId: ID!
   yearFrom: Int!
   yearTo: Int!
+}
+
+input UpdateProductInput {
+  productId: ID!
+  slug: String
+  condition: String
+  priceAmount: Float
+  priceCurrency: String
+  brandId: ID
+  categoryId: ID
+  translations: [ProductTranslationInputType!]
 }

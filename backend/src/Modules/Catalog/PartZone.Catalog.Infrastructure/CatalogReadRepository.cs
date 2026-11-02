@@ -80,6 +80,13 @@ internal sealed class CatalogReadRepository(DbContext db) : ICatalogReadReposito
         var products = await query.OrderByDescending(p => p.CreatedAt)
             .Skip(skip).Take(filter.PageSize).ToListAsync(ct);
 
+        var brandIds = products.Select(p => p.BrandId).Distinct().ToList();
+        var categoryIds = products.Select(p => p.CategoryId).Distinct().ToList();
+        var brandNames = await db.Set<Brand>().Where(b => brandIds.Contains(b.Id))
+            .ToDictionaryAsync(b => b.Id, b => b.Name, ct);
+        var categoryNames = await db.Set<Category>().Where(c => categoryIds.Contains(c.Id))
+            .ToDictionaryAsync(c => c.Id, c => c.Name, ct);
+
         var items = products.Select(p =>
         {
             var primaryImage = p.Images.FirstOrDefault(i => i.IsPrimary) ?? p.Images.FirstOrDefault();
@@ -92,7 +99,10 @@ internal sealed class CatalogReadRepository(DbContext db) : ICatalogReadReposito
                 p.Price.Amount, p.Price.Currency,
                 p.Stock, p.IsPublished,
                 primaryImage?.Url,
-                string.Empty, string.Empty);
+                brandNames.GetValueOrDefault(p.BrandId, string.Empty),
+                categoryNames.GetValueOrDefault(p.CategoryId, string.Empty),
+                p.BrandId,
+                p.CategoryId);
         }).ToList();
 
         return new PagedResult<ProductSummaryDto>(items, total, filter.Page, filter.PageSize);

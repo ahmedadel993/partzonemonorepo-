@@ -59,6 +59,14 @@ internal static class IdentityEndpoints
         return Results.Created($"/api/v1/identity/me/addresses/{address.Id}", address);
     }
 
+    internal static async Task<IResult> DeleteAddressAsync(
+        Guid id, ClaimsPrincipal user, IIdentityRepository repo, CancellationToken ct)
+    {
+        var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var deleted = await repo.DeleteAddressAsync(id, userId, ct);
+        return deleted ? Results.NoContent() : Results.NotFound();
+    }
+
     internal static async Task<IResult> GetAllUsersAsync(IMediator mediator, CancellationToken ct)
     {
         var result = await mediator.Send(new GetAllUsersQuery(), ct);

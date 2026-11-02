@@ -154,6 +154,30 @@ public sealed class CatalogMutationResolvers
         var product = await mediator.Send(new GetProductByIdQuery(input.ProductId), ct);
         return new ProductPayload(product.IsSuccess ? product.Value : null, []);
     }
+
+    public async Task<ProductPayload> UpdateProductAsync(
+        UpdateProductGqlInput input,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var translations = input.Translations?.Select(t =>
+            new ProductTranslationInput(t.Locale, t.Name, t.Description)).ToList();
+
+        var result = await mediator.Send(new UpdateProductCommand(
+            input.ProductId,
+            input.Slug,
+            input.Condition,
+            (decimal?)input.PriceAmount,
+            input.PriceCurrency,
+            input.BrandId,
+            input.CategoryId,
+            translations), ct);
+
+        if (!result.IsSuccess)
+            return new ProductPayload(null, [result.Error.Description]);
+
+        var product = await mediator.Send(new GetProductByIdQuery(input.ProductId), ct);
+        return new ProductPayload(product.IsSuccess ? product.Value : null, []);
+    }
 }
 
 // ── GQL input records (mirror SDL input types) ────────────────────────────────
@@ -172,6 +196,15 @@ public sealed record CreateProductGqlInput(
     IReadOnlyList<ProductTranslationGqlInput> Translations);
 public sealed record UpdateProductStockGqlInput(Guid ProductId, int NewStock);
 public sealed record AddProductFitmentGqlInput(Guid ProductId, Guid VehicleModelId, int YearFrom, int YearTo);
+public sealed record UpdateProductGqlInput(
+    Guid ProductId,
+    string? Slug,
+    string? Condition,
+    double? PriceAmount,
+    string? PriceCurrency,
+    Guid? BrandId,
+    Guid? CategoryId,
+    IReadOnlyList<ProductTranslationGqlInput>? Translations);
 
 // ── Payload types (returned by mutations) ─────────────────────────────────────
 

@@ -20,7 +20,7 @@ export const PRODUCT_SUMMARY_FIELDS = gql`
     id sku slug name condition
     priceAmount priceCurrency
     stock isPublished primaryImageUrl
-    brandName categoryName
+    brandName categoryName brandId categoryId
   }
 `;
 
@@ -120,6 +120,15 @@ export const CREATE_VEHICLE_MODEL = gql`
 export const CREATE_PRODUCT = gql`
   mutation CreateProduct($input: CreateProductInput!) {
     createProduct(input: $input) {
+      product { id sku slug name condition priceAmount priceCurrency stock isPublished }
+      errors
+    }
+  }
+`;
+
+export const UPDATE_PRODUCT = gql`
+  mutation UpdateProduct($input: UpdateProductInput!) {
+    updateProduct(input: $input) {
       product { id sku slug name condition priceAmount priceCurrency stock isPublished }
       errors
     }
