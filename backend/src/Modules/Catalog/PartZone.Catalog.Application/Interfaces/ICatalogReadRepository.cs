@@ -10,6 +10,7 @@ public interface ICatalogReadRepository
     Task<IReadOnlyList<Brand>> GetBrandsAsync(CancellationToken ct = default);
     Task<bool> BrandSlugExistsAsync(string slug, CancellationToken ct = default);
 
+    Task<Category?> GetCategoryByIdAsync(Guid id, CancellationToken ct = default);
     Task<Category?> GetCategoryBySlugAsync(string slug, CancellationToken ct = default);
     Task<IReadOnlyList<Category>> GetCategoriesAsync(CancellationToken ct = default);
 

@@ -14,6 +14,8 @@ using PartZone.Marketing.Api;
 using PartZone.Marketing.Application.Queries;
 using PartZone.Orders.Api;
 using PartZone.Orders.Application;
+using PartZone.StoreSettings.Api;
+using PartZone.StoreSettings.Application;
 using PartZone.Host.Data;
 using PartZone.Host.Middleware;
 using PartZone.Identity.Application;
@@ -52,6 +54,7 @@ builder.Services.AddMarketingModule(graphql);
 builder.Services.AddCartModule();
 builder.Services.AddCheckoutModule();
 builder.Services.AddOrdersModule();
+builder.Services.AddStoreSettingsModule();
 
 // ── MediatR (all application assemblies) ────────────────────────────────────
 builder.Services.AddMediatR(cfg =>
@@ -61,7 +64,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(GetActivePageBlocksQuery).Assembly,   // Marketing.Application
         typeof(AddToCartCommand).Assembly,           // Cart.Application
         typeof(PlaceOrderCommand).Assembly,          // Checkout.Application
-        typeof(GetAllOrdersQuery).Assembly           // Orders.Application
+        typeof(GetAllOrdersQuery).Assembly,          // Orders.Application
+        typeof(GetStoreSettingsQuery).Assembly       // StoreSettings.Application
     ));
 
 // ── FluentValidation ─────────────────────────────────────────────────────────
@@ -72,6 +76,7 @@ builder.Services.AddValidatorsFromAssemblies([
     typeof(AddToCartCommand).Assembly,
     typeof(PlaceOrderCommand).Assembly,
     typeof(GetAllOrdersQuery).Assembly,
+    typeof(GetStoreSettingsQuery).Assembly,
 ]);
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -146,6 +151,7 @@ app.MapMarketingEndpoints();
 app.MapCartEndpoints();
 app.MapCheckoutEndpoints();
 app.MapOrdersAdminEndpoints();
+app.MapStoreSettingsEndpoints();
 
 // Serve admin SPA from wwwroot/admin (production — IIS handles SPA fallback)
 app.UseStaticFiles();

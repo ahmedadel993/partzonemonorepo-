@@ -13,6 +13,8 @@ using PartZone.Marketing.Domain.Entities;
 using PartZone.Marketing.Infrastructure;
 using PartZone.Orders.Infrastructure;
 using PartZone.Shared.Kernel.Domain;
+using PartZone.StoreSettings.Domain;
+using PartZone.StoreSettings.Infrastructure;
 
 namespace PartZone.Host.Data;
 
@@ -53,6 +55,9 @@ public sealed class AppDbContext : DbContext
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
+    // StoreSettings
+    public DbSet<StoreSetting> StoreSettings => Set<StoreSetting>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new UserConfiguration());
@@ -64,6 +69,7 @@ public sealed class AppDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CartInfrastructureExtensions).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CheckoutInfrastructureExtensions).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrdersInfrastructureExtensions).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(StoreSettingsInfrastructureExtensions).Assembly);
 
         base.OnModelCreating(modelBuilder);
     }

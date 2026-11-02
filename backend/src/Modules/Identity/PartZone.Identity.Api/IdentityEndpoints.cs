@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using PartZone.Identity.Application.Commands;
 using PartZone.Identity.Application.Interfaces;
+using PartZone.Identity.Application.Queries;
 using PartZone.Identity.Domain.Entities;
 
 namespace PartZone.Identity.Api;
@@ -56,6 +57,12 @@ internal static class IdentityEndpoints
         await repo.AddAddressAsync(address, ct);
         await repo.SaveChangesAsync(ct);
         return Results.Created($"/api/v1/identity/me/addresses/{address.Id}", address);
+    }
+
+    internal static async Task<IResult> GetAllUsersAsync(IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetAllUsersQuery(), ct);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Description);
     }
 }
 

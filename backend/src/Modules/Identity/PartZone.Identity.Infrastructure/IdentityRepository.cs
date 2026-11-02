@@ -10,6 +10,12 @@ public sealed class IdentityRepository : IIdentityRepository
 
     public IdentityRepository(DbContext ctx) => _ctx = ctx;
 
+    public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken ct)
+    {
+        var list = await _ctx.Set<User>().OrderByDescending(u => u.CreatedAt).ToListAsync(ct);
+        return list.AsReadOnly();
+    }
+
     public Task<User?> GetByEmailAsync(string email, CancellationToken ct) =>
         _ctx.Set<User>().FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant(), ct);
 

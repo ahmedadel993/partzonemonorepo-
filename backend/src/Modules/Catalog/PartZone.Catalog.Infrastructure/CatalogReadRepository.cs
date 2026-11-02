@@ -19,6 +19,9 @@ internal sealed class CatalogReadRepository(DbContext db) : ICatalogReadReposito
     public Task<bool> BrandSlugExistsAsync(string slug, CancellationToken ct) =>
         db.Set<Brand>().AnyAsync(b => b.Slug == slug, ct);
 
+    public Task<Category?> GetCategoryByIdAsync(Guid id, CancellationToken ct) =>
+        db.Set<Category>().FirstOrDefaultAsync(c => c.Id == id, ct);
+
     public Task<Category?> GetCategoryBySlugAsync(string slug, CancellationToken ct) =>
         db.Set<Category>().AsNoTracking()
             .Include(c => c.Children)

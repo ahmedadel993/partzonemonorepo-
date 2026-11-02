@@ -47,6 +47,17 @@ public sealed class CatalogMutationResolvers
         return new CategoryPayload(category.IsSuccess ? category.Value : null, []);
     }
 
+    public async Task<CategoryPayload> UpdateCategoryAsync(
+        UpdateCategoryGqlInput input,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new UpdateCategoryCommand(input.Id, input.Name, input.ImageUrl, input.SortOrder), ct);
+        return result.IsSuccess
+            ? new CategoryPayload(null, [])
+            : new CategoryPayload(null, [result.Error.Description]);
+    }
+
     public async Task<VehicleMakePayload> CreateVehicleMakeAsync(
         CreateVehicleMakeGqlInput input,
         [Service] IMediator mediator, CancellationToken ct)
@@ -150,6 +161,7 @@ public sealed class CatalogMutationResolvers
 public sealed record CreateBrandGqlInput(string Name, string Slug, string? LogoUrl);
 public sealed record UpdateBrandGqlInput(Guid Id, string Name, string? LogoUrl);
 public sealed record CreateCategoryGqlInput(string Name, string Slug, string? IconUrl, int SortOrder, Guid? ParentId);
+public sealed record UpdateCategoryGqlInput(Guid Id, string Name, string? ImageUrl, int SortOrder);
 public sealed record CreateVehicleMakeGqlInput(string Name, string Slug, string? LogoUrl);
 public sealed record CreateVehicleModelGqlInput(string Name, string Slug, Guid VehicleMakeId);
 public sealed record ProductTranslationGqlInput(string Locale, string Name, string? Description);

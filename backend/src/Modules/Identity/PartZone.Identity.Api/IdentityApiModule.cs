@@ -15,6 +15,9 @@ public static class IdentityApiModule
         group.MapGet("/me/addresses", IdentityEndpoints.GetAddressesAsync).RequireAuthorization();
         group.MapPost("/me/addresses", IdentityEndpoints.AddAddressAsync).RequireAuthorization();
 
+        app.MapGet("/api/v1/admin/users", IdentityEndpoints.GetAllUsersAsync)
+            .RequireAuthorization("Admin");
+
         return app;
     }
 }

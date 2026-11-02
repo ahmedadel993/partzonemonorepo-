@@ -763,6 +763,33 @@ namespace PartZone.Host.Data.Migrations
                     b.ToTable("PageBlockTranslations", "marketing");
                 });
 
+            modelBuilder.Entity("PartZone.StoreSettings.Domain.StoreSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("StoreSettings", "settings");
+                });
+
             modelBuilder.Entity("PartZone.Cart.Domain.Entities.CartItem", b =>
                 {
                     b.HasOne("PartZone.Cart.Domain.Entities.Cart", null)

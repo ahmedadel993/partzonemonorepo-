@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { BrandsPanel } from "./BrandsPanel";
 import { ProductsPanel } from "./ProductsPanel";
+import { CategoriesPanel } from "./CategoriesPanel";
+import { VehiclesPanel } from "./VehiclesPanel";
 
 type Tab = "products" | "brands" | "categories" | "vehicles";
 
@@ -37,24 +39,9 @@ export default function CatalogPage() {
       {/* Tab content */}
       {tab === "products"   && <ProductsPanel />}
       {tab === "brands"     && <BrandsPanel />}
-      {tab === "categories" && <CategoriesStub />}
-      {tab === "vehicles"   && <VehiclesStub />}
+      {tab === "categories" && <CategoriesPanel />}
+      {tab === "vehicles"   && <VehiclesPanel />}
     </div>
   );
 }
 
-function CategoriesStub() {
-  return (
-    <div className="flex items-center justify-center h-48 text-text-muted text-sm rounded-lg border border-dashed border-border">
-      إدارة الفئات — قريباً
-    </div>
-  );
-}
-
-function VehiclesStub() {
-  return (
-    <div className="flex items-center justify-center h-48 text-text-muted text-sm rounded-lg border border-dashed border-border">
-      قاموس المركبات — قريباً
-    </div>
-  );
-}

@@ -90,6 +90,33 @@ export const CREATE_CATEGORY = gql`
   }
 `;
 
+export const UPDATE_CATEGORY = gql`
+  mutation UpdateCategory($input: UpdateCategoryInput!) {
+    updateCategory(input: $input) {
+      category { id }
+      errors
+    }
+  }
+`;
+
+export const CREATE_VEHICLE_MAKE = gql`
+  mutation CreateVehicleMake($input: CreateVehicleMakeInput!) {
+    createVehicleMake(input: $input) {
+      vehicleMake { id name slug }
+      errors
+    }
+  }
+`;
+
+export const CREATE_VEHICLE_MODEL = gql`
+  mutation CreateVehicleModel($input: CreateVehicleModelInput!) {
+    createVehicleModel(input: $input) {
+      vehicleModel { id name slug }
+      errors
+    }
+  }
+`;
+
 export const CREATE_PRODUCT = gql`
   mutation CreateProduct($input: CreateProductInput!) {
     createProduct(input: $input) {
