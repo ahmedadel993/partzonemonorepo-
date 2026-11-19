@@ -21,6 +21,7 @@ using PartZone.Vendors.Application;
 using PartZone.Erp.Api;
 using PartZone.Erp.Application;
 using PartZone.Host.Data;
+using PartZone.Host.Extensions;
 using PartZone.Host.Middleware;
 using PartZone.Identity.Application;
 using PartZone.Identity.Application.Commands;
@@ -46,15 +47,28 @@ builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>(
 
 // ── GraphQL (HotChocolate — schema-first) ────────────────────────────────────
 // Root schema: empty Query/Mutation extended by each module's SDL file.
+// SECURITY: every mutation is an admin operation (the storefront uses REST),
+// so the whole Mutation type requires the "Admin" policy.
 var graphql = builder.Services
     .AddGraphQLServer()
+    .AddAuthorization()
     .AddDocumentFromString(
-        "type Query { _placeholder: Boolean } type Mutation { _placeholder: Boolean }");
+        "type Query { _placeholder: Boolean } " +
+        "type Mutation @authorize(policy: \"Admin\") { _placeholder: Boolean }")
+    .AddResolver("Query", "_placeholder", _ => null)
+    .AddResolver("Mutation", "_placeholder", _ => null)
+    // Serialize Guid → ID in the standard dashed form (same as REST); the
+    // HotChocolate default ("N", no dashes) fails client-side UUID validation.
+    .AddTypeConverter<Guid, string>(g => g.ToString("D"))
+    // Show real exception messages in GraphQL errors during development only.
+    .ModifyRequestOptions(o => o.IncludeExceptionDetails = builder.Environment.IsDevelopment());
 
 // ── Modules ───────────────────────────────────────────────────────────────────
 builder.Services.AddIdentityModule(jwtSettings);
-builder.Services.AddCatalogModule(graphql);
+// NOTE: Marketing must be registered before Catalog. With Catalog first,
+// HotChocolate fails to bind the Marketing Query resolvers ("has no resolver").
 builder.Services.AddMarketingModule(graphql);
+builder.Services.AddCatalogModule(graphql);
 builder.Services.AddCartModule();
 builder.Services.AddCheckoutModule();
 builder.Services.AddOrdersModule();
@@ -164,6 +178,7 @@ app.MapOrdersAdminEndpoints();
 app.MapStoreSettingsEndpoints();
 app.MapVendorsEndpoints();
 app.MapErpEndpoints();
+app.MapUploadEndpoints();
 
 // Serve admin SPA from wwwroot/admin (production — IIS handles SPA fallback)
 app.UseStaticFiles();

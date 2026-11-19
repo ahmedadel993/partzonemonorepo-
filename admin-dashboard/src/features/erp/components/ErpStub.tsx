@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { getZodMessages } from "@/i18n/zodMessages";
 
 interface LowStockProduct {
   id: string;
@@ -64,16 +66,19 @@ const inputCls =
 
 // ── Adjustment form ───────────────────────────────────────────────────────────
 
+const zm = getZodMessages();
+
 const adjustSchema = z.object({
-  productId: z.string().uuid("اختر منتجاً"),
-  delta: z.coerce.number().int().refine((n) => n !== 0, "يجب ألّا يكون الفرق صفراً"),
-  reason: z.string().min(1, "مطلوب").max(500),
+  productId: z.string().uuid(zm.required),
+  delta: z.coerce.number().int().refine((n) => n !== 0, zm.diffNotZero),
+  reason: z.string().min(1, zm.required).max(500),
 });
 type AdjustForm = z.infer<typeof adjustSchema>;
 
 function AdjustmentDrawer({
   products, onClose, onDone,
 }: { products: LowStockProduct[]; onClose: () => void; onDone: () => void }) {
+  const { t, dir } = useLanguage();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AdjustForm>({
@@ -89,31 +94,31 @@ function AdjustmentDrawer({
       body: JSON.stringify({ productId: data.productId, delta: data.delta, reason: data.reason }),
     });
     if (!r.ok) {
-      setServerError(`فشل التعديل (HTTP ${r.status})`);
+      setServerError(`HTTP ${r.status}`);
       return;
     }
     onDone();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <Field label="المنتج" error={errors.productId?.message}>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate dir={dir}>
+      <Field label={t("fieldProduct")} error={errors.productId?.message}>
         <select {...register("productId")} className={inputCls}>
-          <option value="">— اختر منتجاً —</option>
+          <option value="">— {t("fieldProductSelect")} —</option>
           {products.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.sku} — {p.name} (المخزون: {p.stock})
+              {p.sku} — {p.name}
             </option>
           ))}
         </select>
       </Field>
 
-      <Field label="الفرق (موجب = إضافة، سالب = خصم)" error={errors.delta?.message}>
-        <input type="number" {...register("delta")} className={inputCls} placeholder="مثال: 50 أو -10" />
+      <Field label={t("fieldDiff")} error={errors.delta?.message}>
+        <input type="number" {...register("delta")} className={inputCls} placeholder={t("diffPlaceholder")} dir="ltr" />
       </Field>
 
-      <Field label="السبب" error={errors.reason?.message}>
-        <input type="text" {...register("reason")} className={inputCls} placeholder="مثال: استلام بضاعة جديدة" />
+      <Field label={t("fieldReason")} error={errors.reason?.message}>
+        <input type="text" {...register("reason")} className={inputCls} placeholder={t("reasonPlaceholder")} />
       </Field>
 
       {serverError && <p className="text-danger text-xs mb-4">{serverError}</p>}
@@ -124,14 +129,14 @@ function AdjustmentDrawer({
           disabled={isSubmitting}
           className="flex-1 bg-accent text-white rounded-md py-2 text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
         >
-          {isSubmitting ? "جارٍ الحفظ…" : "تسجيل التعديل"}
+          {isSubmitting ? t("adjustmentSubmitting") : t("submitAdjustment")}
         </button>
         <button
           type="button"
           onClick={onClose}
           className="flex-1 bg-surface-alt text-text rounded-md py-2 text-sm font-medium hover:bg-border transition-colors"
         >
-          إلغاء
+          {t("adjustmentCancel")}
         </button>
       </div>
     </form>
@@ -141,6 +146,7 @@ function AdjustmentDrawer({
 // ── History tab ───────────────────────────────────────────────────────────────
 
 function HistoryTab() {
+  const { t } = useLanguage();
   const [adjustments, setAdjustments] = useState<AdjustmentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -169,10 +175,10 @@ function HistoryTab() {
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-border text-text-muted text-right">
-          <th className="pb-3 font-medium pe-4">التاريخ</th>
-          <th className="pb-3 font-medium pe-4">المنتج</th>
-          <th className="pb-3 font-medium pe-4">الفرق</th>
-          <th className="pb-3 font-medium">السبب</th>
+          <th className="pb-3 font-medium pe-4">{t("tableColAdjDate")}</th>
+          <th className="pb-3 font-medium pe-4">SKU</th>
+          <th className="pb-3 font-medium pe-4">{t("tableColDiff")}</th>
+          <th className="pb-3 font-medium">{t("tableColReason")}</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-border">
@@ -195,7 +201,7 @@ function HistoryTab() {
         {adjustments.length === 0 && (
           <tr>
             <td colSpan={4} className="py-8 text-center text-text-muted text-sm">
-              لا توجد تعديلات مسجّلة بعد
+              {t("noAdjustments")}
             </td>
           </tr>
         )}
@@ -210,6 +216,7 @@ const THRESHOLD = 10;
 type ErpTab = "inventory" | "history";
 
 export default function ErpStub() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<ErpTab>("inventory");
   const [products, setProducts] = useState<LowStockProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -231,20 +238,20 @@ export default function ErpStub() {
   useEffect(load, []);
 
   const tabs: { id: ErpTab; label: string }[] = [
-    { id: "inventory", label: "المخزون المنخفض" },
-    { id: "history",   label: "سجل التعديلات" },
+    { id: "inventory", label: t("tabLowStock") },
+    { id: "history",   label: t("tabHistory") },
   ];
 
   return (
-    <div dir="rtl">
+    <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-text">إدارة المخزون</h2>
+        <h2 className="text-lg font-semibold text-text">{t("erpHeading")}</h2>
         {activeTab === "inventory" && (
           <button
             onClick={() => setDrawerOpen(true)}
             className="bg-accent text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-accent/90 transition-colors"
           >
-            + تعديل مخزون
+            {t("addAdjustment")}
           </button>
         )}
       </div>
@@ -272,7 +279,7 @@ export default function ErpStub() {
       ) : (
         <>
           {error && (
-            <p className="text-danger text-sm mb-4">خطأ في تحميل المخزون: {error}</p>
+            <p className="text-danger text-sm mb-4">{t("errorLoadStock").replace("{error}", error)}</p>
           )}
 
           {loading ? (
@@ -286,9 +293,9 @@ export default function ErpStub() {
               <thead>
                 <tr className="border-b border-border text-text-muted text-right">
                   <th className="pb-3 font-medium pe-4">SKU</th>
-                  <th className="pb-3 font-medium pe-4">الاسم</th>
-                  <th className="pb-3 font-medium pe-4">المخزون</th>
-                  <th className="pb-3 font-medium">الحالة</th>
+                  <th className="pb-3 font-medium pe-4">{t("fieldNameAr")}</th>
+                  <th className="pb-3 font-medium pe-4">{t("stockLabel")}</th>
+                  <th className="pb-3 font-medium">{t("tableStatus")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -304,7 +311,7 @@ export default function ErpStub() {
                           ? "bg-danger/15 text-danger"
                           : "bg-warning/15 text-warning",
                       ].join(" ")}>
-                        {p.stock <= 5 ? "حرج" : "منخفض"}
+                        {p.stock <= 5 ? t("statusCritical") : t("statusLow")}
                       </span>
                     </td>
                   </tr>
@@ -312,7 +319,7 @@ export default function ErpStub() {
                 {products.length === 0 && (
                   <tr>
                     <td colSpan={4} className="py-8 text-center text-text-muted text-sm">
-                      جميع المنتجات لديها مخزون كافٍ
+                      {t("lowStockEmpty")}
                     </td>
                   </tr>
                 )}
@@ -322,7 +329,7 @@ export default function ErpStub() {
         </>
       )}
 
-      <Drawer open={drawerOpen} title="تسجيل تعديل مخزون" onClose={() => setDrawerOpen(false)}>
+      <Drawer open={drawerOpen} title={t("drawerAdjustment")} onClose={() => setDrawerOpen(false)}>
         {drawerOpen && (
           <AdjustmentDrawer
             products={products}

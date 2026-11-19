@@ -74,6 +74,11 @@ internal sealed class CatalogReadRepository(DbContext db) : ICatalogReadReposito
                 p.Translations.Any(t => t.Name.Contains(filter.Q)));
         if (filter.VehicleModelId.HasValue)
             query = query.Where(p => p.Fitments.Any(f => f.VehicleModelId == filter.VehicleModelId.Value));
+        // Phase 2 – boolean display-flag filters
+        if (filter.IsFeatured.HasValue)   query = query.Where(p => p.IsFeatured   == filter.IsFeatured.Value);
+        if (filter.IsBestSeller.HasValue) query = query.Where(p => p.IsBestSeller == filter.IsBestSeller.Value);
+        if (filter.IsNew.HasValue)        query = query.Where(p => p.IsNew        == filter.IsNew.Value);
+        if (filter.IsOnSale.HasValue)     query = query.Where(p => p.IsOnSale     == filter.IsOnSale.Value);
 
         var total = await query.CountAsync(ct);
         var skip = (filter.Page - 1) * filter.PageSize;
@@ -98,6 +103,7 @@ internal sealed class CatalogReadRepository(DbContext db) : ICatalogReadReposito
                 p.Condition.ToString(),
                 p.Price.Amount, p.Price.Currency,
                 p.Stock, p.IsPublished,
+                p.IsFeatured, p.IsBestSeller, p.IsNew, p.IsOnSale,
                 primaryImage?.Url,
                 brandNames.GetValueOrDefault(p.BrandId, string.Empty),
                 categoryNames.GetValueOrDefault(p.CategoryId, string.Empty),

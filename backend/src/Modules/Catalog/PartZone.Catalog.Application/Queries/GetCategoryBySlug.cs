@@ -15,6 +15,8 @@ internal sealed class GetCategoryBySlugHandler(ICatalogReadRepository repo)
         if (c is null) return Result.Success<CategoryDto?>(null);
         return Result.Success<CategoryDto?>(
             new CategoryDto(c.Id, c.Name, c.Slug, c.ImageUrl, c.SortOrder, c.ParentId,
-                c.Children.Select(ch => new CategoryDto(ch.Id, ch.Name, ch.Slug, ch.ImageUrl, ch.SortOrder, ch.ParentId, [])).ToList()));
+                c.IsActive, c.IsFeatured, c.ShowInHome, c.ShowInMenu,
+                c.Children.Select(ch => new CategoryDto(ch.Id, ch.Name, ch.Slug, ch.ImageUrl, ch.SortOrder, ch.ParentId,
+                    ch.IsActive, ch.IsFeatured, ch.ShowInHome, ch.ShowInMenu, [])).ToList()));
     }
 }

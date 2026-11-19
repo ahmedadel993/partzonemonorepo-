@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { ActivePageBlock, PageBlockTranslation } from "../types";
 
 interface HeroConfig {
   backgroundImageUrl?: string;
+  heroImageUrl?: string;
 }
 
 function getTranslation(
@@ -17,16 +19,23 @@ interface Props {
   locale: string;
 }
 
-export function HeroBlock({ block, locale }: Props) {
-  const t = getTranslation(block.translations, locale);
+export async function HeroBlock({ block, locale }: Props) {
+  const t = await getTranslations({ locale, namespace: "home" });
+  const trans = getTranslation(block.translations, locale);
   const config: HeroConfig = (() => {
     try { return JSON.parse(block.config); } catch { return {}; }
   })();
 
   const ctaHref = block.targetUrl ?? `/${locale}/search`;
-  const headline = t?.title ?? "كل ما تحتاجه لسيارتك";
-  const subtitle = t?.subtitle ?? "قطع غيار أصلية وبديلة بأفضل الأسعار — شحن سريع لجميع المحافظات";
-  const ctaText = t?.ctaText ?? "تسوق الآن";
+  const headline = trans?.title ?? t("heroTitle");
+  const subtitle = trans?.subtitle ?? t("heroSubtitle");
+  const ctaText = trans?.ctaText ?? t("heroCta");
+
+  const trustBadges = [
+    t("trustOriginal"),
+    t("trustShipping"),
+    t("trustReturns"),
+  ];
 
   return (
     <section
@@ -48,7 +57,7 @@ export function HeroBlock({ block, locale }: Props) {
       )}
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 py-16 grid md:grid-cols-2 gap-12 items-center">
-        {/* Text side (RTL: right column) */}
+        {/* Text side */}
         <div className="space-y-6 text-center md:text-start">
           <h1 className="text-3xl md:text-5xl font-bold text-text leading-tight">
             {headline}
@@ -67,29 +76,36 @@ export function HeroBlock({ block, locale }: Props) {
 
           {/* Trust badges */}
           <ul className="flex flex-wrap gap-4 justify-center md:justify-start mt-4" role="list">
-            {[
-              { icon: "✓", label: "قطع غيار أصلية" },
-              { icon: "✓", label: "شحن سريع" },
-              { icon: "✓", label: "إمكانية الإرجاع 7 أيام" },
-            ].map((badge) => (
+            {trustBadges.map((label) => (
               <li
-                key={badge.label}
+                key={label}
                 className="flex items-center gap-1.5 text-sm text-text-muted"
               >
-                <span className="text-accent font-bold">{badge.icon}</span>
-                {badge.label}
+                <span className="text-accent font-bold">✓</span>
+                {label}
               </li>
             ))}
           </ul>
         </div>
 
         {/* Illustration side */}
-        <div className="hidden md:flex items-center justify-center">
-          <div className="w-full max-w-sm aspect-square rounded-2xl bg-surface-alt border border-border flex items-center justify-center text-text-muted">
-            {/* [HERO IMAGE PLACEHOLDER] — drop asset in docs/design/hero/ */}
-            <span className="text-xs opacity-40">[hero image]</span>
+        {config.heroImageUrl ? (
+          <div className="flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={config.heroImageUrl}
+              alt={headline}
+              fetchPriority="high"
+              className="w-full max-w-xs md:max-w-sm aspect-square object-cover rounded-2xl border border-border"
+            />
           </div>
-        </div>
+        ) : (
+          <div className="hidden md:flex items-center justify-center">
+            <div className="w-full max-w-sm aspect-square rounded-2xl bg-surface-alt border border-border flex items-center justify-center text-text-muted">
+              <span className="text-xs opacity-40">[hero image]</span>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

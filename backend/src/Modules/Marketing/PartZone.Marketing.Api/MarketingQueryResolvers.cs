@@ -49,4 +49,13 @@ public sealed class MarketingQueryResolvers
             ? result.Value!
             : new CouponValidationResult(false, null, null, "ERROR");
     }
+
+    // Phase 6 – payment methods
+    public async Task<IReadOnlyList<PaymentMethodDto>> GetPaymentMethodsAsync(
+        bool? onlyActive,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetAllPaymentMethodsQuery(onlyActive ?? false), ct);
+        return result.IsSuccess ? result.Value! : [];
+    }
 }

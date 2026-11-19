@@ -16,10 +16,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
     {
         _logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
 
+        var isDev = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
         var problem = new ProblemDetails
         {
             Status = StatusCodes.Status500InternalServerError,
-            Title = "An unexpected error occurred.",
+            Title = isDev ? exception.Message : "An unexpected error occurred.",
+            Detail = isDev ? exception.ToString() : null,
             Type = "https://tools.ietf.org/html/rfc7807",
         };
 

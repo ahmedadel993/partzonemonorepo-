@@ -12,6 +12,8 @@ export interface PlaceOrderInput {
   shippingAddress: ShippingAddressInput;
   couponCode?: string;
   discountAmount: number;
+  // Phase 6 – payment method key from dynamic list
+  paymentMethod?: string;
   notes?: string;
 }
 

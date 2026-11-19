@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { VehiclePickerModal } from "@/shared/ui/VehiclePickerModal";
 import type { VehicleMake } from "@/modules/catalog/types";
 import type { ActivePageBlock, PageBlockTranslation } from "../types";
@@ -20,8 +20,9 @@ interface Props {
 
 export function VehicleStripBlock({ block, makes }: Props) {
   const locale = useLocale();
-  const t = getTranslation(block.translations, locale);
-  const title = t?.title ?? "اختر ماركة سيارتك";
+  const t = useTranslations("catalog");
+  const trans = getTranslation(block.translations, locale);
+  const title = trans?.title ?? t("chooseVehicle");
   const [pendingMake, setPendingMake] = useState<VehicleMake | null>(null);
 
   if (makes.length === 0) return null;

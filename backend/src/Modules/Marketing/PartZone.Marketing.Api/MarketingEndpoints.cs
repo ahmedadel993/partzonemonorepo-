@@ -20,6 +20,13 @@ internal static class MarketingEndpoints
             new ValidateCouponQuery(code, Guid.Empty, (decimal)(p.OrderAmount ?? 0)), ct);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Description);
     }
+
+    // Phase 6 – active payment methods for storefront checkout
+    internal static async Task<IResult> GetActivePaymentMethodsAsync(IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetAllPaymentMethodsQuery(OnlyActive: true), ct);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Description);
+    }
 }
 
 internal sealed record ValidateCouponParams(double? OrderAmount);

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   GET_VEHICLE_MAKES,
   GET_VEHICLE_MODELS,
@@ -13,78 +12,20 @@ import {
   UPDATE_VEHICLE_MODEL,
   DELETE_VEHICLE_MODEL,
 } from "../graphql/catalogApi";
-
-interface VehicleMake {
-  id: string;
-  name: string;
-  slug: string;
-  logoUrl?: string | null;
-}
-
-interface VehicleModel {
-  id: string;
-  name: string;
-  slug: string;
-  vehicleMakeId: string;
-}
-
-const makeSchema = z.object({
-  name: z.string().min(1, "مطلوب").max(200),
-  slug: z.string().min(1, "مطلوب").max(200).regex(/^[a-z0-9-]+$/, "lowercase, أرقام، شرطات فقط"),
-});
-type MakeForm = z.infer<typeof makeSchema>;
-
-const makeEditSchema = z.object({
-  name: z.string().min(1, "مطلوب").max(200),
-});
-type MakeEditForm = z.infer<typeof makeEditSchema>;
-
-const modelSchema = z.object({
-  name: z.string().min(1, "مطلوب").max(200),
-  slug: z.string().min(1, "مطلوب").max(200).regex(/^[a-z0-9-]+$/, "lowercase, أرقام، شرطات فقط"),
-});
-type ModelForm = z.infer<typeof modelSchema>;
-
-const modelEditSchema = z.object({
-  name: z.string().min(1, "مطلوب").max(200),
-});
-type ModelEditForm = z.infer<typeof modelEditSchema>;
-
-function Drawer({
-  open, title, onClose, children,
-}: { open: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
-  return (
-    <>
-      {open && <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />}
-      <aside className={[
-        "fixed top-0 end-0 h-full w-96 bg-surface border-s border-border z-50",
-        "transition-transform duration-300",
-        open ? "translate-x-0" : "translate-x-full rtl:-translate-x-full",
-      ].join(" ")}>
-        <div className="h-16 flex items-center justify-between px-6 border-b border-border">
-          <h2 className="font-semibold text-text">{title}</h2>
-          <button onClick={onClose} className="text-text-muted hover:text-text text-xl leading-none">×</button>
-        </div>
-        <div className="p-6 overflow-y-auto h-[calc(100%-4rem)]">{children}</div>
-      </aside>
-    </>
-  );
-}
-
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-4">
-      <label className="block text-sm text-text-muted mb-1">{label}</label>
-      {children}
-      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
-    </div>
-  );
-}
-
-const inputCls =
-  "w-full bg-surface-alt border border-border rounded-md px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors";
+import { VehicleMake, VehicleModel } from "../vehicles/types";
+import {
+  makeSchema, MakeForm,
+  makeEditSchema, MakeEditForm,
+  modelSchema, ModelForm,
+  modelEditSchema, ModelEditForm,
+} from "../vehicles/validation";
+import { Drawer } from "../shared/Drawer";
+import { Field } from "../shared/Field";
+import { inputCls } from "../shared/styles";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function MakeFormDrawer({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+  const { t, dir } = useLanguage();
   const [serverError, setServerError] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<MakeForm>({
     resolver: zodResolver(makeSchema),
@@ -105,22 +46,22 @@ function MakeFormDrawer({ onClose, onDone }: { onClose: () => void; onDone: () =
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir="rtl">
-      <Field label="الاسم" error={errors.name?.message}>
-        <input {...register("name")} className={inputCls} placeholder="تويوتا" />
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir={dir}>
+      <Field label={t("fieldName")} error={errors.name?.message}>
+        <input {...register("name")} className={inputCls} placeholder={t("brandNamePlaceholder")} />
       </Field>
-      <Field label="الـ Slug" error={errors.slug?.message}>
+      <Field label={t("fieldSlug")} error={errors.slug?.message}>
         <input {...register("slug")} className={inputCls} placeholder="toyota" dir="ltr" />
       </Field>
       {serverError && <p className="text-xs text-danger bg-danger/10 px-3 py-2 rounded">{serverError}</p>}
       <div className="flex gap-3 pt-4">
         <button type="submit" disabled={isSubmitting}
           className="flex-1 bg-accent hover:bg-accent-hover text-accent-fg text-sm font-medium px-4 py-2 rounded transition-colors disabled:opacity-60">
-          {isSubmitting ? "جارٍ الحفظ…" : "إضافة"}
+          {isSubmitting ? t("saving") : t("add")}
         </button>
         <button type="button" onClick={onClose}
           className="px-4 py-2 text-sm text-text-muted hover:text-text border border-border rounded transition-colors">
-          إلغاء
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -128,6 +69,7 @@ function MakeFormDrawer({ onClose, onDone }: { onClose: () => void; onDone: () =
 }
 
 function MakeEditDrawer({ make, onClose, onDone }: { make: VehicleMake; onClose: () => void; onDone: () => void }) {
+  const { t, dir } = useLanguage();
   const [serverError, setServerError] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<MakeEditForm>({
     resolver: zodResolver(makeEditSchema),
@@ -148,19 +90,19 @@ function MakeEditDrawer({ make, onClose, onDone }: { make: VehicleMake; onClose:
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir="rtl">
-      <Field label="الاسم" error={errors.name?.message}>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir={dir}>
+      <Field label={t("fieldName")} error={errors.name?.message}>
         <input {...register("name")} className={inputCls} />
       </Field>
       {serverError && <p className="text-xs text-danger bg-danger/10 px-3 py-2 rounded">{serverError}</p>}
       <div className="flex gap-3 pt-4">
         <button type="submit" disabled={isSubmitting}
           className="flex-1 bg-accent hover:bg-accent-hover text-accent-fg text-sm font-medium px-4 py-2 rounded transition-colors disabled:opacity-60">
-          {isSubmitting ? "جارٍ الحفظ…" : "حفظ"}
+          {isSubmitting ? t("saving") : t("save")}
         </button>
         <button type="button" onClick={onClose}
           className="px-4 py-2 text-sm text-text-muted hover:text-text border border-border rounded transition-colors">
-          إلغاء
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -168,6 +110,7 @@ function MakeEditDrawer({ make, onClose, onDone }: { make: VehicleMake; onClose:
 }
 
 function ModelFormDrawer({ makeId, onClose, onDone }: { makeId: string; onClose: () => void; onDone: () => void }) {
+  const { t, dir } = useLanguage();
   const [serverError, setServerError] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ModelForm>({
     resolver: zodResolver(modelSchema),
@@ -190,22 +133,22 @@ function ModelFormDrawer({ makeId, onClose, onDone }: { makeId: string; onClose:
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir="rtl">
-      <Field label="الاسم" error={errors.name?.message}>
-        <input {...register("name")} className={inputCls} placeholder="كامري" />
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir={dir}>
+      <Field label={t("fieldName")} error={errors.name?.message}>
+        <input {...register("name")} className={inputCls} placeholder={t("modelNamePlaceholder")} />
       </Field>
-      <Field label="الـ Slug" error={errors.slug?.message}>
+      <Field label={t("fieldSlug")} error={errors.slug?.message}>
         <input {...register("slug")} className={inputCls} placeholder="camry" dir="ltr" />
       </Field>
       {serverError && <p className="text-xs text-danger bg-danger/10 px-3 py-2 rounded">{serverError}</p>}
       <div className="flex gap-3 pt-4">
         <button type="submit" disabled={isSubmitting}
           className="flex-1 bg-accent hover:bg-accent-hover text-accent-fg text-sm font-medium px-4 py-2 rounded transition-colors disabled:opacity-60">
-          {isSubmitting ? "جارٍ الحفظ…" : "إضافة"}
+          {isSubmitting ? t("saving") : t("add")}
         </button>
         <button type="button" onClick={onClose}
           className="px-4 py-2 text-sm text-text-muted hover:text-text border border-border rounded transition-colors">
-          إلغاء
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -213,6 +156,7 @@ function ModelFormDrawer({ makeId, onClose, onDone }: { makeId: string; onClose:
 }
 
 function ModelEditDrawer({ model, makeId, onClose, onDone }: { model: VehicleModel; makeId: string; onClose: () => void; onDone: () => void }) {
+  const { t, dir } = useLanguage();
   const [serverError, setServerError] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ModelEditForm>({
     resolver: zodResolver(modelEditSchema),
@@ -235,19 +179,19 @@ function ModelEditDrawer({ model, makeId, onClose, onDone }: { model: VehicleMod
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir="rtl">
-      <Field label="الاسم" error={errors.name?.message}>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir={dir}>
+      <Field label={t("fieldName")} error={errors.name?.message}>
         <input {...register("name")} className={inputCls} />
       </Field>
       {serverError && <p className="text-xs text-danger bg-danger/10 px-3 py-2 rounded">{serverError}</p>}
       <div className="flex gap-3 pt-4">
         <button type="submit" disabled={isSubmitting}
           className="flex-1 bg-accent hover:bg-accent-hover text-accent-fg text-sm font-medium px-4 py-2 rounded transition-colors disabled:opacity-60">
-          {isSubmitting ? "جارٍ الحفظ…" : "حفظ"}
+          {isSubmitting ? t("saving") : t("save")}
         </button>
         <button type="button" onClick={onClose}
           className="px-4 py-2 text-sm text-text-muted hover:text-text border border-border rounded transition-colors">
-          إلغاء
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -255,6 +199,7 @@ function ModelEditDrawer({ model, makeId, onClose, onDone }: { model: VehicleMod
 }
 
 export function VehiclesPanel() {
+  const { t, dir } = useLanguage();
   const { data: makesData, loading: makesLoading, error: makesError } = useQuery(GET_VEHICLE_MAKES);
   const [selectedMakeId, setSelectedMakeId] = useState<string | null>(null);
   const [makeDrawerOpen, setMakeDrawerOpen] = useState(false);
@@ -275,13 +220,13 @@ export function VehiclesPanel() {
   const selectedMake = makes.find((m) => m.id === selectedMakeId) ?? null;
 
   const handleDeleteMake = async (id: string) => {
-    if (!confirm("هل تريد حذف هذه الماركة؟")) return;
+    if (!confirm(t("deleteConfirmMake"))) return;
     if (selectedMakeId === id) setSelectedMakeId(null);
     await deleteMake({ variables: { id } });
   };
 
   const handleDeleteModel = async (id: string) => {
-    if (!confirm("هل تريد حذف هذا الموديل؟")) return;
+    if (!confirm(t("deleteConfirmModel"))) return;
     await deleteModel({
       variables: { id },
       refetchQueries: [{ query: GET_VEHICLE_MODELS, variables: { makeId: selectedMakeId } }],
@@ -289,19 +234,18 @@ export function VehiclesPanel() {
   };
 
   if (makesError)
-    return <p className="text-danger text-sm">خطأ في تحميل المركبات: {makesError.message}</p>;
+    return <p className="text-danger text-sm">{t("errorLoadVehicles")}: {makesError.message}</p>;
 
   return (
-    <div dir="rtl" className="flex gap-6">
-      {/* Makes panel */}
+    <div dir={dir} className="flex gap-6">
       <div className="w-72 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-text">الماركات</h2>
+          <h2 className="text-base font-semibold text-text">{t("makesHeading")}</h2>
           <button
             onClick={() => setMakeDrawerOpen(true)}
             className="text-sm bg-accent hover:bg-accent-hover text-accent-fg px-3 py-1.5 rounded transition-colors"
           >
-            + إضافة
+            {t("addMake")}
           </button>
         </div>
         {makesLoading ? (
@@ -326,14 +270,14 @@ export function VehiclesPanel() {
                 <button
                   onClick={() => setEditMake(m)}
                   className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-text-muted hover:text-text transition-colors rounded"
-                  title="تعديل"
+                  title={t("edit")}
                 >
                   ✏
                 </button>
                 <button
                   onClick={() => handleDeleteMake(m.id)}
                   className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-danger hover:text-danger/70 transition-colors rounded"
-                  title="حذف"
+                  title={t("delete")}
                 >
                   ✕
                 </button>
@@ -343,17 +287,16 @@ export function VehiclesPanel() {
         )}
       </div>
 
-      {/* Models panel */}
       <div className="flex-1 min-w-0">
         {selectedMake ? (
           <>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-text">موديلات {selectedMake.name}</h2>
+              <h2 className="text-base font-semibold text-text">{t("modelsOf").replace("{make}", selectedMake.name)}</h2>
               <button
                 onClick={() => setModelDrawerOpen(true)}
                 className="text-sm bg-accent hover:bg-accent-hover text-accent-fg px-3 py-1.5 rounded transition-colors"
               >
-                + إضافة موديل
+                {t("addModel")}
               </button>
             </div>
             {modelsLoading ? (
@@ -364,9 +307,9 @@ export function VehiclesPanel() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-text-muted text-right">
-                    <th className="pb-3 font-medium pe-4">الاسم</th>
+                    <th className="pb-3 font-medium pe-4">{t("fieldName")}</th>
                     <th className="pb-3 font-medium pe-4">Slug</th>
-                    <th className="pb-3 font-medium w-20">إجراءات</th>
+                    <th className="pb-3 font-medium w-20">{t("tableColActions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -379,14 +322,14 @@ export function VehiclesPanel() {
                           <button
                             onClick={() => setEditModel(m)}
                             className="px-2 py-1 text-xs text-text-muted hover:text-text transition-colors rounded"
-                            title="تعديل"
+                            title={t("edit")}
                           >
                             ✏
                           </button>
                           <button
                             onClick={() => handleDeleteModel(m.id)}
                             className="px-2 py-1 text-xs text-danger hover:text-danger/70 transition-colors rounded"
-                            title="حذف"
+                            title={t("delete")}
                           >
                             ✕
                           </button>
@@ -397,7 +340,7 @@ export function VehiclesPanel() {
                   {models.length === 0 && (
                     <tr>
                       <td colSpan={3} className="py-6 text-center text-text-muted text-xs">
-                        لا توجد موديلات بعد
+                        {t("noModels")}
                       </td>
                     </tr>
                   )}
@@ -407,26 +350,23 @@ export function VehiclesPanel() {
           </>
         ) : (
           <div className="flex items-center justify-center h-full min-h-[200px] text-text-muted text-sm rounded-lg border border-dashed border-border">
-            اختر ماركة من اليمين لعرض الموديلات
+            {t("selectMakeHint")}
           </div>
         )}
       </div>
 
-      {/* Create make drawer */}
-      <Drawer open={makeDrawerOpen} title="إضافة ماركة جديدة" onClose={() => setMakeDrawerOpen(false)}>
+      <Drawer open={makeDrawerOpen} title={t("drawerNewMake")} onClose={() => setMakeDrawerOpen(false)}>
         <MakeFormDrawer onClose={() => setMakeDrawerOpen(false)} onDone={() => setMakeDrawerOpen(false)} />
       </Drawer>
 
-      {/* Edit make drawer */}
-      <Drawer open={editMake !== null} title="تعديل الماركة" onClose={() => setEditMake(null)}>
+      <Drawer open={editMake !== null} title={t("drawerEditMake")} onClose={() => setEditMake(null)}>
         {editMake && (
           <MakeEditDrawer make={editMake} onClose={() => setEditMake(null)} onDone={() => setEditMake(null)} />
         )}
       </Drawer>
 
-      {/* Create model drawer */}
       {selectedMakeId && (
-        <Drawer open={modelDrawerOpen} title={`إضافة موديل لـ ${selectedMake?.name}`} onClose={() => setModelDrawerOpen(false)}>
+        <Drawer open={modelDrawerOpen} title={t("drawerNewModel").replace("{make}", selectedMake?.name ?? "")} onClose={() => setModelDrawerOpen(false)}>
           <ModelFormDrawer
             makeId={selectedMakeId}
             onClose={() => setModelDrawerOpen(false)}
@@ -435,9 +375,8 @@ export function VehiclesPanel() {
         </Drawer>
       )}
 
-      {/* Edit model drawer */}
       {selectedMakeId && (
-        <Drawer open={editModel !== null} title="تعديل الموديل" onClose={() => setEditModel(null)}>
+        <Drawer open={editModel !== null} title={t("drawerEditModel")} onClose={() => setEditModel(null)}>
           {editModel && (
             <ModelEditDrawer
               model={editModel}

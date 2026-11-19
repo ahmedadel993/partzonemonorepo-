@@ -6,10 +6,14 @@ public interface ICatalogWriteRepository
 {
     void AddBrand(Brand brand);
     void UpdateBrand(Brand brand);
+    void RemoveBrand(Brand brand);
     void AddCategory(Category category);
     void UpdateCategory(Category category);
+    void RemoveCategory(Category category);
     void AddProduct(Product product);
     void UpdateProduct(Product product);
+    void RemoveProduct(Product product);
+    void RemoveProductImage(ProductImage image);
     void AddVehicleMake(VehicleMake make);
     void UpdateVehicleMake(VehicleMake make);
     void RemoveVehicleMake(VehicleMake make);

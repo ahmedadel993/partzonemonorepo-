@@ -1,22 +1,25 @@
 import { Link, useRouterState, useRouter } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useAuthStore } from "@/stores/useAuthStore";
-
-const NAV_ITEMS = [
-  { to: "/",          label: "Dashboard" },
-  { to: "/catalog",   label: "Catalog" },
-  { to: "/marketing", label: "Marketing" },
-  { to: "/orders",    label: "Orders" },
-  { to: "/users",     label: "Users" },
-  { to: "/vendors",   label: "Vendors" },
-  { to: "/erp",       label: "ERP Sync" },
-  { to: "/settings",  label: "Settings" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LangToggle } from "@/components/ui/LangToggle";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const router = useRouter();
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const { dir, t } = useLanguage();
+
+  const NAV_ITEMS = [
+    { to: "/",          label: t("dashboard") },
+    { to: "/catalog",   label: t("catalog") },
+    { to: "/marketing", label: t("marketing") },
+    { to: "/orders",    label: t("orders") },
+    { to: "/users",     label: t("users") },
+    { to: "/vendors",   label: t("vendors") },
+    { to: "/erp",       label: t("erpSync") },
+    { to: "/settings",  label: t("settings") },
+  ];
 
   const handleLogout = () => {
     clearAuth();
@@ -24,7 +27,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="dark flex h-screen bg-bg text-text font-sans overflow-hidden">
+    <div dir={dir} className="dark flex h-screen bg-bg text-text font-sans overflow-hidden">
       {/* Sidebar */}
       <aside className="w-56 shrink-0 flex flex-col bg-surface border-e border-border">
         <div className="h-16 flex items-center px-6 border-b border-border">
@@ -61,17 +64,18 @@ export function AppLayout({ children }: { children: ReactNode }) {
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded text-sm text-text-muted hover:bg-surface-alt hover:text-danger transition-colors"
           >
-            تسجيل الخروج
+            {t("logout")}
           </button>
         </div>
       </aside>
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto">
-        <header className="h-16 flex items-center px-6 border-b border-border bg-surface">
+        <header className="h-16 flex items-center justify-between px-6 border-b border-border bg-surface">
           <h1 className="text-sm font-medium text-text-muted capitalize">
-            {location.pathname.replace("/", "") || "Dashboard"}
+            {location.pathname.replace("/", "") || t("dashboard")}
           </h1>
+          <LangToggle />
         </header>
         <div className="p-6">{children}</div>
       </main>

@@ -15,7 +15,6 @@ internal sealed class RemoveFromCartHandler(ICartRepository repo)
         var cart = await repo.GetByUserIdAsync(request.UserId, ct);
         if (cart is null) return Result.Failure<CartDto>(Error.NotFound("Cart.NotFound", "Cart not found."));
         cart.RemoveItem(request.CartItemId);
-        repo.Update(cart);
         await repo.SaveChangesAsync(ct);
         return Result.Success(CartMapper.ToDto(cart));
     }

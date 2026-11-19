@@ -18,7 +18,25 @@ public sealed class CartRepository : ICartRepository
 
     public void Add(CartEntity cart) => _ctx.Set<CartEntity>().Add(cart);
 
-    public void Update(CartEntity cart) => _ctx.Set<CartEntity>().Update(cart);
+    public void Update(CartEntity cart)
+    {
+        // Disable auto-detect so Entry() calls below don't trigger DetectChanges mid-loop.
+        // DetectChanges would see the new CartItem in _items and mark it Modified (not Added)
+        // before we get a chance to explicitly mark it Added ourselves.
+        _ctx.ChangeTracker.AutoDetectChangesEnabled = false;
+        try
+        {
+            foreach (var item in cart.Items)
+            {
+                if (_ctx.Entry(item).State == EntityState.Detached)
+                    _ctx.Entry(item).State = EntityState.Added;
+            }
+        }
+        finally
+        {
+            _ctx.ChangeTracker.AutoDetectChangesEnabled = true;
+        }
+    }
 
     public Task SaveChangesAsync(CancellationToken ct) => _ctx.SaveChangesAsync(ct);
 }

@@ -29,6 +29,11 @@ export interface ProductSummary {
   primaryImageUrl: string | null;
   brandName: string;
   categoryName: string;
+  // Phase 5 – display flags for swiper carousels
+  isFeatured: boolean;
+  isBestSeller: boolean;
+  isNew: boolean;
+  isOnSale: boolean;
 }
 
 export interface ProductImage {
@@ -80,6 +85,11 @@ export interface ProductFilter {
   brandId?: string | null;
   condition?: string | null;
   vehicleModelId?: string | null;
+  // Phase 5 – boolean display-flag filters
+  isFeatured?: boolean | null;
+  isBestSeller?: boolean | null;
+  isNew?: boolean | null;
+  isOnSale?: boolean | null;
   page?: number;
   pageSize?: number;
 }

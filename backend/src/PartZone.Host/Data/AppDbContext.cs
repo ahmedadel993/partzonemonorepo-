@@ -39,6 +39,8 @@ public sealed class AppDbContext : DbContext
     public DbSet<PageBlockTranslation> PageBlockTranslations => Set<PageBlockTranslation>();
     public DbSet<Coupon> Coupons => Set<Coupon>();
     public DbSet<CouponUsage> CouponUsages => Set<CouponUsage>();
+    // Phase 6 – payment methods
+    public DbSet<PaymentMethod> PaymentMethods => Set<PaymentMethod>();
 
     // Catalog
     public DbSet<Brand> Brands => Set<Brand>();

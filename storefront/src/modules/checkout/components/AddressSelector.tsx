@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { getMyAddresses, addAddress } from "@/modules/checkout/actions/checkoutActions";
 import type { Address } from "@/modules/auth/types";
 import type { ShippingAddressInput } from "@/modules/checkout/types";
@@ -12,6 +13,8 @@ interface Props {
 }
 
 export function AddressSelector({ initialAddresses, onSelect, selectedId }: Props) {
+  const t = useTranslations("address");
+  const tCommon = useTranslations("common");
   const [addresses, setAddresses] = useState<Address[]>(initialAddresses);
   const [showForm, setShowForm] = useState(addresses.length === 0);
   const [selected, setSelected] = useState<string | null>(selectedId ?? addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? null);
@@ -49,7 +52,7 @@ export function AddressSelector({ initialAddresses, onSelect, selectedId }: Prop
         isDefault: addresses.length === 0,
       });
       if (!result) {
-        setAddError("فشل حفظ العنوان، يرجى المحاولة مجدداً");
+        setAddError(t("saveError"));
         return;
       }
       const updated = await getMyAddresses();
@@ -80,30 +83,30 @@ export function AddressSelector({ initialAddresses, onSelect, selectedId }: Prop
 
       {!showForm ? (
         <button type="button" onClick={() => setShowForm(true)} className="text-sm text-accent hover:underline flex items-center gap-1">
-          + إضافة عنوان جديد
+          + {t("addNew")}
         </button>
       ) : (
         <form onSubmit={handleAddAddress} className="space-y-3 p-4 rounded-lg border border-border bg-surface-alt">
-          <p className="text-sm font-medium text-text">عنوان جديد</p>
+          <p className="text-sm font-medium text-text">{t("addNew")}</p>
           <div className="grid grid-cols-2 gap-3">
-            <input value={newAddr.fullName} onChange={(e) => setNewAddr((p) => ({ ...p, fullName: e.target.value }))} placeholder="الاسم الكامل" required className={inputCls} />
-            <input value={newAddr.phone} onChange={(e) => setNewAddr((p) => ({ ...p, phone: e.target.value }))} placeholder="رقم الهاتف" required className={inputCls} dir="ltr" />
+            <input value={newAddr.fullName} onChange={(e) => setNewAddr((p) => ({ ...p, fullName: e.target.value }))} placeholder={t("fullNamePlaceholder")} required className={inputCls} />
+            <input value={newAddr.phone} onChange={(e) => setNewAddr((p) => ({ ...p, phone: e.target.value }))} placeholder={t("phonePlaceholder")} required className={inputCls} dir="ltr" />
           </div>
-          <input value={newAddr.addressLine1} onChange={(e) => setNewAddr((p) => ({ ...p, addressLine1: e.target.value }))} placeholder="العنوان (السطر الأول)" required className={inputCls} />
-          <input value={newAddr.addressLine2} onChange={(e) => setNewAddr((p) => ({ ...p, addressLine2: e.target.value }))} placeholder="العنوان (السطر الثاني — اختياري)" className={inputCls} />
+          <input value={newAddr.addressLine1} onChange={(e) => setNewAddr((p) => ({ ...p, addressLine1: e.target.value }))} placeholder={t("line1Label")} required className={inputCls} />
+          <input value={newAddr.addressLine2} onChange={(e) => setNewAddr((p) => ({ ...p, addressLine2: e.target.value }))} placeholder={t("line2Label")} className={inputCls} />
           <div className="grid grid-cols-3 gap-3">
-            <input value={newAddr.city} onChange={(e) => setNewAddr((p) => ({ ...p, city: e.target.value }))} placeholder="المدينة" required className={inputCls} />
-            <input value={newAddr.governorate} onChange={(e) => setNewAddr((p) => ({ ...p, governorate: e.target.value }))} placeholder="المحافظة" required className={inputCls} />
-            <input value={newAddr.postalCode} onChange={(e) => setNewAddr((p) => ({ ...p, postalCode: e.target.value }))} placeholder="الرمز البريدي" required className={inputCls} dir="ltr" />
+            <input value={newAddr.city} onChange={(e) => setNewAddr((p) => ({ ...p, city: e.target.value }))} placeholder={t("cityLabel")} required className={inputCls} />
+            <input value={newAddr.governorate} onChange={(e) => setNewAddr((p) => ({ ...p, governorate: e.target.value }))} placeholder={t("governorateLabel")} required className={inputCls} />
+            <input value={newAddr.postalCode} onChange={(e) => setNewAddr((p) => ({ ...p, postalCode: e.target.value }))} placeholder={t("postalCodeLabel")} required className={inputCls} dir="ltr" />
           </div>
           {addError && <p className="text-xs text-danger">{addError}</p>}
           <div className="flex gap-2">
             <button type="submit" disabled={isPending} className="h-9 px-4 bg-accent text-accent-fg text-sm font-medium rounded-md hover:bg-accent-hover transition-colors disabled:opacity-50">
-              {isPending ? "جاري الحفظ..." : "حفظ العنوان"}
+              {isPending ? "..." : t("saveButton")}
             </button>
             {addresses.length > 0 && (
               <button type="button" onClick={() => setShowForm(false)} className="h-9 px-4 border border-border text-text text-sm rounded-md hover:bg-surface-alt transition-colors">
-                إلغاء
+                {tCommon("cancel")}
               </button>
             )}
           </div>

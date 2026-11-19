@@ -34,15 +34,22 @@ internal sealed class UpdatePageBlockHandler(IPageBlockRepository repo)
             block.UpdateBinding(bt, request.TargetId, request.TargetUrl);
         }
 
+        // The admin always sends the full schedule; null clears a limit.
+        block.UpdateSchedule(ScheduleParsing.ToUtc(request.ActiveFrom), ScheduleParsing.ToUtc(request.ActiveTo));
+
         if (request.Translations is not null)
         {
             var translations = request.Translations
                 .Select(t => PageBlockTranslation.Create(block.Id, t.Locale, t.Title, t.Subtitle, t.CtaText, t.ConfigOverride))
                 .ToList();
-            block.SetTranslations(translations);
+            // Update in place by locale; only genuinely new locales are inserted.
+            // (Replacing all rows made EF send UPDATEs for the new rows, because
+            // their Guid keys are set client-side, which failed with 0 rows affected.)
+            foreach (var added in block.SyncTranslations(translations))
+                repo.AddTranslation(added);
         }
 
-        repo.Update(block);
+        // The block is tracked (no AsNoTracking), so changes are detected on save.
         await repo.SaveChangesAsync(ct);
         return Result.Success();
     }

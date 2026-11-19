@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface OrderSummary {
   id: string;
@@ -24,14 +25,6 @@ const STATUS_COLORS: Record<string, string> = {
   Cancelled: "bg-danger/15 text-danger",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  Pending:   "معلق",
-  Confirmed: "مؤكد",
-  Shipped:   "تم الشحن",
-  Delivered: "تم التسليم",
-  Cancelled: "ملغي",
-};
-
 function KpiCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="bg-surface border border-border rounded-xl p-5 space-y-1">
@@ -43,8 +36,17 @@ function KpiCard({ label, value, sub }: { label: string; value: string | number;
 }
 
 export default function DashboardPage() {
+  const { t, lang } = useLanguage();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const STATUS_LABELS: Record<string, string> = {
+    Pending:   t("statusPending"),
+    Confirmed: t("statusConfirmed"),
+    Shipped:   t("statusShipped"),
+    Delivered: t("statusDelivered"),
+    Cancelled: t("statusCancelled"),
+  };
 
   useEffect(() => {
     fetch(`${API}/admin/orders`, { headers: authHeaders() })
@@ -61,8 +63,8 @@ export default function DashboardPage() {
   const recent      = [...orders].slice(0, 5);
 
   return (
-    <div className="space-y-6" dir="rtl">
-      <h1 className="text-xl font-semibold text-text">لوحة التحكم</h1>
+    <div className="space-y-6">
+      <h1 className="text-xl font-semibold text-text">{t("dashboardHeading")}</h1>
 
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -72,15 +74,15 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label="إجمالي الطلبات" value={total} />
-          <KpiCard label="الإيرادات" value={`${revenue.toFixed(0)} ج.م`} />
-          <KpiCard label="معلّقة" value={pending} sub="تحتاج متابعة" />
-          <KpiCard label="نشطة" value={active} sub="مؤكدة + شحن" />
+          <KpiCard label={t("kpiOrders")} value={total} />
+          <KpiCard label={t("kpiRevenue")} value={`${revenue.toFixed(0)} ${t("currency")}`} />
+          <KpiCard label={t("kpiPending")} value={pending} sub={t("kpiPendingHint")} />
+          <KpiCard label={t("kpiActive")} value={active} sub={t("kpiActiveHint")} />
         </div>
       )}
 
       <div>
-        <h2 className="text-sm font-semibold text-text mb-3">أحدث الطلبات</h2>
+        <h2 className="text-sm font-semibold text-text mb-3">{t("recentOrders")}</h2>
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -89,17 +91,17 @@ export default function DashboardPage() {
           </div>
         ) : recent.length === 0 ? (
           <div className="flex items-center justify-center h-32 text-text-muted text-sm rounded-lg border border-dashed border-border">
-            لا توجد طلبات بعد
+            {t("noOrders")}
           </div>
         ) : (
           <div className="border border-border rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-surface-alt border-b border-border">
                 <tr>
-                  <th className="text-right font-medium text-text-muted px-4 py-3">رقم الطلب</th>
-                  <th className="text-right font-medium text-text-muted px-4 py-3">الحالة</th>
-                  <th className="text-right font-medium text-text-muted px-4 py-3">الإجمالي</th>
-                  <th className="text-right font-medium text-text-muted px-4 py-3">التاريخ</th>
+                  <th className="text-right font-medium text-text-muted px-4 py-3">{t("tableOrderNumber")}</th>
+                  <th className="text-right font-medium text-text-muted px-4 py-3">{t("tableStatus")}</th>
+                  <th className="text-right font-medium text-text-muted px-4 py-3">{t("tableTotal")}</th>
+                  <th className="text-right font-medium text-text-muted px-4 py-3">{t("tableDate")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-surface">
@@ -111,9 +113,9 @@ export default function DashboardPage() {
                         {STATUS_LABELS[order.status] ?? order.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-semibold text-text" dir="ltr">{order.total.toFixed(2)} ج.م</td>
+                    <td className="px-4 py-3 font-semibold text-text" dir="ltr">{order.total.toFixed(2)} {t("currency")}</td>
                     <td className="px-4 py-3 text-text-muted" dir="ltr">
-                      {new Date(order.placedAt).toLocaleDateString("ar-EG")}
+                      {new Date(order.placedAt).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB")}
                     </td>
                   </tr>
                 ))}

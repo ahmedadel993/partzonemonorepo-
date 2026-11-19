@@ -13,6 +13,6 @@ internal sealed class GetBrandsHandler(ICatalogReadRepository repo)
     {
         var brands = await repo.GetBrandsAsync(ct);
         return Result.Success<IReadOnlyList<BrandDto>>(
-            brands.Select(b => new BrandDto(b.Id, b.Name, b.Slug, b.LogoUrl, b.IsActive)).ToList());
+            brands.Select(b => new BrandDto(b.Id, b.Name, b.Slug, b.LogoUrl, b.IsActive, b.IsFeatured, b.ShowInHome, b.IsSponsored)).ToList());
     }
 }

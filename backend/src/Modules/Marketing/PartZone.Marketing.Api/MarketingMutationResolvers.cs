@@ -58,6 +58,15 @@ public sealed class MarketingMutationResolvers
         return new PageBlockPayloadDto(blockResult.Value, []);
     }
 
+    public async Task<PageBlockPayloadDto> DeletePageBlockAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeletePageBlockCommand(id), ct);
+        return result.IsSuccess
+            ? new PageBlockPayloadDto(null, [])
+            : new PageBlockPayloadDto(null, [result.Error.Description]);
+    }
+
     public async Task<IReadOnlyList<PageBlockDto>> ReorderPageBlocksAsync(
         IReadOnlyList<ReorderItemInputGql> input,
         [Service] IMediator mediator, CancellationToken ct)
@@ -105,6 +114,54 @@ public sealed class MarketingMutationResolvers
         var allResult = await mediator.Send(new GetAllCouponsQuery(), ct);
         var dto = allResult.Value!.FirstOrDefault(c => c.Id == id);
         return new CouponPayloadDto(dto, []);
+    }
+
+    // Phase 6 – payment methods
+    public async Task<PaymentMethodPayloadDto> CreatePaymentMethodAsync(
+        CreatePaymentMethodInputGql input, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new CreatePaymentMethodCommand(
+            input.Key, input.LabelAr, input.LabelEn, input.IconUrl, input.IsComingSoon, input.SortOrder), ct);
+        if (!result.IsSuccess) return new PaymentMethodPayloadDto(null, [result.Error.Description]);
+        var all = await mediator.Send(new GetAllPaymentMethodsQuery(), ct);
+        return new PaymentMethodPayloadDto(all.Value!.FirstOrDefault(m => m.Id == result.Value), []);
+    }
+
+    public async Task<PaymentMethodPayloadDto> UpdatePaymentMethodAsync(
+        UpdatePaymentMethodInputGql input, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new UpdatePaymentMethodCommand(
+            input.Id, input.LabelAr, input.LabelEn, input.IconUrl, input.IsComingSoon, input.SortOrder), ct);
+        if (!result.IsSuccess) return new PaymentMethodPayloadDto(null, [result.Error.Description]);
+        var all = await mediator.Send(new GetAllPaymentMethodsQuery(), ct);
+        return new PaymentMethodPayloadDto(all.Value!.FirstOrDefault(m => m.Id == input.Id), []);
+    }
+
+    public async Task<PaymentMethodPayloadDto> ActivatePaymentMethodAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ActivatePaymentMethodCommand(id), ct);
+        if (!result.IsSuccess) return new PaymentMethodPayloadDto(null, [result.Error.Description]);
+        var all = await mediator.Send(new GetAllPaymentMethodsQuery(), ct);
+        return new PaymentMethodPayloadDto(all.Value!.FirstOrDefault(m => m.Id == id), []);
+    }
+
+    public async Task<PaymentMethodPayloadDto> DeactivatePaymentMethodAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeactivatePaymentMethodCommand(id), ct);
+        if (!result.IsSuccess) return new PaymentMethodPayloadDto(null, [result.Error.Description]);
+        var all = await mediator.Send(new GetAllPaymentMethodsQuery(), ct);
+        return new PaymentMethodPayloadDto(all.Value!.FirstOrDefault(m => m.Id == id), []);
+    }
+
+    public async Task<PaymentMethodPayloadDto> DeletePaymentMethodAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeletePaymentMethodCommand(id), ct);
+        return result.IsSuccess
+            ? new PaymentMethodPayloadDto(null, [])
+            : new PaymentMethodPayloadDto(null, [result.Error.Description]);
     }
 }
 
@@ -161,7 +218,15 @@ public sealed record UpdateCouponInputGql(
     string? ValidTo,
     bool? IsActive);
 
+// Phase 6 – payment method input records
+public sealed record CreatePaymentMethodInputGql(
+    string Key, string LabelAr, string LabelEn, string? IconUrl, bool IsComingSoon, int SortOrder);
+
+public sealed record UpdatePaymentMethodInputGql(
+    Guid Id, string LabelAr, string LabelEn, string? IconUrl, bool IsComingSoon, int SortOrder);
+
 // ── GQL payload records ───────────────────────────────────────────────────────
 
 public sealed record PageBlockPayloadDto(PageBlockDto? PageBlock, IReadOnlyList<string> Errors);
 public sealed record CouponPayloadDto(CouponDto? Coupon, IReadOnlyList<string> Errors);
+public sealed record PaymentMethodPayloadDto(PaymentMethodDto? PaymentMethod, IReadOnlyList<string> Errors);

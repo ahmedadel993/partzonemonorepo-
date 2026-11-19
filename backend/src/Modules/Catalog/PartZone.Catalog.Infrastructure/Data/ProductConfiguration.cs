@@ -18,6 +18,11 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasIndex(p => p.OemNumber);
         builder.HasIndex(p => p.BrandId);
         builder.HasIndex(p => p.CategoryId);
+        // Phase 1 – indexes on display-flag columns for swiper queries
+        builder.HasIndex(p => p.IsFeatured);
+        builder.HasIndex(p => p.IsBestSeller);
+        builder.HasIndex(p => p.IsNew);
+        builder.HasIndex(p => p.IsOnSale);
         builder.Property(p => p.Condition).HasConversion<string>().HasMaxLength(20);
         builder.OwnsOne(p => p.Price, price =>
         {

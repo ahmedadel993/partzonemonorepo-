@@ -49,6 +49,12 @@ export const DEACTIVATE_PAGE_BLOCK = gql`
   }
 `;
 
+export const DELETE_PAGE_BLOCK = gql`
+  mutation DeletePageBlock($id: ID!) {
+    deletePageBlock(id: $id) { errors }
+  }
+`;
+
 export const REORDER_PAGE_BLOCKS = gql`
   ${PAGE_BLOCK_FRAGMENT}
   mutation ReorderPageBlocks($input: [ReorderItemInput!]!) {
@@ -86,5 +92,53 @@ export const DEACTIVATE_COUPON = gql`
   ${COUPON_FRAGMENT}
   mutation DeactivateCoupon($id: ID!) {
     deactivateCoupon(id: $id) { coupon { ...CouponFields } errors }
+  }
+`;
+
+// Phase 6 – payment methods
+export const PAYMENT_METHOD_FRAGMENT = gql`
+  fragment PaymentMethodFields on PaymentMethodType {
+    id key labelAr labelEn iconUrl isActive isComingSoon sortOrder
+  }
+`;
+
+export const GET_ALL_PAYMENT_METHODS = gql`
+  ${PAYMENT_METHOD_FRAGMENT}
+  query GetAllPaymentMethods {
+    paymentMethods(onlyActive: false) { ...PaymentMethodFields }
+  }
+`;
+
+export const CREATE_PAYMENT_METHOD = gql`
+  ${PAYMENT_METHOD_FRAGMENT}
+  mutation CreatePaymentMethod($input: CreatePaymentMethodInput!) {
+    createPaymentMethod(input: $input) { paymentMethod { ...PaymentMethodFields } errors }
+  }
+`;
+
+export const UPDATE_PAYMENT_METHOD = gql`
+  ${PAYMENT_METHOD_FRAGMENT}
+  mutation UpdatePaymentMethod($input: UpdatePaymentMethodInput!) {
+    updatePaymentMethod(input: $input) { paymentMethod { ...PaymentMethodFields } errors }
+  }
+`;
+
+export const ACTIVATE_PAYMENT_METHOD = gql`
+  ${PAYMENT_METHOD_FRAGMENT}
+  mutation ActivatePaymentMethod($id: ID!) {
+    activatePaymentMethod(id: $id) { paymentMethod { ...PaymentMethodFields } errors }
+  }
+`;
+
+export const DEACTIVATE_PAYMENT_METHOD = gql`
+  ${PAYMENT_METHOD_FRAGMENT}
+  mutation DeactivatePaymentMethod($id: ID!) {
+    deactivatePaymentMethod(id: $id) { paymentMethod { ...PaymentMethodFields } errors }
+  }
+`;
+
+export const DELETE_PAYMENT_METHOD = gql`
+  mutation DeletePaymentMethod($id: ID!) {
+    deletePaymentMethod(id: $id) { errors }
   }
 `;

@@ -63,6 +63,7 @@ internal static class CatalogEndpoints
     internal static async Task<IResult> GetProductsAsync(
         [AsParameters] ProductQueryParams p, IMediator mediator, CancellationToken ct)
     {
+        // Phase 3 – boolean display-flag filters wired from query string
         var filter = new ProductFilter
         {
             Q = p.Q,
@@ -70,6 +71,10 @@ internal static class CatalogEndpoints
             BrandId = p.BrandId,
             Condition = p.Condition,
             VehicleModelId = p.VehicleModelId,
+            IsFeatured   = p.IsFeatured,
+            IsBestSeller = p.IsBestSeller,
+            IsNew        = p.IsNew,
+            IsOnSale     = p.IsOnSale,
             Page = p.Page ?? 1,
             PageSize = p.PageSize ?? 20,
         };
@@ -137,7 +142,9 @@ internal sealed record CreateProductRequest(
     Guid BrandId, Guid CategoryId,
     IReadOnlyList<TranslationRequest> Translations);
 
+// Phase 3 – added boolean display-flag query params
 internal sealed record ProductQueryParams(
     string? Q, Guid? CategoryId, Guid? BrandId,
     string? Condition, Guid? VehicleModelId,
+    bool? IsFeatured, bool? IsBestSeller, bool? IsNew, bool? IsOnSale,
     int? Page, int? PageSize);

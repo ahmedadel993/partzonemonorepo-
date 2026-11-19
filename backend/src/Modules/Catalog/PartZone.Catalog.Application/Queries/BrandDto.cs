@@ -5,4 +5,7 @@ public sealed record BrandDto(
     string Name,
     string Slug,
     string? LogoUrl,
-    bool IsActive);
+    bool IsActive,
+    bool IsFeatured,
+    bool ShowInHome,
+    bool IsSponsored);

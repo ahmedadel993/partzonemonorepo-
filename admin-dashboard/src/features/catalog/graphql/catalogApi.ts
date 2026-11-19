@@ -5,12 +5,14 @@ import { gql } from "@apollo/client";
 export const BRAND_FIELDS = gql`
   fragment BrandFields on BrandType {
     id name slug logoUrl isActive
+    isFeatured showInHome isSponsored
   }
 `;
 
 export const CATEGORY_FIELDS = gql`
   fragment CategoryFields on CategoryType {
     id name slug imageUrl sortOrder parentId
+    isActive isFeatured showInHome showInMenu
     children { id name slug sortOrder }
   }
 `;
@@ -21,6 +23,7 @@ export const PRODUCT_SUMMARY_FIELDS = gql`
     priceAmount priceCurrency
     stock isPublished primaryImageUrl
     brandName categoryName brandId categoryId
+    isFeatured isBestSeller isNew isOnSale
   }
 `;
 
@@ -62,7 +65,57 @@ export const GET_PRODUCT_BY_SLUG = gql`
   query GetProductBySlug($slug: String!) {
     product(slug: $slug) {
       id slug description
+      images { id url altText isPrimary }
     }
+  }
+`;
+
+// Phase 4 – detail page queries (productById returns ProductDetailType, not ProductSummaryType)
+export const GET_PRODUCT_BY_ID = gql`
+  query GetProductById($id: ID!) {
+    productById(id: $id) {
+      id sku slug name condition
+      priceAmount priceCurrency
+      stock isPublished
+      isFeatured isBestSeller isNew isOnSale
+      brand { id name }
+      category { id name }
+      images { url isPrimary }
+    }
+  }
+`;
+
+export const GET_CATEGORY_BY_ID = gql`
+  ${CATEGORY_FIELDS}
+  query GetCategoryById($id: ID!) {
+    categoryById(id: $id) { ...CategoryFields }
+  }
+`;
+
+export const GET_BRAND_BY_ID = gql`
+  ${BRAND_FIELDS}
+  query GetBrandById($id: ID!) {
+    brandById(id: $id) { ...BrandFields }
+  }
+`;
+
+const PRODUCT_IMAGES_FIELDS = `product { id images { id url altText isPrimary } } errors`;
+
+export const ADD_PRODUCT_IMAGE = gql`
+  mutation AddProductImage($input: AddProductImageInput!) {
+    addProductImage(input: $input) { ${PRODUCT_IMAGES_FIELDS} }
+  }
+`;
+
+export const REMOVE_PRODUCT_IMAGE = gql`
+  mutation RemoveProductImage($productId: ID!, $imageId: ID!) {
+    removeProductImage(productId: $productId, imageId: $imageId) { ${PRODUCT_IMAGES_FIELDS} }
+  }
+`;
+
+export const SET_PRIMARY_PRODUCT_IMAGE = gql`
+  mutation SetPrimaryProductImage($productId: ID!, $imageId: ID!) {
+    setPrimaryProductImage(productId: $productId, imageId: $imageId) { ${PRODUCT_IMAGES_FIELDS} }
   }
 `;
 
@@ -188,6 +241,51 @@ export const UNPUBLISH_PRODUCT = gql`
   mutation UnpublishProduct($productId: ID!) {
     unpublishProduct(productId: $productId) {
       product { id isPublished }
+      errors
+    }
+  }
+`;
+
+// Phase 4 – brand activate/deactivate mutations
+export const ACTIVATE_BRAND = gql`
+  ${BRAND_FIELDS}
+  mutation ActivateBrand($brandId: ID!) {
+    activateBrand(brandId: $brandId) {
+      brand { ...BrandFields }
+      errors
+    }
+  }
+`;
+
+export const DEACTIVATE_BRAND = gql`
+  ${BRAND_FIELDS}
+  mutation DeactivateBrand($brandId: ID!) {
+    deactivateBrand(brandId: $brandId) {
+      brand { ...BrandFields }
+      errors
+    }
+  }
+`;
+
+export const DELETE_BRAND = gql`
+  mutation DeleteBrand($id: ID!) {
+    deleteBrand(id: $id) {
+      errors
+    }
+  }
+`;
+
+export const DELETE_CATEGORY = gql`
+  mutation DeleteCategory($id: ID!) {
+    deleteCategory(id: $id) {
+      errors
+    }
+  }
+`;
+
+export const DELETE_PRODUCT = gql`
+  mutation DeleteProduct($id: ID!) {
+    deleteProduct(id: $id) {
       errors
     }
   }

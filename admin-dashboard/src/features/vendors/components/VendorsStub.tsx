@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface VendorDto {
   id: string;
@@ -24,19 +25,18 @@ const STATUS_COLORS: Record<string, string> = {
   Suspended: "bg-danger/15 text-danger",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  Pending:   "معلّق الموافقة",
-  Approved:  "موافق عليه",
-  Suspended: "موقوف",
-};
-
-const TABS = ["الكل", "معلّق الموافقة", "موافق عليه", "موقوف"] as const;
-
 export default function VendorsStub() {
+  const { t } = useLanguage();
+  const STATUS_LABELS: Record<string, string> = {
+    Pending:   t("vendorStatusPending"),
+    Approved:  t("vendorStatusApproved"),
+    Suspended: t("vendorStatusSuspended"),
+  };
+  const TABS = [t("vendorFilterAll"), t("vendorStatusPending"), t("vendorStatusApproved"), t("vendorStatusSuspended")] as const;
   const [vendors, setVendors] = useState<VendorDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<typeof TABS[number]>("الكل");
+  const [activeTab, setActiveTab] = useState(t("vendorFilterAll"));
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const load = () => {
@@ -54,7 +54,7 @@ export default function VendorsStub() {
   useEffect(load, []);
 
   const filtered = vendors.filter((v) => {
-    if (activeTab === "الكل") return true;
+    if (activeTab === t("vendorFilterAll")) return true;
     return STATUS_LABELS[v.status] === activeTab;
   });
 
@@ -75,10 +75,10 @@ export default function VendorsStub() {
   };
 
   return (
-    <div dir="rtl">
+    <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-text">الموردون</h2>
-        <span className="text-sm text-text-muted">{vendors.length} مورّد</span>
+        <h2 className="text-lg font-semibold text-text">{t("vendorsHeading")}</h2>
+        <span className="text-sm text-text-muted">{vendors.length} {t("vendorCount")}</span>
       </div>
 
       {/* Tabs */}
@@ -100,7 +100,7 @@ export default function VendorsStub() {
       </div>
 
       {error && (
-        <p className="text-danger text-sm mb-4">خطأ: {error}</p>
+        <p className="text-danger text-sm mb-4">{t("vendorsError").replace("{error}", error)}</p>
       )}
 
       {loading ? (
@@ -113,12 +113,12 @@ export default function VendorsStub() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted text-right">
-              <th className="pb-3 font-medium pe-4">الشركة</th>
-              <th className="pb-3 font-medium pe-4">الرقم الضريبي</th>
-              <th className="pb-3 font-medium pe-4">الهاتف</th>
-              <th className="pb-3 font-medium pe-4">العمولة</th>
-              <th className="pb-3 font-medium pe-4">الحالة</th>
-              <th className="pb-3 font-medium">إجراءات</th>
+              <th className="pb-3 font-medium pe-4">{t("tableCompany")}</th>
+              <th className="pb-3 font-medium pe-4">{t("tableTaxId")}</th>
+              <th className="pb-3 font-medium pe-4">{t("tablePhone")}</th>
+              <th className="pb-3 font-medium pe-4">{t("tableCommission")}</th>
+              <th className="pb-3 font-medium pe-4">{t("tableVendorStatus")}</th>
+              <th className="pb-3 font-medium">{t("tableActions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -144,7 +144,7 @@ export default function VendorsStub() {
                         disabled={actionLoading === v.id + "approve"}
                         className="px-3 py-1 text-xs rounded bg-success/15 text-success hover:bg-success/25 transition-colors disabled:opacity-50"
                       >
-                        موافقة
+                        {t("actionApprove")}
                       </button>
                     )}
                     {v.status === "Approved" && (
@@ -153,7 +153,7 @@ export default function VendorsStub() {
                         disabled={actionLoading === v.id + "suspend"}
                         className="px-3 py-1 text-xs rounded bg-danger/15 text-danger hover:bg-danger/25 transition-colors disabled:opacity-50"
                       >
-                        تعليق
+                        {t("actionSuspend")}
                       </button>
                     )}
                     {v.status === "Suspended" && (
@@ -162,7 +162,7 @@ export default function VendorsStub() {
                         disabled={actionLoading === v.id + "approve"}
                         className="px-3 py-1 text-xs rounded bg-success/15 text-success hover:bg-success/25 transition-colors disabled:opacity-50"
                       >
-                        إعادة تفعيل
+                        {t("actionReactivate")}
                       </button>
                     )}
                   </div>
@@ -172,7 +172,7 @@ export default function VendorsStub() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-text-muted text-sm">
-                  لا يوجد موردون في هذه الفئة
+                  {t("noVendors")}
                 </td>
               </tr>
             )}

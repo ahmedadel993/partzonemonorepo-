@@ -30,4 +30,12 @@ public sealed class PageBlockTranslation : Entity<Guid>
             CtaText = ctaText,
             ConfigOverride = configOverride,
         };
+
+    internal void Update(string? title, string? subtitle, string? ctaText, string? configOverride)
+    {
+        Title = title;
+        Subtitle = subtitle;
+        CtaText = ctaText;
+        ConfigOverride = configOverride;
+    }
 }

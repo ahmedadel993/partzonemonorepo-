@@ -21,15 +21,19 @@ const layoutRoute = createRoute({
   ),
 });
 
-const DashboardPage  = lazy(() => import("@/features/dashboard/components/DashboardStub"));
-const LoginPage      = lazy(() => import("@/features/auth/components/LoginStub"));
-const CatalogPage    = lazy(() => import("@/features/catalog/components/CatalogPage"));
-const MarketingPage  = lazy(() => import("@/features/marketing/components/MarketingPage"));
-const OrdersPage     = lazy(() => import("@/features/orders/components/OrdersStub"));
-const UsersPage      = lazy(() => import("@/features/users/components/UsersStub"));
-const SettingsPage   = lazy(() => import("@/features/settings/components/SettingsStub"));
-const VendorsPage    = lazy(() => import("@/features/vendors/components/VendorsStub"));
-const ErpPage        = lazy(() => import("@/features/erp/components/ErpStub"));
+const DashboardPage       = lazy(() => import("@/features/dashboard/components/DashboardStub"));
+const LoginPage           = lazy(() => import("@/features/auth/components/LoginStub"));
+const CatalogPage         = lazy(() => import("@/features/catalog/components/CatalogPage"));
+const MarketingPage       = lazy(() => import("@/features/marketing/components/MarketingPage"));
+const OrdersPage          = lazy(() => import("@/features/orders/components/OrdersStub"));
+const UsersPage           = lazy(() => import("@/features/users/components/UsersStub"));
+const SettingsPage        = lazy(() => import("@/features/settings/components/SettingsStub"));
+const VendorsPage         = lazy(() => import("@/features/vendors/components/VendorsStub"));
+const ErpPage             = lazy(() => import("@/features/erp/components/ErpStub"));
+// Phase 4 – catalog detail pages
+const ProductDetailPage   = lazy(() => import("@/features/catalog/components/ProductDetailPage"));
+const CategoryDetailPage  = lazy(() => import("@/features/catalog/components/CategoryDetailPage"));
+const BrandDetailPage     = lazy(() => import("@/features/catalog/components/BrandDetailPage"));
 
 const wrap = (Component: React.LazyExoticComponent<() => JSX.Element>) => () => (
   <Suspense fallback={<div className="p-8 text-text-muted">Loading...</div>}>
@@ -46,24 +50,34 @@ const loginRoute    = createRoute({
   },
   component: wrap(LoginPage),
 });
-const indexRoute    = createRoute({ getParentRoute: () => layoutRoute, path: "/",         component: wrap(DashboardPage) });
-const catalogRoute  = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog",  component: wrap(CatalogPage) });
-const marketingRoute= createRoute({ getParentRoute: () => layoutRoute, path: "/marketing",component: wrap(MarketingPage) });
-const ordersRoute   = createRoute({ getParentRoute: () => layoutRoute, path: "/orders",   component: wrap(OrdersPage) });
-const usersRoute    = createRoute({ getParentRoute: () => layoutRoute, path: "/users",    component: wrap(UsersPage) });
-const settingsRoute = createRoute({ getParentRoute: () => layoutRoute, path: "/settings", component: wrap(SettingsPage) });
-const vendorsRoute  = createRoute({ getParentRoute: () => layoutRoute, path: "/vendors",  component: wrap(VendorsPage) });
-const erpRoute      = createRoute({ getParentRoute: () => layoutRoute, path: "/erp",      component: wrap(ErpPage) });
+const indexRoute          = createRoute({ getParentRoute: () => layoutRoute, path: "/",         component: wrap(DashboardPage) });
+const catalogRoute        = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog",  component: wrap(CatalogPage) });
+const marketingRoute      = createRoute({ getParentRoute: () => layoutRoute, path: "/marketing",component: wrap(MarketingPage) });
+const ordersRoute         = createRoute({ getParentRoute: () => layoutRoute, path: "/orders",   component: wrap(OrdersPage) });
+const usersRoute          = createRoute({ getParentRoute: () => layoutRoute, path: "/users",    component: wrap(UsersPage) });
+const settingsRoute       = createRoute({ getParentRoute: () => layoutRoute, path: "/settings", component: wrap(SettingsPage) });
+const vendorsRoute        = createRoute({ getParentRoute: () => layoutRoute, path: "/vendors",  component: wrap(VendorsPage) });
+const erpRoute            = createRoute({ getParentRoute: () => layoutRoute, path: "/erp",      component: wrap(ErpPage) });
+// Phase 4 – catalog detail routes
+const productDetailRoute  = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/products/$productId",  component: wrap(ProductDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
+const categoryDetailRoute = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/categories/$categoryId", component: wrap(CategoryDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
+const brandDetailRoute    = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/brands/$brandId",      component: wrap(BrandDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
   layoutRoute.addChildren([
     indexRoute, catalogRoute, marketingRoute, ordersRoute,
     usersRoute, settingsRoute, vendorsRoute, erpRoute,
+    productDetailRoute, categoryDetailRoute, brandDetailRoute,
   ]),
 ]);
 
-export const router = createRouter({ routeTree });
+// The app is served under Vite's `base` ("/admin/"), so routes must be
+// resolved relative to it — otherwise every page renders "Not Found".
+export const router = createRouter({
+  routeTree,
+  basepath: import.meta.env.BASE_URL.replace(/\/$/, "") || "/",
+});
 
 declare module "@tanstack/react-router" {
   interface Register { router: typeof router; }

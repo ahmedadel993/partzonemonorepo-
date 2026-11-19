@@ -6,9 +6,9 @@ import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CartIconButton } from "@/shared/ui/CartIconButton";
-import { CartDrawer } from "@/modules/cart/components/CartDrawer";
 import { VehiclePickerModal } from "@/shared/ui/VehiclePickerModal";
 import { useVehicleStore } from "@/shared/stores/useVehicleStore";
+import { LanguageSwitcher } from "@/shared/ui/LanguageSwitcher";
 
 export function Header() {
   const t = useTranslations("common");
@@ -53,7 +53,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={clearVehicle}
-                aria-label="مسح الاختيار"
+                aria-label={t("clearSelection")}
                 className="text-text-muted hover:text-danger transition-colors ms-1 text-base leading-none"
               >
                 ×
@@ -69,8 +69,11 @@ export function Header() {
             </button>
           )}
 
+          {/* Language switcher */}
+          <LanguageSwitcher />
+
           {/* Account icon */}
-          <Link href={`/${locale}/account`} aria-label="حسابي" className="text-text-muted hover:text-text transition-colors">
+          <Link href={`/${locale}/account`} aria-label={t("myAccount")} className="text-text-muted hover:text-text transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="4" />
               <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
@@ -81,7 +84,6 @@ export function Header() {
           <CartIconButton label={t("cart")} />
         </div>
       </header>
-      <CartDrawer />
       <VehiclePickerModal
         isOpen={isPickerOpen}
         onClose={() => setIsPickerOpen(false)}

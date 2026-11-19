@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -81,18 +82,18 @@ const STATUS_COLORS: Record<string, string> = {
   Cancelled: "bg-danger/15 text-danger",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  Pending:   "معلق",
-  Confirmed: "مؤكد",
-  Shipped:   "تم الشحن",
-  Delivered: "تم التسليم",
-  Cancelled: "ملغي",
-};
-
 // ── Orders list ───────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useLanguage();
   const color = STATUS_COLORS[status] ?? "bg-surface-alt text-text-muted";
+  const STATUS_LABELS: Record<string, string> = {
+    Pending:   t("statusPending"),
+    Confirmed: t("statusConfirmed"),
+    Shipped:   t("statusShipped"),
+    Delivered: t("statusDelivered"),
+    Cancelled: t("statusCancelled"),
+  };
   const label = STATUS_LABELS[status] ?? status;
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${color}`}>
@@ -112,6 +113,14 @@ function OrderDetailModal({
   onClose: () => void;
   onStatusChanged: () => void;
 }) {
+  const { t, dir, lang } = useLanguage();
+  const STATUS_LABELS: Record<string, string> = {
+    Pending:   t("statusPending"),
+    Confirmed: t("statusConfirmed"),
+    Shipped:   t("statusShipped"),
+    Delivered: t("statusDelivered"),
+    Cancelled: t("statusCancelled"),
+  };
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,25 +150,25 @@ function OrderDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" dir="rtl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" dir={dir}>
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative bg-surface border border-border rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
         <div className="flex items-center justify-between p-5 border-b border-border">
           <h2 className="text-base font-semibold text-text">
-            {order ? `طلب ${order.orderNumber}` : "تفاصيل الطلب"}
+            {order ? `${t("tableOrderNumber")} ${order.orderNumber}` : t("orderDetailTitle")}
           </h2>
           <button onClick={onClose} className="text-text-muted hover:text-text transition-colors text-lg leading-none">✕</button>
         </div>
 
         <div className="p-5">
-          {loading && <p className="text-sm text-text-muted text-center py-8">جاري التحميل...</p>}
+          {loading && <p className="text-sm text-text-muted text-center py-8">{t("orderLoading")}</p>}
           {error && <p className="text-sm text-danger bg-danger/10 rounded px-3 py-2">{error}</p>}
 
           {order && (
             <div className="space-y-5">
               {/* Status update */}
               <div className="flex items-center gap-3 p-4 bg-surface-alt rounded-lg border border-border">
-                <span className="text-sm text-text-muted shrink-0">الحالة:</span>
+                <span className="text-sm text-text-muted shrink-0">{t("orderStatusLabel")}</span>
                 <StatusBadge status={order.status} />
                 <select
                   value={selectedStatus}
@@ -175,33 +184,33 @@ function OrderDetailModal({
                   disabled={updating || selectedStatus === order.status}
                   className="h-9 px-4 bg-accent text-accent-fg text-sm font-medium rounded hover:bg-accent-hover transition-colors disabled:opacity-50 shrink-0"
                 >
-                  {updating ? "..." : "تحديث"}
+                  {updating ? "..." : t("orderUpdate")}
                 </button>
               </div>
 
               {/* Totals */}
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="p-3 bg-surface-alt rounded-lg border border-border space-y-1">
-                  <p className="text-text-muted text-xs">رقم الطلب</p>
+                  <p className="text-text-muted text-xs">{t("orderNumberLabel")}</p>
                   <p className="text-text font-mono font-medium" dir="ltr">{order.orderNumber}</p>
                 </div>
                 <div className="p-3 bg-surface-alt rounded-lg border border-border space-y-1">
-                  <p className="text-text-muted text-xs">تاريخ الطلب</p>
-                  <p className="text-text font-medium" dir="ltr">{new Date(order.placedAt).toLocaleDateString("ar-EG")}</p>
+                  <p className="text-text-muted text-xs">{t("orderDateLabel")}</p>
+                  <p className="text-text font-medium" dir="ltr">{new Date(order.placedAt).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB")}</p>
                 </div>
                 <div className="p-3 bg-surface-alt rounded-lg border border-border space-y-1">
-                  <p className="text-text-muted text-xs">المجموع الفرعي</p>
-                  <p className="text-text font-medium" dir="ltr">{order.subTotal.toFixed(2)} ج.م</p>
+                  <p className="text-text-muted text-xs">{t("orderSubtotal")}</p>
+                  <p className="text-text font-medium" dir="ltr">{order.subTotal.toFixed(2)} {t("currency")}</p>
                 </div>
                 <div className="p-3 bg-surface-alt rounded-lg border border-border space-y-1">
-                  <p className="text-text-muted text-xs">الإجمالي</p>
-                  <p className="text-accent font-semibold" dir="ltr">{order.total.toFixed(2)} ج.م</p>
+                  <p className="text-text-muted text-xs">{t("orderTotal")}</p>
+                  <p className="text-accent font-semibold" dir="ltr">{order.total.toFixed(2)} {t("currency")}</p>
                 </div>
               </div>
 
               {/* Shipping address */}
               <div className="p-4 bg-surface-alt rounded-lg border border-border space-y-1 text-sm">
-                <p className="text-text-muted text-xs font-medium mb-2">عنوان الشحن</p>
+                <p className="text-text-muted text-xs font-medium mb-2">{t("orderShipping")}</p>
                 <p className="text-text font-medium">{order.shippingFullName}</p>
                 <p className="text-text-muted">{order.shippingPhone}</p>
                 <p className="text-text-muted">{order.shippingAddressLine1}
@@ -211,7 +220,7 @@ function OrderDetailModal({
 
               {/* Items */}
               <div>
-                <p className="text-xs font-medium text-text-muted mb-2">منتجات الطلب ({order.items.length})</p>
+                <p className="text-xs font-medium text-text-muted mb-2">{t("orderItemsCount").replace("{count}", String(order.items.length))}</p>
                 <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
                   {order.items.map((item) => (
                     <div key={item.id} className="flex items-center gap-3 p-3 bg-surface-alt">
@@ -223,7 +232,7 @@ function OrderDetailModal({
                         <p className="text-sm font-medium text-text line-clamp-1">{item.name}</p>
                         <p className="text-xs text-text-muted font-mono" dir="ltr">{item.sku} × {item.quantity}</p>
                       </div>
-                      <span className="text-sm font-semibold text-text shrink-0" dir="ltr">{item.subTotal.toFixed(2)} ج.م</span>
+                      <span className="text-sm font-semibold text-text shrink-0" dir="ltr">{item.subTotal.toFixed(2)} {t("currency")}</span>
                     </div>
                   ))}
                 </div>
@@ -231,7 +240,7 @@ function OrderDetailModal({
 
               {order.notes && (
                 <div className="p-3 bg-surface-alt rounded-lg border border-border text-sm">
-                  <p className="text-text-muted text-xs mb-1">ملاحظات</p>
+                  <p className="text-text-muted text-xs mb-1">{t("orderNotes")}</p>
                   <p className="text-text">{order.notes}</p>
                 </div>
               )}
@@ -246,6 +255,14 @@ function OrderDetailModal({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
+  const { t, lang } = useLanguage();
+  const STATUS_LABELS: Record<string, string> = {
+    Pending:   t("statusPending"),
+    Confirmed: t("statusConfirmed"),
+    Shipped:   t("statusShipped"),
+    Delivered: t("statusDelivered"),
+    Cancelled: t("statusCancelled"),
+  };
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -267,31 +284,31 @@ export default function OrdersPage() {
     : orders.filter((o) => o.status === statusFilter);
 
   return (
-    <div className="space-y-5" dir="rtl">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-text">الطلبات</h1>
+        <h1 className="text-xl font-semibold text-text">{t("ordersHeading")}</h1>
         <button
           onClick={load}
           className="h-8 px-3 text-xs border border-border rounded text-text-muted hover:text-text hover:bg-surface-alt transition-colors"
         >
-          تحديث
+          {t("ordersRefresh")}
         </button>
       </div>
 
       {/* Status filter tabs */}
       <div className="flex gap-1 border-b border-border">
-        {[{ id: "all", label: "الكل" }, ...ORDER_STATUSES.map((s) => ({ id: s, label: STATUS_LABELS[s] ?? s }))].map((t) => (
+        {[{ id: "all", label: t("ordersFilterAll") }, ...ORDER_STATUSES.map((s) => ({ id: s, label: STATUS_LABELS[s] ?? s }))].map((tab) => (
           <button
-            key={t.id}
-            onClick={() => setStatusFilter(t.id)}
+            key={tab.id}
+            onClick={() => setStatusFilter(tab.id)}
             className={[
               "px-3 py-2 text-sm font-medium transition-colors -mb-px border-b-2",
-              statusFilter === t.id
+              statusFilter === tab.id
                 ? "border-accent text-accent"
                 : "border-transparent text-text-muted hover:text-text",
             ].join(" ")}
           >
-            {t.label}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -308,18 +325,18 @@ export default function OrdersPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex items-center justify-center h-48 text-text-muted text-sm rounded-lg border border-dashed border-border">
-          لا توجد طلبات
+          {t("ordersEmpty")}
         </div>
       ) : (
         <div className="border border-border rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-surface-alt border-b border-border">
               <tr>
-                <th className="text-right font-medium text-text-muted px-4 py-3">رقم الطلب</th>
-                <th className="text-right font-medium text-text-muted px-4 py-3">الحالة</th>
-                <th className="text-right font-medium text-text-muted px-4 py-3">المنتجات</th>
-                <th className="text-right font-medium text-text-muted px-4 py-3">الإجمالي</th>
-                <th className="text-right font-medium text-text-muted px-4 py-3">التاريخ</th>
+                <th className="text-right font-medium text-text-muted px-4 py-3">{t("tableOrderNumber")}</th>
+                <th className="text-right font-medium text-text-muted px-4 py-3">{t("tableStatus")}</th>
+                <th className="text-right font-medium text-text-muted px-4 py-3">{t("tableProducts")}</th>
+                <th className="text-right font-medium text-text-muted px-4 py-3">{t("tableTotal")}</th>
+                <th className="text-right font-medium text-text-muted px-4 py-3">{t("tableDate")}</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -334,7 +351,7 @@ export default function OrdersPage() {
                   </td>
                   <td className="px-4 py-3 text-text-muted">{order.itemCount}</td>
                   <td className="px-4 py-3">
-                    <span className="font-semibold text-text" dir="ltr">{order.total.toFixed(2)} ج.م</span>
+                    <span className="font-semibold text-text" dir="ltr">{order.total.toFixed(2)} {t("currency")}</span>
                   </td>
                   <td className="px-4 py-3 text-text-muted" dir="ltr">
                     {new Date(order.placedAt).toLocaleDateString("ar-EG")}
@@ -344,7 +361,7 @@ export default function OrdersPage() {
                       onClick={() => setSelectedOrderId(order.id)}
                       className="text-xs text-accent hover:underline"
                     >
-                      عرض
+                      {t("rowView")}
                     </button>
                   </td>
                 </tr>

@@ -1,11 +1,14 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useCartStore } from "@/shared/stores/useCartStore";
 import { updateCartItemQty, removeFromCart } from "@/modules/cart/actions/cartActions";
 import type { CartItem } from "@/modules/cart/types";
 
 export function CartItemRow({ item }: { item: CartItem }) {
+  const t = useTranslations("cart");
+  const tCommon = useTranslations("common");
   const { cart, setCart } = useCartStore();
   const [isPending, startTransition] = useTransition();
 
@@ -55,11 +58,11 @@ export function CartItemRow({ item }: { item: CartItem }) {
             <button onClick={() => handleQtyChange(1)} className="w-7 h-7 rounded border border-border text-text hover:bg-surface-alt transition-colors text-sm">+</button>
           </div>
           <span className="text-sm font-semibold text-accent" dir="ltr">
-            {item.subTotal.toFixed(2)} ج.م
+            {item.subTotal.toFixed(2)} {tCommon("currency")}
           </span>
         </div>
       </div>
-      <button onClick={handleRemove} aria-label="حذف" className="text-text-muted hover:text-danger transition-colors text-lg leading-none self-start shrink-0 p-1">
+      <button onClick={handleRemove} aria-label={t("removeAriaLabel")} className="text-text-muted hover:text-danger transition-colors text-lg leading-none self-start shrink-0 p-1">
         ✕
       </button>
     </div>

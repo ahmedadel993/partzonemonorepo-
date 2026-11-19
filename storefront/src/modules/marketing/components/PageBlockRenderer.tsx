@@ -1,6 +1,6 @@
 import { getActivePageBlocks } from "../actions/marketingActions";
 import { getCategories, getProducts, getVehicleMakes } from "@/modules/catalog/actions/catalogActions";
-import type { ActivePageBlock } from "../types";
+import type { ActivePageBlock, PageBlockType } from "../types";
 import { HeroBlock } from "./HeroBlock";
 import { VehicleStripBlock } from "./VehicleStripBlock";
 import { CategoryGridBlock } from "./CategoryGridBlock";
@@ -10,9 +10,11 @@ import { BannerDoubleBlock } from "./BannerDoubleBlock";
 
 interface Props {
   locale: string;
+  types?: PageBlockType[];
+  exclude?: PageBlockType[];
 }
 
-export async function PageBlockRenderer({ locale }: Props) {
+export async function PageBlockRenderer({ locale, types, exclude }: Props) {
   const [blocks, makes, categories, productsResult] = await Promise.all([
     getActivePageBlocks(),
     getVehicleMakes(),
@@ -20,17 +22,27 @@ export async function PageBlockRenderer({ locale }: Props) {
     getProducts({ page: 1, pageSize: 10 }),
   ]);
 
-  if (blocks.length === 0) {
-    return (
-      <section className="py-12 text-center">
-        <p className="text-text-muted text-sm">لا توجد محتويات للصفحة الرئيسية حالياً</p>
-      </section>
-    );
+  let visibleBlocks = blocks;
+  if (types) {
+    visibleBlocks = visibleBlocks.filter((b) => types.includes(b.type));
+  } else if (exclude) {
+    visibleBlocks = visibleBlocks.filter((b) => !exclude.includes(b.type));
+  }
+
+  if (visibleBlocks.length === 0) {
+    if (!types && !exclude) {
+      return (
+        <section className="py-12 text-center">
+          <p className="text-text-muted text-sm">لا توجد محتويات للصفحة الرئيسية حالياً</p>
+        </section>
+      );
+    }
+    return null;
   }
 
   return (
     <>
-      {blocks.map((block) => (
+      {visibleBlocks.map((block) => (
         <BlockSwitch
           key={block.id}
           block={block}

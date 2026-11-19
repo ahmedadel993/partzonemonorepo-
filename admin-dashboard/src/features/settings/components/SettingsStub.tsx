@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const API = import.meta.env.VITE_API_URL ?? "/api/v1";
 
@@ -7,18 +8,18 @@ function authHeaders(): HeadersInit {
   return token ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } : {};
 }
 
-const FIELDS: { key: string; label: string; type: string; maxLength?: number }[] = [
-  { key: "store_name",          label: "اسم المتجر",                  type: "text" },
-  { key: "store_email",         label: "البريد الإلكتروني للمتجر",    type: "email" },
-  { key: "store_phone",         label: "رقم الهاتف",                  type: "tel" },
-  { key: "shipping_threshold",  label: "حد الشحن المجاني (ج.م)",      type: "number" },
-  { key: "currency",            label: "رمز العملة",                  type: "text", maxLength: 3 },
-];
-
 const inputCls =
   "w-full bg-surface-alt border border-border rounded-md px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors";
 
 export default function SettingsStub() {
+  const { t } = useLanguage();
+  const FIELDS: { key: string; label: string; type: string; maxLength?: number }[] = [
+    { key: "store_name",          label: t("fieldStoreName"),          type: "text" },
+    { key: "store_email",         label: t("fieldStoreEmail"),         type: "email" },
+    { key: "store_phone",         label: t("fieldPhone"),              type: "tel" },
+    { key: "shipping_threshold",  label: t("fieldShippingThreshold"),  type: "number" },
+    { key: "currency",            label: t("fieldCurrencyCode"),       type: "text", maxLength: 3 },
+  ];
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -43,12 +44,12 @@ export default function SettingsStub() {
         body: JSON.stringify(values),
       });
       if (r.ok) {
-        setFeedback({ ok: true, msg: "تم حفظ الإعدادات بنجاح" });
+        setFeedback({ ok: true, msg: t("saveFeedbackOk") });
       } else {
-        setFeedback({ ok: false, msg: `خطأ ${r.status}` });
+        setFeedback({ ok: false, msg: t("saveFeedbackError").replace("{status}", String(r.status)) });
       }
     } catch {
-      setFeedback({ ok: false, msg: "تعذّر الاتصال بالخادم" });
+      setFeedback({ ok: false, msg: t("saveFeedbackNetwork") });
     } finally {
       setSaving(false);
     }
@@ -62,8 +63,8 @@ export default function SettingsStub() {
     );
 
   return (
-    <form onSubmit={handleSave} className="max-w-lg" dir="rtl">
-      <h2 className="text-lg font-semibold text-text mb-6">إعدادات المتجر</h2>
+    <form onSubmit={handleSave} className="max-w-lg">
+      <h2 className="text-lg font-semibold text-text mb-6">{t("settingsHeading")}</h2>
 
       {FIELDS.map(({ key, label, type, maxLength }) => (
         <div key={key} className="mb-4">
@@ -93,7 +94,7 @@ export default function SettingsStub() {
         disabled={saving}
         className="bg-accent hover:bg-accent-hover text-accent-fg text-sm font-medium px-6 py-2 rounded transition-colors disabled:opacity-60"
       >
-        {saving ? "جارٍ الحفظ…" : "حفظ الإعدادات"}
+        {saving ? t("saveSettingsSubmitting") : t("saveSettings")}
       </button>
     </form>
   );

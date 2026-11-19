@@ -13,4 +13,10 @@ public sealed class ProductTranslation : Entity<Guid>
 
     public static ProductTranslation Create(Guid productId, string locale, string name, string? description) =>
         new() { Id = Guid.NewGuid(), ProductId = productId, Locale = locale, Name = name, Description = description };
+
+    internal void Update(string name, string? description)
+    {
+        Name = name;
+        Description = description;
+    }
 }

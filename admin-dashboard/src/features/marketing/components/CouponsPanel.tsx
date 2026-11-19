@@ -9,18 +9,20 @@ import {
 import type { Coupon } from "../types/marketing.types";
 import type { CouponFormValues } from "../schemas/marketing.schemas";
 import { CouponForm } from "./CouponForm";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function Drawer({ open, title, onClose, children }: {
   open: boolean; title: string; onClose: () => void; children: React.ReactNode;
 }) {
+  const { dir } = useLanguage();
   return (
     <>
       {open && <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />}
       <div className={[
         "fixed top-0 end-0 h-full w-full max-w-lg bg-surface border-s border-border z-50",
         "transition-transform duration-300 overflow-y-auto",
-        open ? "translate-x-0" : "translate-x-full",
-      ].join(" ")} dir="rtl">
+        open ? "translate-x-0" : "translate-x-full rtl:-translate-x-full invisible",
+      ].join(" ")} dir={dir}>
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="font-semibold text-text">{title}</h3>
           <button onClick={onClose} className="text-text-muted hover:text-text">✕</button>
@@ -32,6 +34,7 @@ function Drawer({ open, title, onClose, children }: {
 }
 
 export function CouponsPanel() {
+  const { t, dir } = useLanguage();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Coupon | null>(null);
 
@@ -84,33 +87,33 @@ export function CouponsPanel() {
   };
 
   return (
-    <div className="space-y-4" dir="rtl">
+    <div className="space-y-4" dir={dir}>
       <div className="flex items-center justify-between">
-        <h3 className="font-medium text-text">كوبونات الخصم</h3>
+        <h3 className="font-medium text-text">{t("couponsHeading")}</h3>
         <button
           onClick={openCreate}
           className="px-3 py-1.5 bg-accent text-accent-fg text-sm font-medium rounded hover:bg-accent-hover transition-colors"
         >
-          + إضافة كوبون
+          {t("addCoupon")}
         </button>
       </div>
 
-      {loading && <p className="text-text-muted text-sm">جاري التحميل...</p>}
+      {loading && <p className="text-text-muted text-sm">{t("couponsLoading")}</p>}
 
       {!loading && coupons.length === 0 && (
-        <p className="text-text-muted text-sm text-center py-8">لا توجد كوبونات حالياً</p>
+        <p className="text-text-muted text-sm text-center py-8">{t("couponsEmpty")}</p>
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm" dir="rtl">
+        <table className="w-full text-sm" dir={dir}>
           <thead>
             <tr className="border-b border-border text-text-muted text-xs">
-              <th className="py-2 px-3 text-start">الكود</th>
-              <th className="py-2 px-3 text-start">النوع</th>
-              <th className="py-2 px-3 text-start">القيمة</th>
-              <th className="py-2 px-3 text-start">الاستخدام</th>
-              <th className="py-2 px-3 text-start">الصلاحية</th>
-              <th className="py-2 px-3 text-start">الحالة</th>
+              <th className="py-2 px-3 text-start">{t("tableCode")}</th>
+              <th className="py-2 px-3 text-start">{t("tableType")}</th>
+              <th className="py-2 px-3 text-start">{t("tableValue")}</th>
+              <th className="py-2 px-3 text-start">{t("tableUsage")}</th>
+              <th className="py-2 px-3 text-start">{t("tableValidity")}</th>
+              <th className="py-2 px-3 text-start">{t("tableCouponStatus")}</th>
               <th className="py-2 px-3"></th>
             </tr>
           </thead>
@@ -119,28 +122,28 @@ export function CouponsPanel() {
               <tr key={c.id} className="border-b border-border/50 hover:bg-surface-alt/50">
                 <td className="py-2 px-3 font-mono text-accent">{c.code}</td>
                 <td className="py-2 px-3 text-text-muted">
-                  {c.discountType === "Percentage" ? "%" : "ج.م"}
+                  {c.discountType === "Percentage" ? t("discTypePercent") : t("discTypeFixed")}
                 </td>
                 <td className="py-2 px-3 text-text">{c.value}</td>
                 <td className="py-2 px-3 text-text-muted">
                   {c.usedCount}{c.usageLimit > 0 ? `/${c.usageLimit}` : ""}
                 </td>
-                <td className="py-2 px-3 text-text-muted text-xs">
+                <td className="py-2 px-3 text-text-muted text-xs" dir="ltr">
                   {c.validFrom.slice(0, 10)} → {c.validTo.slice(0, 10)}
                 </td>
                 <td className="py-2 px-3">
                   <span className={`px-2 py-0.5 rounded text-xs ${c.isActive ? "bg-success/20 text-success" : "bg-surface-alt text-text-muted"}`}>
-                    {c.isActive ? "مفعّل" : "معطّل"}
+                    {c.isActive ? t("couponActive") : t("couponInactive")}
                   </span>
                 </td>
                 <td className="py-2 px-3 flex gap-2 justify-end">
-                  <button onClick={() => openEdit(c)} className="text-xs text-accent hover:underline">تعديل</button>
+                  <button onClick={() => openEdit(c)} className="text-xs text-accent hover:underline">{t("actionEdit")}</button>
                   {c.isActive && (
                     <button
                       onClick={async () => { await deactivateCoupon({ variables: { id: c.id } }); refetch(); }}
                       className="text-xs text-danger hover:underline"
                     >
-                      تعطيل
+                      {t("actionDisable")}
                     </button>
                   )}
                 </td>
@@ -152,10 +155,12 @@ export function CouponsPanel() {
 
       <Drawer
         open={drawerOpen}
-        title={editing ? "تعديل كوبون" : "إضافة كوبون جديد"}
+        title={editing ? t("drawerEditCoupon") : t("drawerNewCoupon")}
         onClose={closeDrawer}
       >
         <CouponForm
+          // Remount per item so the form picks up the right defaults.
+          key={drawerOpen ? (editing?.id ?? "new") : "closed"}
           initial={editing ?? undefined}
           onSubmit={handleSubmit}
           loading={creating || updating}

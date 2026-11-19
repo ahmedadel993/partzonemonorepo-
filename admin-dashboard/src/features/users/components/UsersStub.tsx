@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserAdmin {
   id: string;
@@ -26,6 +27,7 @@ const ROLE_COLORS: Record<string, string> = {
 const ROLES = ["Customer", "Vendor", "ContentManager", "Admin"];
 
 export default function UsersStub() {
+  const { t } = useLanguage();
   const [users, setUsers] = useState<UserAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,19 +75,19 @@ export default function UsersStub() {
   };
 
   return (
-    <div dir="rtl">
+    <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-text">المستخدمون</h2>
+        <h2 className="text-lg font-semibold text-text">{t("usersHeading")}</h2>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="بحث بالاسم أو البريد…"
+          placeholder={t("usersSearchPlaceholder")}
           className="bg-surface-alt border border-border rounded-md px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors w-64"
         />
       </div>
 
       {error && (
-        <p className="text-danger text-sm mb-4">خطأ: {error}</p>
+        <p className="text-danger text-sm mb-4">{t("usersError").replace("{error}", error)}</p>
       )}
 
       {loading ? (
@@ -98,11 +100,11 @@ export default function UsersStub() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted text-right">
-              <th className="pb-3 font-medium pe-4">البريد الإلكتروني</th>
-              <th className="pb-3 font-medium pe-4">الاسم</th>
-              <th className="pb-3 font-medium pe-4">الدور</th>
-              <th className="pb-3 font-medium pe-4">تغيير الدور</th>
-              <th className="pb-3 font-medium">تاريخ التسجيل</th>
+              <th className="pb-3 font-medium pe-4">{t("tableEmail")}</th>
+              <th className="pb-3 font-medium pe-4">{t("tableFullName")}</th>
+              <th className="pb-3 font-medium pe-4">{t("tableRole")}</th>
+              <th className="pb-3 font-medium pe-4">{t("tableChangeRole")}</th>
+              <th className="pb-3 font-medium">{t("tableRegDate")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -138,7 +140,7 @@ export default function UsersStub() {
                       ))}
                     </select>
                     {changingRole === u.id && (
-                      <span className="text-xs text-text-muted">جارٍ…</span>
+                      <span className="text-xs text-text-muted">{t("roleUpdating")}</span>
                     )}
                   </div>
                 </td>
@@ -150,7 +152,7 @@ export default function UsersStub() {
             {filtered.length === 0 && !loading && (
               <tr>
                 <td colSpan={5} className="py-8 text-center text-text-muted text-sm">
-                  لا توجد نتائج
+                  {t("noUsers")}
                 </td>
               </tr>
             )}

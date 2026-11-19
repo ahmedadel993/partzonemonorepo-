@@ -5,7 +5,14 @@ using PartZone.Shared.Kernel.Results;
 
 namespace PartZone.Catalog.Application.Commands;
 
-public sealed record UpdateBrandCommand(Guid Id, string Name, string? LogoUrl) : ICommand;
+// Phase 1 – Added IsFeatured, ShowInHome, IsSponsored flags
+public sealed record UpdateBrandCommand(
+    Guid Id,
+    string Name,
+    string? LogoUrl,
+    bool? IsFeatured = null,
+    bool? ShowInHome = null,
+    bool? IsSponsored = null) : ICommand;
 
 public sealed class UpdateBrandValidator : AbstractValidator<UpdateBrandCommand>
 {
@@ -24,7 +31,12 @@ internal sealed class UpdateBrandHandler(ICatalogWriteRepository write, ICatalog
         var brand = await read.GetBrandByIdAsync(request.Id, ct);
         if (brand is null) return Result.Failure(Error.NotFound("Brand.NotFound", $"Brand {request.Id} not found."));
 
-        brand.Update(request.Name, request.LogoUrl);
+        brand.Update(
+            request.Name,
+            request.LogoUrl,
+            request.IsFeatured  ?? brand.IsFeatured,
+            request.ShowInHome  ?? brand.ShowInHome,
+            request.IsSponsored ?? brand.IsSponsored);
         write.UpdateBrand(brand);
         await write.SaveChangesAsync(ct);
         return Result.Success();

@@ -2,97 +2,19 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Link } from "@tanstack/react-router";
 import {
   GET_BRANDS,
   CREATE_BRAND,
   UPDATE_BRAND,
+  DELETE_BRAND,
 } from "../graphql/catalogApi";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-interface Brand {
-  id: string;
-  name: string;
-  slug: string;
-  logoUrl: string | null;
-  isActive: boolean;
-}
-
-// ── Schema ────────────────────────────────────────────────────────────────────
-
-const brandSchema = z.object({
-  name: z.string().min(1, "مطلوب").max(200),
-  slug: z.string().min(1, "مطلوب").max(200).regex(/^[a-z0-9-]+$/, "lowercase, أرقام، شرطات فقط"),
-  logoUrl: z.string().url("رابط غير صالح").nullish().or(z.literal("")),
-});
-type BrandForm = z.infer<typeof brandSchema>;
-
-// ── Components ────────────────────────────────────────────────────────────────
-
-function Drawer({
-  open,
-  title,
-  onClose,
-  children,
-}: {
-  open: boolean;
-  title: string;
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 transition-opacity"
-          onClick={onClose}
-        />
-      )}
-      <aside
-        className={[
-          "fixed top-0 end-0 h-full w-96 bg-surface border-s border-border z-50",
-          "transition-transform duration-300",
-          open ? "translate-x-0" : "translate-x-full rtl:-translate-x-full",
-        ].join(" ")}
-      >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-border">
-          <h2 className="font-semibold text-text">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-text-muted hover:text-text transition-colors text-xl leading-none"
-          >
-            ×
-          </button>
-        </div>
-        <div className="p-6 overflow-y-auto h-[calc(100%-4rem)]">{children}</div>
-      </aside>
-    </>
-  );
-}
-
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mb-4">
-      <label className="block text-sm text-text-muted mb-1">{label}</label>
-      {children}
-      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
-    </div>
-  );
-}
-
-const inputCls =
-  "w-full bg-surface-alt border border-border rounded-md px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors";
-
-// ── BrandForm ─────────────────────────────────────────────────────────────────
+import { Brand } from "../brands/types";
+import { brandSchema, BrandForm } from "../brands/validation";
+import { Drawer } from "../shared/Drawer";
+import { Field } from "../shared/Field";
+import { inputCls } from "../shared/styles";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function BrandFormDrawer({
   editing,
@@ -103,6 +25,7 @@ function BrandFormDrawer({
   onClose: () => void;
   onDone: () => void;
 }) {
+  const { t, dir } = useLanguage();
   const isEdit = editing !== null;
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -148,11 +71,11 @@ function BrandFormDrawer({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir="rtl">
-      <Field label="الاسم" error={errors.name?.message}>
-        <input {...register("name")} className={inputCls} placeholder="تويوتا" />
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir={dir}>
+      <Field label={t("fieldName")} error={errors.name?.message}>
+        <input {...register("name")} className={inputCls} placeholder={t("brandNamePlaceholder")} />
       </Field>
-      <Field label="الـ Slug" error={errors.slug?.message}>
+      <Field label={t("fieldSlug")} error={errors.slug?.message}>
         <input
           {...register("slug")}
           className={inputCls}
@@ -161,7 +84,7 @@ function BrandFormDrawer({
           dir="ltr"
         />
       </Field>
-      <Field label="رابط الشعار (اختياري)" error={errors.logoUrl?.message}>
+      <Field label={t("fieldLogoUrl")} error={errors.logoUrl?.message}>
         <input {...register("logoUrl")} className={inputCls} placeholder="https://…" dir="ltr" />
       </Field>
       {serverError && (
@@ -173,26 +96,26 @@ function BrandFormDrawer({
           disabled={isSubmitting}
           className="flex-1 bg-accent hover:bg-accent-hover text-accent-fg text-sm font-medium px-4 py-2 rounded transition-colors disabled:opacity-60"
         >
-          {isSubmitting ? "جارٍ الحفظ…" : isEdit ? "حفظ التعديلات" : "إضافة"}
+          {isSubmitting ? t("saving") : isEdit ? t("saveEdits") : t("add")}
         </button>
         <button
           type="button"
           onClick={onClose}
           className="px-4 py-2 text-sm text-text-muted hover:text-text border border-border rounded transition-colors"
         >
-          إلغاء
+          {t("cancel")}
         </button>
       </div>
     </form>
   );
 }
 
-// ── Main panel ────────────────────────────────────────────────────────────────
-
 export function BrandsPanel() {
+  const { t, dir } = useLanguage();
   const { data, loading, error } = useQuery(GET_BRANDS);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Brand | null>(null);
+  const [deleteBrand] = useMutation(DELETE_BRAND, { refetchQueries: [{ query: GET_BRANDS }] });
 
   const brands: Brand[] = data?.brands ?? [];
 
@@ -206,20 +129,25 @@ export function BrandsPanel() {
   };
   const closeDrawer = () => setDrawerOpen(false);
 
+  const handleDelete = async (id: string) => {
+    if (!confirm(t("deleteConfirmBrand"))) return;
+    await deleteBrand({ variables: { id } });
+  };
+
   if (error)
     return (
-      <p className="text-danger text-sm">خطأ في تحميل الماركات: {error.message}</p>
+      <p className="text-danger text-sm">{t("errorLoadBrands")}: {error.message}</p>
     );
 
   return (
-    <div dir="rtl">
+    <div dir={dir}>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-text">الماركات</h2>
+        <h2 className="text-lg font-semibold text-text">{t("brandsHeading")}</h2>
         <button
           onClick={openCreate}
           className="bg-accent hover:bg-accent-hover text-accent-fg text-sm font-medium px-4 py-2 rounded transition-colors"
         >
-          + إضافة ماركة
+          {t("addBrand")}
         </button>
       </div>
 
@@ -233,9 +161,9 @@ export function BrandsPanel() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted text-right">
-              <th className="pb-3 font-medium pe-4">الاسم</th>
+              <th className="pb-3 font-medium pe-4">{t("fieldName")}</th>
               <th className="pb-3 font-medium pe-4">Slug</th>
-              <th className="pb-3 font-medium pe-4">الحالة</th>
+              <th className="pb-3 font-medium pe-4">{t("tableColStatus")}</th>
               <th className="pb-3" />
             </tr>
           </thead>
@@ -266,16 +194,31 @@ export function BrandsPanel() {
                         : "bg-danger/15 text-danger",
                     ].join(" ")}
                   >
-                    {b.isActive ? "مفعّل" : "معطّل"}
+                    {b.isActive ? t("flagEnabled") : t("flagDisabled")}
                   </span>
                 </td>
                 <td className="py-3 text-end">
-                  <button
-                    onClick={() => openEdit(b)}
-                    className="text-xs text-text-muted hover:text-accent transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    تعديل
-                  </button>
+                  <div className="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 transition-all">
+                    <button
+                      onClick={() => openEdit(b)}
+                      className="text-xs text-text-muted hover:text-accent transition-colors"
+                    >
+                      {t("edit")}
+                    </button>
+                    <Link
+                      to="/catalog/brands/$brandId"
+                      params={{ brandId: b.id }}
+                      className="text-xs text-accent hover:underline"
+                    >
+                      {t("details")}
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(b.id)}
+                      className="text-xs text-danger hover:text-danger/70 transition-colors"
+                    >
+                      {t("delete")}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -285,7 +228,7 @@ export function BrandsPanel() {
 
       <Drawer
         open={drawerOpen}
-        title={editing ? "تعديل ماركة" : "إضافة ماركة جديدة"}
+        title={editing ? t("drawerEditBrand") : t("drawerNewBrand")}
         onClose={closeDrawer}
       >
         {drawerOpen && (

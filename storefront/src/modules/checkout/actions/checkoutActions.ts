@@ -65,3 +65,26 @@ export async function getOrderById(id: string): Promise<OrderDetail | null> {
 
 export { getAddresses as getMyAddresses, addAddr as addAddress };
 export type { Address };
+
+// Phase 6 – fetch active payment methods for checkout page
+export interface PaymentMethodOption {
+  id: string;
+  key: string;
+  labelAr: string;
+  labelEn: string;
+  iconUrl: string | null;
+  isComingSoon: boolean;
+  sortOrder: number;
+}
+
+export async function getActivePaymentMethods(): Promise<PaymentMethodOption[]> {
+  try {
+    const res = await fetch(`${API}/marketing/payment-methods`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}

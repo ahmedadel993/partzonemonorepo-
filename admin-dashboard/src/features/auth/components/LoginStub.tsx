@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const API = import.meta.env.VITE_API_URL ?? "/api/v1";
 
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,32 +25,32 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       if (!res.ok) {
-        setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+        setError(t("loginErrorInvalid"));
         return;
       }
       const data = await res.json();
       setAuth(data.accessToken, data.userId, data.role);
       router.navigate({ to: "/" });
     } catch {
-      setError("تعذر الاتصال بالخادم، حاول مجدداً");
+      setError(t("loginErrorNetwork"));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="dark min-h-screen bg-bg flex items-center justify-center font-sans p-4" dir="rtl">
+    <div className="dark min-h-screen bg-bg flex items-center justify-center font-sans p-4">
       <div className="bg-surface border border-border rounded-xl w-full max-w-sm shadow-xl">
         <div className="p-8 space-y-6">
           <div className="text-center space-y-1">
             <h1 className="text-2xl font-bold text-text">PartZone</h1>
-            <p className="text-sm text-text-muted">لوحة التحكم</p>
+            <p className="text-sm text-text-muted">{t("loginSubtitle")}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label htmlFor="email" className="block text-sm font-medium text-text">
-                البريد الإلكتروني
+                {t("loginEmailLabel")}
               </label>
               <input
                 id="email"
@@ -59,12 +61,13 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-10 px-3 rounded-md bg-bg border border-border text-text text-sm placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
                 placeholder="admin@example.com"
+                dir="ltr"
               />
             </div>
 
             <div className="space-y-1.5">
               <label htmlFor="password" className="block text-sm font-medium text-text">
-                كلمة المرور
+                {t("loginPasswordLabel")}
               </label>
               <input
                 id="password"
@@ -75,6 +78,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full h-10 px-3 rounded-md bg-bg border border-border text-text text-sm placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
                 placeholder="••••••••"
+                dir="ltr"
               />
             </div>
 
@@ -87,7 +91,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full h-10 rounded-md bg-accent text-accent-fg text-sm font-semibold hover:bg-accent-hover transition-colors disabled:opacity-60"
             >
-              {loading ? "جاري الدخول..." : "تسجيل الدخول"}
+              {loading ? t("loginSubmitting") : t("loginSubmit")}
             </button>
           </form>
         </div>

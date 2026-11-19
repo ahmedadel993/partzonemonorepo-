@@ -9,6 +9,11 @@ public sealed class Category : AggregateRoot<Guid>
     public string? ImageUrl { get; private set; }
     public int SortOrder { get; private set; }
     public Guid? ParentId { get; private set; }
+    // Phase 1 – Boolean display flags
+    public bool IsActive   { get; private set; } = true;
+    public bool IsFeatured { get; private set; }
+    public bool ShowInHome { get; private set; }
+    public bool ShowInMenu { get; private set; } = true;
 
     private readonly List<Category> _children = [];
     public IReadOnlyCollection<Category> Children => _children.AsReadOnly();
@@ -18,10 +23,18 @@ public sealed class Category : AggregateRoot<Guid>
     public static Category Create(string name, string slug, Guid? parentId = null, int sortOrder = 0) =>
         new() { Id = Guid.NewGuid(), Name = name, Slug = slug, ParentId = parentId, SortOrder = sortOrder };
 
-    public void Update(string name, string? imageUrl, int sortOrder)
+    public void Update(string name, string? imageUrl, int sortOrder,
+        bool isActive, bool isFeatured, bool showInHome, bool showInMenu)
     {
         Name = name;
         ImageUrl = imageUrl;
         SortOrder = sortOrder;
+        IsActive   = isActive;
+        IsFeatured = isFeatured;
+        ShowInHome = showInHome;
+        ShowInMenu = showInMenu;
     }
+
+    public void Activate()   => IsActive = true;
+    public void Deactivate() => IsActive = false;
 }

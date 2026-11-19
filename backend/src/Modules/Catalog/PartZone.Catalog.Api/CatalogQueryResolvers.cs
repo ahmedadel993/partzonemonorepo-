@@ -21,6 +21,15 @@ public sealed class CatalogQueryResolvers
         return result.IsSuccess ? result.Value : null;
     }
 
+    // Phase 4 – by-id queries for admin detail pages
+    public async Task<BrandDto?> GetBrandByIdAsync(
+        Guid id,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetBrandByIdQuery(id), ct);
+        return result.IsSuccess ? result.Value : null;
+    }
+
     public async Task<IReadOnlyList<CategoryDto>> GetCategoriesAsync(
         [Service] IMediator mediator, CancellationToken ct)
     {
@@ -36,6 +45,14 @@ public sealed class CatalogQueryResolvers
         return result.IsSuccess ? result.Value : null;
     }
 
+    public async Task<CategoryDto?> GetCategoryByIdAsync(
+        Guid id,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetCategoryByIdQuery(id), ct);
+        return result.IsSuccess ? result.Value : null;
+    }
+
     public async Task<PagedResult<ProductSummaryDto>> GetProductsAsync(
         ProductFilterInput filter,
         [Service] IMediator mediator, CancellationToken ct)
@@ -47,6 +64,11 @@ public sealed class CatalogQueryResolvers
             BrandId = filter.BrandId,
             Condition = filter.Condition,
             VehicleModelId = filter.VehicleModelId,
+            // Phase 4 – boolean display-flag filters
+            IsFeatured = filter.IsFeatured,
+            IsBestSeller = filter.IsBestSeller,
+            IsNew = filter.IsNew,
+            IsOnSale = filter.IsOnSale,
             Page = filter.Page ?? 1,
             PageSize = filter.PageSize ?? 20,
         });
@@ -61,6 +83,14 @@ public sealed class CatalogQueryResolvers
         [Service] IMediator mediator, CancellationToken ct)
     {
         var result = await mediator.Send(new GetProductBySlugQuery(slug), ct);
+        return result.IsSuccess ? result.Value : null;
+    }
+
+    public async Task<ProductDetailDto?> GetProductByIdAsync(
+        Guid id,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetProductByIdQuery(id), ct);
         return result.IsSuccess ? result.Value : null;
     }
 
@@ -94,5 +124,10 @@ public sealed record ProductFilterInput(
     Guid? BrandId,
     string? Condition,
     Guid? VehicleModelId,
+    // Phase 4 – boolean display-flag filters
+    bool? IsFeatured,
+    bool? IsBestSeller,
+    bool? IsNew,
+    bool? IsOnSale,
     int? Page,
     int? PageSize);

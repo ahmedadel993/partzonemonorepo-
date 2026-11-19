@@ -48,6 +48,11 @@ export async function getProducts(filter: ProductFilter): Promise<PagedResult<Pr
   if (filter.brandId)       params.set("brandId", filter.brandId);
   if (filter.condition)     params.set("condition", filter.condition);
   if (filter.vehicleModelId) params.set("vehicleModelId", filter.vehicleModelId);
+  // Phase 5 – boolean display-flag filters for swiper carousels
+  if (filter.isFeatured != null)   params.set("isFeatured", String(filter.isFeatured));
+  if (filter.isBestSeller != null) params.set("isBestSeller", String(filter.isBestSeller));
+  if (filter.isNew != null)        params.set("isNew", String(filter.isNew));
+  if (filter.isOnSale != null)     params.set("isOnSale", String(filter.isOnSale));
   if (filter.page)          params.set("page", String(filter.page));
   if (filter.pageSize)      params.set("pageSize", String(filter.pageSize));
 

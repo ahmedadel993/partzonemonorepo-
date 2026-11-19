@@ -14,7 +14,12 @@ public sealed record UpdateProductCommand(
     string? PriceCurrency,
     Guid? BrandId,
     Guid? CategoryId,
-    IReadOnlyList<ProductTranslationInput>? Translations) : ICommand;
+    IReadOnlyList<ProductTranslationInput>? Translations,
+    // Phase 1 – Boolean display flags (nullable = keep current value)
+    bool? IsFeatured = null,
+    bool? IsBestSeller = null,
+    bool? IsNew = null,
+    bool? IsOnSale = null) : ICommand;
 
 internal sealed class UpdateProductHandler(
     ICatalogReadRepository read,
@@ -47,6 +52,11 @@ internal sealed class UpdateProductHandler(
             : product.Price;
 
         product.Update(slug, brandId, categoryId, condition, price);
+        product.SetFlags(
+            req.IsFeatured   ?? product.IsFeatured,
+            req.IsBestSeller ?? product.IsBestSeller,
+            req.IsNew        ?? product.IsNew,
+            req.IsOnSale     ?? product.IsOnSale);
 
         if (req.Translations is not null)
             foreach (var t in req.Translations)

@@ -48,10 +48,8 @@ internal sealed class CreatePageBlockHandler(IPageBlockRepository repo)
         if (!Enum.TryParse<BindingType>(request.BindingType, ignoreCase: true, out var bindingType))
             bindingType = BindingType.None;
 
-        DateTime? activeFrom = null;
-        DateTime? activeTo = null;
-        if (request.ActiveFrom is not null && DateTime.TryParse(request.ActiveFrom, out var af)) activeFrom = af.ToUniversalTime();
-        if (request.ActiveTo is not null && DateTime.TryParse(request.ActiveTo, out var at)) activeTo = at.ToUniversalTime();
+        var activeFrom = ScheduleParsing.ToUtc(request.ActiveFrom);
+        var activeTo = ScheduleParsing.ToUtc(request.ActiveTo);
 
         var block = PageBlock.Create(blockType, request.SortOrder, request.Config,
             bindingType, request.TargetId, request.TargetUrl, activeFrom, activeTo);

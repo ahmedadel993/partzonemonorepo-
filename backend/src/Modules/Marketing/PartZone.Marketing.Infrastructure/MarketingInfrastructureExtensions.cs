@@ -9,6 +9,8 @@ public static class MarketingInfrastructureExtensions
     {
         services.AddScoped<IPageBlockRepository, PageBlockRepository>();
         services.AddScoped<ICouponRepository, CouponRepository>();
+        // Phase 6 – payment methods
+        services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
         return services;
     }
 }

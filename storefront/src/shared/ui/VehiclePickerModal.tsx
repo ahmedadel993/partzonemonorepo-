@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { getVehicleMakes, getVehicleModelsByMake } from "@/modules/catalog/actions/catalogActions";
 import { useVehicleStore } from "@/shared/stores/useVehicleStore";
 import type { VehicleMake, VehicleModel } from "@/modules/catalog/types";
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export function VehiclePickerModal({ isOpen, onClose, locale, initialMake }: Props) {
+  const t = useTranslations("catalog");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const { setVehicle } = useVehicleStore();
 
@@ -28,7 +31,6 @@ export function VehiclePickerModal({ isOpen, onClose, locale, initialMake }: Pro
     if (!isOpen) return;
     setSelectedMake(null);
     setModels([]);
-    // Always load makes in background (needed for back-button navigation)
     getVehicleMakes().then((data) => { setMakes(data); setLoadingMakes(false); });
     if (initialMake) {
       handleMakeSelect(initialMake);
@@ -84,18 +86,19 @@ export function VehiclePickerModal({ isOpen, onClose, locale, initialMake }: Pro
                 type="button"
                 onClick={() => { setStep("make"); setSelectedMake(null); setModels([]); }}
                 className="text-text-muted hover:text-text transition-colors text-sm"
+                aria-label={tCommon("back")}
               >
                 ←
               </button>
             )}
             <h2 className="font-semibold text-text">
-              {step === "make" ? "اختر الماركة" : `موديلات ${selectedMake?.name}`}
+              {step === "make" ? t("selectMake") : t("modelListHeading", { make: selectedMake?.name ?? "" })}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="إغلاق"
+            aria-label={tCommon("close")}
             className="text-text-muted hover:text-text transition-colors text-xl leading-none"
           >
             ×
@@ -135,7 +138,7 @@ export function VehiclePickerModal({ isOpen, onClose, locale, initialMake }: Pro
                 ))}
               </div>
             ) : models.length === 0 ? (
-              <p className="text-center text-text-muted py-8 text-sm">لا توجد موديلات متاحة</p>
+              <p className="text-center text-text-muted py-8 text-sm">{t("noModels")}</p>
             ) : (
               <div className="space-y-2">
                 {models.map((model) => (

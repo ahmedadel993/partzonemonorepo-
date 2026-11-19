@@ -1,8 +1,10 @@
 extend type Query {
   pageBlocks(onlyActive: Boolean): [PageBlockType!]!
   pageBlock(id: ID!): PageBlockType
-  coupons: [CouponType!]!
+  coupons: [CouponType!]! @authorize(policy: "Admin")
   validateCoupon(code: String!, orderAmount: Float!): CouponValidationResultType!
+  # Phase 6 – payment methods
+  paymentMethods(onlyActive: Boolean): [PaymentMethodType!]!
 }
 
 extend type Mutation {
@@ -10,10 +12,17 @@ extend type Mutation {
   updatePageBlock(input: UpdatePageBlockInput!): PageBlockPayload!
   activatePageBlock(id: ID!): PageBlockPayload!
   deactivatePageBlock(id: ID!): PageBlockPayload!
+  deletePageBlock(id: ID!): PageBlockPayload!
   reorderPageBlocks(input: [ReorderItemInput!]!): [PageBlockType!]!
   createCoupon(input: CreateCouponInput!): CouponPayload!
   updateCoupon(input: UpdateCouponInput!): CouponPayload!
   deactivateCoupon(id: ID!): CouponPayload!
+  # Phase 6 – payment methods
+  createPaymentMethod(input: CreatePaymentMethodInput!): PaymentMethodPayload!
+  updatePaymentMethod(input: UpdatePaymentMethodInput!): PaymentMethodPayload!
+  activatePaymentMethod(id: ID!): PaymentMethodPayload!
+  deactivatePaymentMethod(id: ID!): PaymentMethodPayload!
+  deletePaymentMethod(id: ID!): PaymentMethodPayload!
 }
 
 type PageBlockType {
@@ -126,4 +135,39 @@ input UpdateCouponInput {
   validFrom: String
   validTo: String
   isActive: Boolean
+}
+
+# Phase 6 – payment methods
+type PaymentMethodType {
+  id: ID!
+  key: String!
+  labelAr: String!
+  labelEn: String!
+  iconUrl: String
+  isActive: Boolean!
+  isComingSoon: Boolean!
+  sortOrder: Int!
+}
+
+type PaymentMethodPayload {
+  paymentMethod: PaymentMethodType
+  errors: [String!]!
+}
+
+input CreatePaymentMethodInput {
+  key: String!
+  labelAr: String!
+  labelEn: String!
+  iconUrl: String
+  isComingSoon: Boolean!
+  sortOrder: Int!
+}
+
+input UpdatePaymentMethodInput {
+  id: ID!
+  labelAr: String!
+  labelEn: String!
+  iconUrl: String
+  isComingSoon: Boolean!
+  sortOrder: Int!
 }

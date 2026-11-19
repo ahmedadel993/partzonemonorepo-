@@ -50,6 +50,13 @@ public sealed class PageBlock : AggregateRoot<Guid>
 
     public void UpdateConfig(string config) => Config = config;
 
+    /// <summary>Sets the optional live window (UTC). Null = no limit.</summary>
+    public void UpdateSchedule(DateTime? activeFromUtc, DateTime? activeToUtc)
+    {
+        ActiveFrom = activeFromUtc;
+        ActiveTo = activeToUtc;
+    }
+
     public void UpdateBinding(BindingType bindingType, Guid? targetId, string? targetUrl)
     {
         BindingType = bindingType;
@@ -63,6 +70,33 @@ public sealed class PageBlock : AggregateRoot<Guid>
     {
         _translations.Clear();
         _translations.AddRange(translations);
+    }
+
+    /// <summary>
+    /// Syncs translations by locale: updates existing rows in place, removes
+    /// locales not in <paramref name="incoming"/>, and adds new ones.
+    /// Returns the newly added translations (the caller must register them as
+    /// inserts — their client-generated keys would otherwise look like existing rows).
+    /// </summary>
+    public IReadOnlyList<PageBlockTranslation> SyncTranslations(IReadOnlyList<PageBlockTranslation> incoming)
+    {
+        var added = new List<PageBlockTranslation>();
+        _translations.RemoveAll(t => incoming.All(i => i.Locale != t.Locale));
+
+        foreach (var item in incoming)
+        {
+            var existing = _translations.FirstOrDefault(t => t.Locale == item.Locale);
+            if (existing is not null)
+            {
+                existing.Update(item.Title, item.Subtitle, item.CtaText, item.ConfigOverride);
+            }
+            else
+            {
+                _translations.Add(item);
+                added.Add(item);
+            }
+        }
+        return added;
     }
 
     public bool IsLiveNow()

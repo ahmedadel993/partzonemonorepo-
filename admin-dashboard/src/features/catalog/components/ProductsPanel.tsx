@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { ACCEPTED_IMAGE_TYPES, uploadImage } from "@/lib/upload";
 import { useQuery, useMutation } from "@apollo/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Link } from "@tanstack/react-router";
 import {
   GET_PRODUCTS,
   GET_BRANDS,
@@ -12,96 +14,18 @@ import {
   UNPUBLISH_PRODUCT,
   CREATE_PRODUCT,
   UPDATE_PRODUCT,
+  ADD_PRODUCT_IMAGE,
+  REMOVE_PRODUCT_IMAGE,
+  SET_PRIMARY_PRODUCT_IMAGE,
+  DELETE_PRODUCT,
 } from "../graphql/catalogApi";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-interface ProductSummary {
-  id: string;
-  sku: string;
-  slug: string;
-  name: string;
-  condition: string;
-  priceAmount: number;
-  priceCurrency: string;
-  stock: number;
-  isPublished: boolean;
-  primaryImageUrl: string | null;
-  brandName: string;
-  categoryName: string;
-  brandId: string;
-  categoryId: string;
-}
-
-interface PagedResult {
-  items: ProductSummary[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-const CONDITION_LABELS: Record<string, string> = {
-  Original: "أصلي",
-  Aftermarket: "بديل",
-  Used: "مستعمل",
-};
-
-const CONDITION_COLORS: Record<string, string> = {
-  Original: "bg-success/15 text-success",
-  Aftermarket: "bg-warning/15 text-warning",
-  Used: "bg-surface-alt text-text-muted",
-};
-
-// ── Create Product form ────────────────────────────────────────────────────────
-
-function Drawer({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
-  return (
-    <>
-      {open && <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />}
-      <aside className={[
-        "fixed top-0 end-0 h-full w-[32rem] bg-surface border-s border-border z-50",
-        "transition-transform duration-300",
-        open ? "translate-x-0" : "translate-x-full rtl:-translate-x-full",
-      ].join(" ")}>
-        <div className="h-16 flex items-center justify-between px-6 border-b border-border">
-          <h2 className="font-semibold text-text">{title}</h2>
-          <button onClick={onClose} className="text-text-muted hover:text-text text-xl leading-none">×</button>
-        </div>
-        <div className="p-6 overflow-y-auto h-[calc(100%-4rem)]">{children}</div>
-      </aside>
-    </>
-  );
-}
-
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-4">
-      <label className="block text-sm text-text-muted mb-1">{label}</label>
-      {children}
-      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
-    </div>
-  );
-}
-
-const inputCls =
-  "w-full bg-surface-alt border border-border rounded-md px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors";
-
-const productSchema = z.object({
-  sku:           z.string().min(1, "مطلوب").max(100),
-  oemNumber:     z.string().max(100).default(""),
-  slug:          z.string().min(1, "مطلوب").max(200).regex(/^[a-z0-9-]+$/, "lowercase، أرقام، شرطات فقط"),
-  nameAr:        z.string().min(1, "مطلوب").max(300),
-  descriptionAr: z.string().max(2000).default(""),
-  nameEn:        z.string().max(300).default(""),
-  condition:     z.enum(["Original", "Aftermarket", "Used"]),
-  brandId:       z.string().uuid("اختر الماركة"),
-  categoryId:    z.string().uuid("اختر الفئة"),
-  priceAmount:   z.coerce.number().min(0.01, "السعر > 0"),
-  priceCurrency: z.string().min(1).default("EGP"),
-  stock:         z.coerce.number().int().min(0),
-});
-type ProductForm = z.infer<typeof productSchema>;
+import { ProductSummary, PagedResult, ProductImage } from "../products/types";
+import { productSchema, ProductForm, editProductSchema, EditProductForm } from "../products/validation";
+import { CONDITION_COLORS } from "../products/utils";
+import { Drawer } from "../shared/Drawer";
+import { Field } from "../shared/Field";
+import { inputCls } from "../shared/styles";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function CreateProductDrawer({
   onClose, onDone, brands, categories,
@@ -111,9 +35,11 @@ function CreateProductDrawer({
   brands: { id: string; name: string }[];
   categories: { id: string; name: string }[];
 }) {
+  const { t } = useLanguage();
   const [serverError, setServerError] = useState<string | null>(null);
   const [createProduct] = useMutation(CREATE_PRODUCT, {
     refetchQueries: ["GetProducts"],
+    awaitRefetchQueries: true,
   });
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ProductForm>({
@@ -144,7 +70,7 @@ function CreateProductDrawer({
     });
 
     if (gqlErrors?.length) {
-      setServerError(gqlErrors[0].message);
+      setServerError(gqlErrors[0]?.message ?? t("errorUnknown"));
       return;
     }
     const payload = result?.createProduct;
@@ -161,61 +87,61 @@ function CreateProductDrawer({
         <Field label="SKU" error={errors.sku?.message}>
           <input {...register("sku")} className={inputCls} placeholder="BOSCH-0001" dir="ltr" />
         </Field>
-        <Field label="رقم OEM" error={errors.oemNumber?.message}>
-          <input {...register("oemNumber")} className={inputCls} placeholder="اختياري" dir="ltr" />
+        <Field label={t("fieldOem")} error={errors.oemNumber?.message}>
+          <input {...register("oemNumber")} className={inputCls} dir="ltr" />
         </Field>
       </div>
 
-      <Field label="Slug (الرابط)" error={errors.slug?.message}>
+      <Field label={t("fieldSlugProduct")} error={errors.slug?.message}>
         <input {...register("slug")} className={inputCls} placeholder="bosch-brake-pad-0001" dir="ltr" />
       </Field>
 
-      <Field label="الاسم بالعربية" error={errors.nameAr?.message}>
-        <input {...register("nameAr")} className={inputCls} placeholder="وسادة الفرامل بوش" />
+      <Field label={t("fieldNameAr")} error={errors.nameAr?.message}>
+        <input {...register("nameAr")} className={inputCls} />
       </Field>
 
-      <Field label="وصف (عربي، اختياري)" error={errors.descriptionAr?.message}>
-        <textarea {...register("descriptionAr")} rows={2} className={inputCls} placeholder="وصف المنتج…" />
+      <Field label={t("fieldDescAr")} error={errors.descriptionAr?.message}>
+        <textarea {...register("descriptionAr")} rows={2} className={inputCls} />
       </Field>
 
-      <Field label="الاسم بالإنجليزية (اختياري)" error={errors.nameEn?.message}>
-        <input {...register("nameEn")} className={inputCls} placeholder="Bosch Brake Pad" dir="ltr" />
+      <Field label={t("fieldNameEn")} error={errors.nameEn?.message}>
+        <input {...register("nameEn")} className={inputCls} dir="ltr" />
       </Field>
 
-      <Field label="حالة القطعة" error={errors.condition?.message}>
+      <Field label={t("fieldCondition")} error={errors.condition?.message}>
         <select {...register("condition")} className={inputCls}>
-          <option value="">— اختر —</option>
-          <option value="Original">أصلي (Original)</option>
-          <option value="Aftermarket">بديل (Aftermarket)</option>
-          <option value="Used">مستعمل (Used)</option>
+          <option value="">{t("conditionSelect")}</option>
+          <option value="Original">{t("conditionOriginal")}</option>
+          <option value="Aftermarket">{t("conditionAftermarket")}</option>
+          <option value="Used">{t("conditionUsed")}</option>
         </select>
       </Field>
 
       <div className="grid grid-cols-2 gap-x-4">
-        <Field label="الماركة" error={errors.brandId?.message}>
+        <Field label={t("fieldBrand")} error={errors.brandId?.message}>
           <select {...register("brandId")} className={inputCls}>
-            <option value="">— اختر —</option>
+            <option value="">{t("conditionSelect")}</option>
             {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </Field>
-        <Field label="الفئة" error={errors.categoryId?.message}>
+        <Field label={t("fieldCategory")} error={errors.categoryId?.message}>
           <select {...register("categoryId")} className={inputCls}>
-            <option value="">— اختر —</option>
+            <option value="">{t("conditionSelect")}</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </Field>
       </div>
 
       <div className="grid grid-cols-2 gap-x-4">
-        <Field label="السعر" error={errors.priceAmount?.message}>
+        <Field label={t("fieldPrice")} error={errors.priceAmount?.message}>
           <input type="number" step="0.01" {...register("priceAmount")} className={inputCls} placeholder="0.00" dir="ltr" />
         </Field>
-        <Field label="العملة" error={errors.priceCurrency?.message}>
+        <Field label={t("fieldCurrency")} error={errors.priceCurrency?.message}>
           <input {...register("priceCurrency")} className={inputCls} placeholder="EGP" dir="ltr" />
         </Field>
       </div>
 
-      <Field label="المخزون الابتدائي" error={errors.stock?.message}>
+      <Field label={t("fieldInitialStock")} error={errors.stock?.message}>
         <input type="number" {...register("stock")} className={inputCls} placeholder="0" dir="ltr" />
       </Field>
 
@@ -227,34 +153,116 @@ function CreateProductDrawer({
           disabled={isSubmitting}
           className="flex-1 bg-accent text-white rounded-md py-2 text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
         >
-          {isSubmitting ? "جارٍ الحفظ…" : "إنشاء المنتج"}
+          {isSubmitting ? t("saving") : t("createProduct")}
         </button>
         <button
           type="button"
           onClick={onClose}
           className="flex-1 bg-surface-alt text-text rounded-md py-2 text-sm font-medium hover:bg-border transition-colors"
         >
-          إلغاء
+          {t("cancel")}
         </button>
       </div>
     </form>
   );
 }
 
-// ── Edit Product form ──────────────────────────────────────────────────────────
+function ProductImagesSection({ productId, images }: { productId: string; images: ProductImage[] }) {
+  const { t } = useLanguage();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const opts = { refetchQueries: ["GetProducts"] };
+  const [addImage] = useMutation(ADD_PRODUCT_IMAGE, opts);
+  const [removeImage] = useMutation(REMOVE_PRODUCT_IMAGE, opts);
+  const [setPrimary] = useMutation(SET_PRIMARY_PRODUCT_IMAGE, opts);
 
-const editProductSchema = z.object({
-  slug:          z.string().min(1, "مطلوب").max(200).regex(/^[a-z0-9-]+$/, "lowercase، أرقام، شرطات فقط"),
-  nameAr:        z.string().min(1, "مطلوب").max(300),
-  descriptionAr: z.string().max(2000).default(""),
-  nameEn:        z.string().max(300).default(""),
-  condition:     z.enum(["Original", "Aftermarket", "Used"]),
-  brandId:       z.string().uuid("اختر الماركة"),
-  categoryId:    z.string().uuid("اختر الفئة"),
-  priceAmount:   z.coerce.number().min(0.01, "السعر > 0"),
-  priceCurrency: z.string().min(1).default("EGP"),
-});
-type EditProductForm = z.infer<typeof editProductSchema>;
+  const run = async (fn: () => Promise<{ data?: Record<string, { errors?: string[] } | null> | null }>) => {
+    setError(null);
+    try {
+      const res = await fn();
+      const payload = res.data && Object.values(res.data)[0];
+      if (payload?.errors?.length) setError(payload.errors[0] ?? null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("errorUnknown"));
+    }
+  };
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploading(true);
+    for (const file of Array.from(files)) {
+      try {
+        const url = await uploadImage(file);
+        await run(() => addImage({ variables: { input: { productId, url, altText: file.name } } }));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : t("imageUploadFail"));
+      }
+    }
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  return (
+    <div className="mb-6 pb-6 border-b border-border">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm text-text-muted">{t("productImages")}</p>
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => inputRef.current?.click()}
+          className="px-3 py-1.5 bg-accent text-white rounded text-xs font-medium hover:bg-accent/90 disabled:opacity-50"
+        >
+          {uploading ? t("uploading") : t("uploadImage")}
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          accept={ACCEPTED_IMAGE_TYPES}
+          className="hidden"
+          onChange={(e) => handleFiles(e.target.files)}
+        />
+      </div>
+
+      {images.length === 0 ? (
+        <p className="text-xs text-text-muted py-4 text-center bg-surface-alt rounded">
+          {t("noImages")}
+        </p>
+      ) : (
+        <div className="grid grid-cols-3 gap-3">
+          {images.map((img) => (
+            <div key={img.id} className="relative group rounded overflow-hidden border border-border">
+              <img src={img.url} alt={img.altText ?? ""} className="w-full aspect-square object-cover bg-product-bg" />
+              {img.isPrimary && (
+                <span className="absolute top-1 start-1 bg-accent text-white text-[10px] px-1.5 py-0.5 rounded">{t("primaryImage")}</span>
+              )}
+              <div className="absolute inset-x-0 bottom-0 flex justify-between gap-1 p-1 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                {!img.isPrimary ? (
+                  <button
+                    type="button"
+                    onClick={() => run(() => setPrimary({ variables: { productId, imageId: img.id } }))}
+                    className="text-[10px] text-white hover:text-accent"
+                  >
+                    {t("setPrimary")}
+                  </button>
+                ) : <span />}
+                <button
+                  type="button"
+                  onClick={() => run(() => removeImage({ variables: { productId, imageId: img.id } }))}
+                  className="text-[10px] text-white hover:text-danger"
+                >
+                  {t("delete")}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {error && <p className="mt-2 text-xs text-danger">{error}</p>}
+    </div>
+  );
+}
 
 function EditProductDrawer({
   product, onClose, onDone, brands, categories,
@@ -265,6 +273,7 @@ function EditProductDrawer({
   brands: { id: string; name: string }[];
   categories: { id: string; name: string }[];
 }) {
+  const { t } = useLanguage();
   const [serverError, setServerError] = useState<string | null>(null);
   const [updateProduct] = useMutation(UPDATE_PRODUCT, {
     refetchQueries: ["GetProducts"],
@@ -315,58 +324,60 @@ function EditProductDrawer({
       },
     });
 
-    if (gqlErrors?.length) { setServerError(gqlErrors[0].message); return; }
+    if (gqlErrors?.length) { setServerError(gqlErrors[0]?.message ?? t("errorUnknown")); return; }
     const payload = result?.updateProduct;
     if (payload?.errors?.length) { setServerError(payload.errors[0]); return; }
     onDone();
   };
 
   return (
+    <>
+    <ProductImagesSection productId={product.id} images={detailData?.product?.images ?? []} />
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <Field label="Slug (الرابط)" error={errors.slug?.message}>
+      <Field label={t("fieldSlugProduct")} error={errors.slug?.message}>
         <input {...register("slug")} className={inputCls} dir="ltr" />
       </Field>
 
-      <Field label="الاسم بالعربية" error={errors.nameAr?.message}>
+      <Field label={t("fieldNameAr")} error={errors.nameAr?.message}>
         <input {...register("nameAr")} className={inputCls} />
       </Field>
 
-      <Field label="وصف (عربي، اختياري)" error={errors.descriptionAr?.message}>
+      <Field label={t("fieldDescAr")} error={errors.descriptionAr?.message}>
         <textarea {...register("descriptionAr")} rows={2} className={inputCls} />
       </Field>
 
-      <Field label="الاسم بالإنجليزية (اختياري)" error={errors.nameEn?.message}>
+      <Field label={t("fieldNameEn")} error={errors.nameEn?.message}>
         <input {...register("nameEn")} className={inputCls} dir="ltr" />
       </Field>
 
-      <Field label="حالة القطعة" error={errors.condition?.message}>
+      <Field label={t("fieldCondition")} error={errors.condition?.message}>
         <select {...register("condition")} className={inputCls}>
-          <option value="Original">أصلي (Original)</option>
-          <option value="Aftermarket">بديل (Aftermarket)</option>
-          <option value="Used">مستعمل (Used)</option>
+          <option value="Original">{t("conditionOriginal")}</option>
+          <option value="Aftermarket">{t("conditionAftermarket")}</option>
+          <option value="Used">{t("conditionUsed")}</option>
         </select>
       </Field>
 
       <div className="grid grid-cols-2 gap-x-4">
-        <Field label="الماركة" error={errors.brandId?.message}>
+        <Field label={t("fieldBrand")} error={errors.brandId?.message}>
           <select {...register("brandId")} className={inputCls}>
-            <option value="">— اختر —</option>
+            <option value="">{t("conditionSelect")}</option>
             {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </Field>
-        <Field label="الفئة" error={errors.categoryId?.message}>
+        <Field label={t("fieldCategory")} error={errors.categoryId?.message}>
           <select {...register("categoryId")} className={inputCls}>
-            <option value="">— اختر —</option>
+            <option value="">{t("conditionSelect")}</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </Field>
       </div>
 
       <div className="grid grid-cols-2 gap-x-4">
-        <Field label="السعر" error={errors.priceAmount?.message}>
+        <Field label={t("fieldPrice")} error={errors.priceAmount?.message}>
           <input type="number" step="0.01" {...register("priceAmount")} className={inputCls} dir="ltr" />
         </Field>
-        <Field label="العملة" error={errors.priceCurrency?.message}>
+        <Field label={t("fieldCurrency")} error={errors.priceCurrency?.message}>
           <input {...register("priceCurrency")} className={inputCls} dir="ltr" />
         </Field>
       </div>
@@ -379,21 +390,20 @@ function EditProductDrawer({
           disabled={isSubmitting || detailLoading}
           className="flex-1 bg-accent text-white rounded-md py-2 text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50"
         >
-          {isSubmitting ? "جارٍ الحفظ…" : "حفظ التغييرات"}
+          {isSubmitting ? t("saving") : t("saveChanges")}
         </button>
         <button
           type="button"
           onClick={onClose}
           className="flex-1 bg-surface-alt text-text rounded-md py-2 text-sm font-medium hover:bg-border transition-colors"
         >
-          إلغاء
+          {t("cancel")}
         </button>
       </div>
     </form>
+    </>
   );
 }
-
-// ── Pagination ────────────────────────────────────────────────────────────────
 
 function Pagination({
   page,
@@ -428,9 +438,8 @@ function Pagination({
   );
 }
 
-// ── Main panel ────────────────────────────────────────────────────────────────
-
 export function ProductsPanel() {
+  const { t, dir } = useLanguage();
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -461,6 +470,9 @@ export function ProductsPanel() {
   const [unpublishProduct] = useMutation(UNPUBLISH_PRODUCT, {
     refetchQueries: [{ query: GET_PRODUCTS, variables: { filter } }],
   });
+  const [deleteProduct] = useMutation(DELETE_PRODUCT, {
+    refetchQueries: [{ query: GET_PRODUCTS, variables: { filter } }],
+  });
 
   const paged: PagedResult | undefined = data?.products;
 
@@ -470,6 +482,11 @@ export function ProductsPanel() {
     } else {
       await publishProduct({ variables: { productId: p.id } });
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(t("deleteConfirmProduct"))) return;
+    await deleteProduct({ variables: { id } });
   };
 
   const resetFilters = () => {
@@ -486,28 +503,27 @@ export function ProductsPanel() {
     "bg-surface-alt border border-border rounded-md px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors";
 
   return (
-    <div dir="rtl">
+    <div dir={dir}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-text">المنتجات</h2>
+        <h2 className="text-lg font-semibold text-text">{t("productsHeading")}</h2>
         <div className="flex items-center gap-3">
           {paged && (
-            <span className="text-sm text-text-muted">{paged.totalCount} منتج</span>
+            <span className="text-sm text-text-muted">{paged.totalCount}</span>
           )}
           <button
             onClick={() => setDrawerOpen(true)}
             className="bg-accent text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-accent/90 transition-colors"
           >
-            + منتج جديد
+            {t("newProduct")}
           </button>
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6 p-4 bg-surface-alt rounded-lg border border-border">
         <input
           value={q}
           onChange={(e) => { setQ(e.target.value); setPage(1); }}
-          placeholder="بحث بـ SKU أو الاسم…"
+          placeholder={t("searchPlaceholder")}
           className="flex-1 min-w-48 bg-surface border border-border rounded-md px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
         />
         <select
@@ -515,7 +531,7 @@ export function ProductsPanel() {
           onChange={(e) => { setBrandId(e.target.value || null); setPage(1); }}
           className={selectCls}
         >
-          <option value="">كل الماركات</option>
+          <option value="">{t("filterAllBrands")}</option>
           {brandsData?.brands.map((b: { id: string; name: string }) => (
             <option key={b.id} value={b.id}>{b.name}</option>
           ))}
@@ -525,7 +541,7 @@ export function ProductsPanel() {
           onChange={(e) => { setCategoryId(e.target.value || null); setPage(1); }}
           className={selectCls}
         >
-          <option value="">كل الفئات</option>
+          <option value="">{t("filterAllCategories")}</option>
           {catsData?.categories.map((c: { id: string; name: string }) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
@@ -535,23 +551,23 @@ export function ProductsPanel() {
           onChange={(e) => { setCondition(e.target.value || null); setPage(1); }}
           className={selectCls}
         >
-          <option value="">كل الحالات</option>
-          <option value="Original">أصلي</option>
-          <option value="Aftermarket">بديل</option>
-          <option value="Used">مستعمل</option>
+          <option value="">{t("filterAllConditions")}</option>
+          <option value="Original">{t("conditionOriginal")}</option>
+          <option value="Aftermarket">{t("conditionAftermarket")}</option>
+          <option value="Used">{t("conditionUsed")}</option>
         </select>
         {hasFilters && (
           <button
             onClick={resetFilters}
             className="px-3 py-2 text-sm text-text-muted hover:text-danger transition-colors"
           >
-            مسح الفلاتر ×
+            {t("clearFilters")}
           </button>
         )}
       </div>
 
       {error && (
-        <p className="text-danger text-sm mb-4">خطأ: {error.message}</p>
+        <p className="text-danger text-sm mb-4">{t("errorUnknown")}: {error.message}</p>
       )}
 
       {loading && !paged ? (
@@ -565,14 +581,14 @@ export function ProductsPanel() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-text-muted text-right">
-                <th className="pb-3 font-medium pe-3 w-16">صورة</th>
-                <th className="pb-3 font-medium pe-4">المنتج</th>
+                <th className="pb-3 font-medium pe-3 w-16">{t("tableColImage")}</th>
+                <th className="pb-3 font-medium pe-4">{t("tableColProduct")}</th>
                 <th className="pb-3 font-medium pe-4">SKU</th>
-                <th className="pb-3 font-medium pe-4">الفئة</th>
-                <th className="pb-3 font-medium pe-4">السعر</th>
-                <th className="pb-3 font-medium pe-4">المخزون</th>
-                <th className="pb-3 font-medium pe-4">الحالة</th>
-                <th className="pb-3 font-medium pe-4">نشر</th>
+                <th className="pb-3 font-medium pe-4">{t("tableColCategory")}</th>
+                <th className="pb-3 font-medium pe-4">{t("tableColPrice")}</th>
+                <th className="pb-3 font-medium pe-4">{t("tableColStock")}</th>
+                <th className="pb-3 font-medium pe-4">{t("tableColCondition")}</th>
+                <th className="pb-3 font-medium pe-4">{t("tableColPublish")}</th>
                 <th className="pb-3" />
               </tr>
             </thead>
@@ -613,7 +629,7 @@ export function ProductsPanel() {
                         CONDITION_COLORS[p.condition] ?? "bg-surface-alt text-text-muted",
                       ].join(" ")}
                     >
-                      {CONDITION_LABELS[p.condition] ?? p.condition}
+                      {p.condition === "Original" ? t("conditionOriginal") : p.condition === "Aftermarket" ? t("conditionAftermarket") : p.condition === "Used" ? t("conditionUsed") : p.condition}
                     </span>
                   </td>
                   <td className="py-3 pe-4">
@@ -626,17 +642,33 @@ export function ProductsPanel() {
                           : "bg-surface-alt text-text-muted hover:bg-success/15 hover:text-success",
                       ].join(" ")}
                     >
-                      {p.isPublished ? "منشور" : "مسودة"}
+                      {p.isPublished ? t("published") : t("draft")}
                     </button>
                   </td>
                   <td className="py-3 text-end pe-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditProduct(p)}
-                      className="text-xs text-text-muted hover:text-accent opacity-0 group-hover:opacity-100 transition-all"
-                    >
-                      تعديل
-                    </button>
+                    <div className="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 transition-all">
+                      <button
+                        type="button"
+                        onClick={() => setEditProduct(p)}
+                        className="text-xs text-text-muted hover:text-accent"
+                      >
+                        {t("edit")}
+                      </button>
+                      <Link
+                        to="/catalog/products/$productId"
+                        params={{ productId: p.id }}
+                        className="text-xs text-accent hover:underline"
+                      >
+                        {t("details")}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(p.id)}
+                        className="text-xs text-danger hover:text-danger/70 transition-colors"
+                      >
+                        {t("delete")}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -652,7 +684,7 @@ export function ProductsPanel() {
         </>
       )}
 
-      <Drawer open={drawerOpen} title="منتج جديد" onClose={() => setDrawerOpen(false)}>
+      <Drawer open={drawerOpen} title={t("drawerNewProduct")} onClose={() => setDrawerOpen(false)} asideClassName="w-[32rem]">
         {drawerOpen && (
           <CreateProductDrawer
             brands={brandsData?.brands ?? []}
@@ -666,7 +698,7 @@ export function ProductsPanel() {
         )}
       </Drawer>
 
-      <Drawer open={editProduct !== null} title="تعديل المنتج" onClose={() => setEditProduct(null)}>
+      <Drawer open={editProduct !== null} title={t("drawerEditProduct")} onClose={() => setEditProduct(null)} asideClassName="w-[32rem]">
         {editProduct && (
           <EditProductDrawer
             product={editProduct}

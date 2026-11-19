@@ -18,5 +18,6 @@ internal sealed class GetCategoriesHandler(ICatalogReadRepository repo)
 
     private static CategoryDto Map(PartZone.Catalog.Domain.Entities.Category c) =>
         new(c.Id, c.Name, c.Slug, c.ImageUrl, c.SortOrder, c.ParentId,
+            c.IsActive, c.IsFeatured, c.ShowInHome, c.ShowInMenu,
             c.Children.Select(Map).ToList());
 }

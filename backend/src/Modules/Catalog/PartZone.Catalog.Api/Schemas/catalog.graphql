@@ -1,10 +1,13 @@
 extend type Query {
   brands: [BrandType!]!
   brand(slug: String!): BrandType
+  brandById(id: ID!): BrandType
   categories: [CategoryType!]!
   category(slug: String!): CategoryType
+  categoryById(id: ID!): CategoryType
   products(filter: ProductFilterInput!): ProductPageType!
   product(slug: String!): ProductDetailType
+  productById(id: ID!): ProductDetailType
   vehicleMakes: [VehicleMakeType!]!
   vehicleModels(makeId: ID!): [VehicleModelType!]!
   vehicleYears(modelId: ID!): [VehicleYearRangeType!]!
@@ -13,20 +16,28 @@ extend type Query {
 extend type Mutation {
   createBrand(input: CreateBrandInput!): BrandPayload!
   updateBrand(input: UpdateBrandInput!): BrandPayload!
+  activateBrand(brandId: ID!): BrandPayload!
+  deactivateBrand(brandId: ID!): BrandPayload!
+  deleteBrand(id: ID!): DeletePayload!
   createCategory(input: CreateCategoryInput!): CategoryPayload!
   updateCategory(input: UpdateCategoryInput!): CategoryPayload!
+  deleteCategory(id: ID!): DeletePayload!
   createVehicleMake(input: CreateVehicleMakeInput!): VehicleMakePayload!
   updateVehicleMake(input: UpdateVehicleMakeInput!): VehicleMakePayload!
   deleteVehicleMake(id: ID!): DeletePayload!
   createVehicleModel(input: CreateVehicleModelInput!): VehicleModelPayload!
   updateVehicleModel(input: UpdateVehicleModelInput!): VehicleModelPayload!
   deleteVehicleModel(id: ID!): DeletePayload!
+  deleteProduct(id: ID!): DeletePayload!
   createProduct(input: CreateProductInput!): ProductPayload!
   updateProduct(input: UpdateProductInput!): ProductPayload!
   publishProduct(productId: ID!): ProductPayload!
   unpublishProduct(productId: ID!): ProductPayload!
   updateProductStock(input: UpdateProductStockInput!): ProductPayload!
   addProductFitment(input: AddProductFitmentInput!): ProductPayload!
+  addProductImage(input: AddProductImageInput!): ProductPayload!
+  removeProductImage(productId: ID!, imageId: ID!): ProductPayload!
+  setPrimaryProductImage(productId: ID!, imageId: ID!): ProductPayload!
 }
 
 # ── Output types ──────────────────────────────────────────────────────────────
@@ -38,6 +49,10 @@ type BrandType {
   slug: String!
   logoUrl: String
   isActive: Boolean!
+  # Phase 3 – display flags
+  isFeatured: Boolean!
+  showInHome: Boolean!
+  isSponsored: Boolean!
 }
 
 type CategoryType {
@@ -47,6 +62,11 @@ type CategoryType {
   imageUrl: String
   sortOrder: Int!
   parentId: ID
+  # Phase 3 – display flags
+  isActive: Boolean!
+  isFeatured: Boolean!
+  showInHome: Boolean!
+  showInMenu: Boolean!
   children: [CategoryType!]!
 }
 
@@ -81,6 +101,11 @@ type ProductSummaryType {
   priceCurrency: String!
   stock: Int!
   isPublished: Boolean!
+  # Phase 3 – display flags
+  isFeatured: Boolean!
+  isBestSeller: Boolean!
+  isNew: Boolean!
+  isOnSale: Boolean!
   primaryImageUrl: String
   categoryName: String!
   brandName: String!
@@ -100,6 +125,11 @@ type ProductDetailType {
   priceCurrency: String!
   stock: Int!
   isPublished: Boolean!
+  # Phase 3 – display flags
+  isFeatured: Boolean!
+  isBestSeller: Boolean!
+  isNew: Boolean!
+  isOnSale: Boolean!
   avgRating: Float!
   reviewCount: Int!
   brand: BrandType!
@@ -170,6 +200,11 @@ input ProductFilterInput {
   brandId: ID
   condition: String
   vehicleModelId: ID
+  # Phase 3 – display-flag filters
+  isFeatured: Boolean
+  isBestSeller: Boolean
+  isNew: Boolean
+  isOnSale: Boolean
   page: Int
   pageSize: Int
 }
@@ -184,6 +219,10 @@ input UpdateBrandInput {
   id: ID!
   name: String!
   logoUrl: String
+  # Phase 3 – display flags
+  isFeatured: Boolean
+  showInHome: Boolean
+  isSponsored: Boolean
 }
 
 input CreateCategoryInput {
@@ -199,6 +238,11 @@ input UpdateCategoryInput {
   name: String!
   imageUrl: String
   sortOrder: Int!
+  # Phase 3 – display flags
+  isActive: Boolean
+  isFeatured: Boolean
+  showInHome: Boolean
+  showInMenu: Boolean
 }
 
 input CreateVehicleMakeInput {
@@ -248,6 +292,13 @@ input UpdateProductStockInput {
   newStock: Int!
 }
 
+input AddProductImageInput {
+  productId: ID!
+  url: String!
+  altText: String
+  isPrimary: Boolean
+}
+
 input AddProductFitmentInput {
   productId: ID!
   vehicleModelId: ID!
@@ -264,4 +315,9 @@ input UpdateProductInput {
   brandId: ID
   categoryId: ID
   translations: [ProductTranslationInputType!]
+  # Phase 3 – display flags
+  isFeatured: Boolean
+  isBestSeller: Boolean
+  isNew: Boolean
+  isOnSale: Boolean
 }

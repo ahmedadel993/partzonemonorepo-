@@ -1,21 +1,25 @@
 import { useState } from "react";
 import { PageBlocksPanel } from "./PageBlocksPanel";
 import { CouponsPanel } from "./CouponsPanel";
+import { PaymentMethodsPanel } from "./PaymentMethodsPanel";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const TABS = [
-  { id: "blocks" as const, label: "بلوكات الصفحة" },
-  { id: "coupons" as const, label: "كوبونات الخصم" },
-];
-
-type TabId = (typeof TABS)[number]["id"];
+type TabId = "blocks" | "coupons" | "payment";
 
 export default function MarketingPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabId>("blocks");
 
+  const TABS = [
+    { id: "blocks" as const, label: t("marketingTabBlocks") },
+    { id: "coupons" as const, label: t("marketingTabCoupons") },
+    { id: "payment" as const, label: t("marketingTabPayments") },
+  ];
+
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-text">التسويق</h2>
+        <h2 className="text-xl font-semibold text-text">{t("marketingHeading")}</h2>
       </div>
 
       {/* Tab bar */}
@@ -42,6 +46,7 @@ export default function MarketingPage() {
       <div role="tabpanel">
         {activeTab === "blocks" && <PageBlocksPanel />}
         {activeTab === "coupons" && <CouponsPanel />}
+        {activeTab === "payment" && <PaymentMethodsPanel />}
       </div>
     </div>
   );

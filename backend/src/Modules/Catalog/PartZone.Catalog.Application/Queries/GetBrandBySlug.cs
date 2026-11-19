@@ -13,6 +13,6 @@ internal sealed class GetBrandBySlugHandler(ICatalogReadRepository repo)
     {
         var b = await repo.GetBrandBySlugAsync(request.Slug, ct);
         return Result.Success<BrandDto?>(
-            b is null ? null : new BrandDto(b.Id, b.Name, b.Slug, b.LogoUrl, b.IsActive));
+            b is null ? null : new BrandDto(b.Id, b.Name, b.Slug, b.LogoUrl, b.IsActive, b.IsFeatured, b.ShowInHome, b.IsSponsored));
     }
 }

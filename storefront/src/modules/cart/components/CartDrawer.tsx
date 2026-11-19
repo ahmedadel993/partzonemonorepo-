@@ -2,12 +2,14 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCartStore } from "@/shared/stores/useCartStore";
 import { CartItemRow } from "./CartItemRow";
 
 export function CartDrawer() {
   const locale = useLocale();
+  const t = useTranslations("cart");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const { isDrawerOpen, closeDrawer, cart, itemCount } = useCartStore();
   const count = itemCount();
@@ -39,7 +41,7 @@ export function CartDrawer() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="سلة المشتريات"
+        aria-label={t("title")}
         className={[
           "fixed top-0 end-0 z-50 h-full w-full max-w-sm bg-surface border-s border-border shadow-2xl",
           "flex flex-col transition-transform duration-300 ease-out",
@@ -49,9 +51,9 @@ export function CartDrawer() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-border shrink-0">
           <h2 className="text-base font-semibold text-text">
-            سلة المشتريات {count > 0 && <span className="text-text-muted font-normal">({count})</span>}
+            {t("title")} {count > 0 && <span className="text-text-muted font-normal">({count})</span>}
           </h2>
-          <button onClick={closeDrawer} aria-label="إغلاق" className="p-2 rounded hover:bg-surface-alt transition-colors text-text-muted hover:text-text text-xl leading-none">
+          <button onClick={closeDrawer} aria-label={tCommon("close")} className="p-2 rounded hover:bg-surface-alt transition-colors text-text-muted hover:text-text text-xl leading-none">
             ✕
           </button>
         </div>
@@ -65,8 +67,8 @@ export function CartDrawer() {
                 <line x1="3" y1="6" x2="21" y2="6"/>
                 <path d="M16 10a4 4 0 01-8 0"/>
               </svg>
-              <p className="text-text-muted text-sm">سلتك فارغة</p>
-              <button onClick={closeDrawer} className="text-sm text-accent hover:underline">ابدأ التسوق</button>
+              <p className="text-text-muted text-sm">{t("empty")}</p>
+              <button onClick={closeDrawer} className="text-sm text-accent hover:underline">{t("startShopping")}</button>
             </div>
           ) : (
             cart.items.map((item) => <CartItemRow key={item.id} item={item} />)
@@ -77,20 +79,20 @@ export function CartDrawer() {
         {cart && cart.items.length > 0 && (
           <div className="shrink-0 border-t border-border px-4 py-4 space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-text-muted">المجموع الفرعي</span>
-              <span className="font-semibold text-text" dir="ltr">{cart.subTotal.toFixed(2)} ج.م</span>
+              <span className="text-text-muted">{t("subtotal")}</span>
+              <span className="font-semibold text-text" dir="ltr">{cart.subTotal.toFixed(2)} {tCommon("currency")}</span>
             </div>
             <button
               onClick={() => { closeDrawer(); router.push(`/${locale}/checkout`); }}
               className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-semibold rounded-lg transition-colors text-sm"
             >
-              إتمام الطلب
+              {t("completeOrder")}
             </button>
             <button
               onClick={() => { closeDrawer(); router.push(`/${locale}/cart`); }}
               className="w-full h-9 border border-border text-text text-sm rounded-lg hover:bg-surface-alt transition-colors"
             >
-              عرض السلة الكاملة
+              {t("viewCart")}
             </button>
           </div>
         )}

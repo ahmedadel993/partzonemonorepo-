@@ -9,5 +9,7 @@ public interface IPageBlockRepository
     Task<PageBlock?> GetByIdAsync(Guid id, CancellationToken ct);
     void Add(PageBlock block);
     void Update(PageBlock block);
+    void Remove(PageBlock block);
+    void AddTranslation(PageBlockTranslation translation);
     Task SaveChangesAsync(CancellationToken ct);
 }

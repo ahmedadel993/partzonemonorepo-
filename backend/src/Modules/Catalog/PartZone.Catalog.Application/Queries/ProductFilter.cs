@@ -8,5 +8,9 @@ public sealed record ProductFilter(
     int? YearTo = null,
     string? Condition = null,
     string? Q = null,
+    bool? IsFeatured = null,
+    bool? IsBestSeller = null,
+    bool? IsNew = null,
+    bool? IsOnSale = null,
     int Page = 1,
     int PageSize = 24);

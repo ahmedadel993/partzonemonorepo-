@@ -3,21 +3,23 @@ import { BrandsPanel } from "./BrandsPanel";
 import { ProductsPanel } from "./ProductsPanel";
 import { CategoriesPanel } from "./CategoriesPanel";
 import { VehiclesPanel } from "./VehiclesPanel";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Tab = "products" | "brands" | "categories" | "vehicles";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "products",   label: "المنتجات" },
-  { id: "brands",     label: "الماركات" },
-  { id: "categories", label: "الفئات" },
-  { id: "vehicles",   label: "المركبات" },
-];
-
 export default function CatalogPage() {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<Tab>("products");
 
+  const TABS: { id: Tab; label: string }[] = [
+    { id: "products",   label: t("catalogTabProducts") },
+    { id: "brands",     label: t("catalogTabBrands") },
+    { id: "categories", label: t("catalogTabCategories") },
+    { id: "vehicles",   label: t("catalogTabVehicles") },
+  ];
+
   return (
-    <div dir="rtl">
+    <div>
       {/* Tab bar */}
       <div className="flex gap-1 border-b border-border mb-6">
         {TABS.map((t) => (
