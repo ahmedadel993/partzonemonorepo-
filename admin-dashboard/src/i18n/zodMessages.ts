@@ -16,6 +16,7 @@ const messages = {
     startRequired: "تاريخ البداية مطلوب",
     endRequired: "تاريخ الانتهاء مطلوب",
     keyInvalid: "أحرف صغيرة وأرقام وشرطة سفلية فقط",
+    emailInvalid: "بريد إلكتروني غير صالح",
   },
   en: {
     required: "Required",
@@ -32,6 +33,7 @@ const messages = {
     startRequired: "Start date is required",
     endRequired: "End date is required",
     keyInvalid: "Lowercase letters, numbers, underscores only",
+    emailInvalid: "Invalid email address",
   },
 } as const;
 

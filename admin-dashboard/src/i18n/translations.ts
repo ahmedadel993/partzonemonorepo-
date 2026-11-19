@@ -411,6 +411,35 @@ export const translations = {
     payActionConfirm: "تأكيد",
     payActionCancel: "إلغاء",
     payMethodNamePlaceholder: "الدفع عند الاستلام",
+
+    // ── Users CRUD ─────────────────────────────────────────────────
+    drawerNewUser: "مستخدم جديد",
+    drawerEditUser: "تعديل المستخدم",
+    fieldEmail: "البريد الإلكتروني",
+    fieldPassword: "كلمة المرور",
+    fieldRole: "الدور",
+    fieldFirstName: "الاسم الأول",
+    fieldLastName: "اسم العائلة",
+    deleteConfirmUser: "هل تريد حذف هذا المستخدم نهائياً؟",
+    addUser: "إضافة مستخدم",
+
+    // ── Customers ──────────────────────────────────────────────────
+    customersHeading: "العملاء",
+    customers: "العملاء",
+    drawerEditCustomer: "تعديل العميل",
+    deleteConfirmCustomer: "هل تريد حذف هذا العميل؟",
+    noCustomers: "لا يوجد عملاء",
+    customersError: "تعذّر تحميل العملاء",
+
+    // ── Vendors CRUD ───────────────────────────────────────────────
+    fieldCompanyName: "اسم الشركة",
+    fieldTaxId: "الرقم الضريبي",
+    fieldCommission: "نسبة العمولة (0-1)",
+    fieldUserId: "معرف المستخدم",
+    drawerNewVendor: "مورّد جديد",
+    drawerEditVendor: "تعديل المورّد",
+    deleteConfirmVendor: "هل تريد حذف هذا المورّد؟",
+    addVendor: "إضافة مورّد",
   },
   en: {
     // ── Sidebar nav ──────────────────────────────────────────────
@@ -824,6 +853,35 @@ export const translations = {
     payActionConfirm: "Confirm",
     payActionCancel: "Cancel",
     payMethodNamePlaceholder: "Cash on Delivery",
+
+    // ── Users CRUD ─────────────────────────────────────────────────
+    drawerNewUser: "New User",
+    drawerEditUser: "Edit User",
+    fieldEmail: "Email",
+    fieldPassword: "Password",
+    fieldRole: "Role",
+    fieldFirstName: "First Name",
+    fieldLastName: "Last Name",
+    deleteConfirmUser: "Are you sure you want to permanently delete this user?",
+    addUser: "Add User",
+
+    // ── Customers ──────────────────────────────────────────────────
+    customersHeading: "Customers",
+    customers: "Customers",
+    drawerEditCustomer: "Edit Customer",
+    deleteConfirmCustomer: "Are you sure you want to delete this customer?",
+    noCustomers: "No customers found",
+    customersError: "Failed to load customers",
+
+    // ── Vendors CRUD ───────────────────────────────────────────────
+    fieldCompanyName: "Company Name",
+    fieldTaxId: "Tax ID",
+    fieldCommission: "Commission Rate (0-1)",
+    fieldUserId: "User ID",
+    drawerNewVendor: "New Vendor",
+    drawerEditVendor: "Edit Vendor",
+    deleteConfirmVendor: "Are you sure you want to delete this vendor?",
+    addVendor: "Add Vendor",
   },
 } as const;
 

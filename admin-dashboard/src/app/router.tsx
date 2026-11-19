@@ -26,9 +26,10 @@ const LoginPage           = lazy(() => import("@/features/auth/components/LoginS
 const CatalogPage         = lazy(() => import("@/features/catalog/components/CatalogPage"));
 const MarketingPage       = lazy(() => import("@/features/marketing/components/MarketingPage"));
 const OrdersPage          = lazy(() => import("@/features/orders/components/OrdersStub"));
-const UsersPage           = lazy(() => import("@/features/users/components/UsersStub"));
+const UsersPage           = lazy(() => import("@/features/users/components/UsersPanel"));
+const CustomersPage       = lazy(() => import("@/features/customers/components/CustomersPanel"));
 const SettingsPage        = lazy(() => import("@/features/settings/components/SettingsStub"));
-const VendorsPage         = lazy(() => import("@/features/vendors/components/VendorsStub"));
+const VendorsPage         = lazy(() => import("@/features/vendors/components/VendorsPanel"));
 const ErpPage             = lazy(() => import("@/features/erp/components/ErpStub"));
 // Phase 4 – catalog detail pages
 const ProductDetailPage   = lazy(() => import("@/features/catalog/components/ProductDetailPage"));
@@ -54,9 +55,10 @@ const indexRoute          = createRoute({ getParentRoute: () => layoutRoute, pat
 const catalogRoute        = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog",  component: wrap(CatalogPage) });
 const marketingRoute      = createRoute({ getParentRoute: () => layoutRoute, path: "/marketing",component: wrap(MarketingPage) });
 const ordersRoute         = createRoute({ getParentRoute: () => layoutRoute, path: "/orders",   component: wrap(OrdersPage) });
-const usersRoute          = createRoute({ getParentRoute: () => layoutRoute, path: "/users",    component: wrap(UsersPage) });
-const settingsRoute       = createRoute({ getParentRoute: () => layoutRoute, path: "/settings", component: wrap(SettingsPage) });
-const vendorsRoute        = createRoute({ getParentRoute: () => layoutRoute, path: "/vendors",  component: wrap(VendorsPage) });
+const usersRoute          = createRoute({ getParentRoute: () => layoutRoute, path: "/users",     component: wrap(UsersPage) });
+const customersRoute      = createRoute({ getParentRoute: () => layoutRoute, path: "/customers", component: wrap(CustomersPage as React.LazyExoticComponent<() => JSX.Element>) });
+const settingsRoute       = createRoute({ getParentRoute: () => layoutRoute, path: "/settings",  component: wrap(SettingsPage) });
+const vendorsRoute        = createRoute({ getParentRoute: () => layoutRoute, path: "/vendors",   component: wrap(VendorsPage as React.LazyExoticComponent<() => JSX.Element>) });
 const erpRoute            = createRoute({ getParentRoute: () => layoutRoute, path: "/erp",      component: wrap(ErpPage) });
 // Phase 4 – catalog detail routes
 const productDetailRoute  = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/products/$productId",  component: wrap(ProductDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
@@ -67,7 +69,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   layoutRoute.addChildren([
     indexRoute, catalogRoute, marketingRoute, ordersRoute,
-    usersRoute, settingsRoute, vendorsRoute, erpRoute,
+    usersRoute, customersRoute, settingsRoute, vendorsRoute, erpRoute,
     productDetailRoute, categoryDetailRoute, brandDetailRoute,
   ]),
 ]);

@@ -16,6 +16,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     { to: "/marketing", label: t("marketing") },
     { to: "/orders",    label: t("orders") },
     { to: "/users",     label: t("users") },
+    { to: "/customers", label: t("customersHeading") },
     { to: "/vendors",   label: t("vendors") },
     { to: "/erp",       label: t("erpSync") },
     { to: "/settings",  label: t("settings") },
