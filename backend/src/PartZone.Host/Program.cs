@@ -152,6 +152,24 @@ if (builder.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
     await db.Database.MigrateAsync();
 }
 
+// ── Seed admin user if not present ───────────────────────────────────────────
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var hasher = scope.ServiceProvider.GetRequiredService<PartZone.Identity.Application.Interfaces.IPasswordHasher>();
+    const string adminEmail = "admin@partzone.local";
+    if (!db.Users.Any(u => u.Email == adminEmail))
+    {
+        var admin = PartZone.Identity.Domain.Entities.User.Create(
+            adminEmail,
+            hasher.Hash("Admin@12345"),
+            "Admin", "PartZone",
+            PartZone.Identity.Domain.Entities.UserRole.Admin);
+        db.Users.Add(admin);
+        await db.SaveChangesAsync();
+    }
+}
+
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 
