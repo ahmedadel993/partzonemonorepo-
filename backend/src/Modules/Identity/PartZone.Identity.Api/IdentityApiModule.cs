@@ -21,6 +21,9 @@ public static class IdentityApiModule
         app.MapPut("/api/v1/admin/users/{id:guid}/role", IdentityEndpoints.ChangeUserRoleAsync)
             .RequireAuthorization("Admin");
 
+        group.MapPut("/me", IdentityEndpoints.UpdateMyProfileAsync).RequireAuthorization();
+        group.MapPut("/me/password", IdentityEndpoints.ChangePasswordAsync).RequireAuthorization();
+
         return app;
     }
 }

@@ -14,5 +14,6 @@ public interface IIdentityRepository
     Task AddAddressAsync(Address address, CancellationToken ct = default);
     Task<bool> DeleteAddressAsync(Guid addressId, Guid userId, CancellationToken ct = default);
     void UpdateUser(User user);
+    Task DeleteUserAsync(Guid userId, CancellationToken ct = default);
     Task SaveChangesAsync(CancellationToken ct = default);
 }

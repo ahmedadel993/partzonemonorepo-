@@ -14,6 +14,7 @@ public interface IVendorRepository
     Task<IReadOnlyList<Vendor>> GetAllAsync(CancellationToken ct = default);
     void Add(Vendor vendor);
     void Update(Vendor vendor);
+    Task DeleteAsync(Guid vendorId, CancellationToken ct = default);
     Task SaveChangesAsync(CancellationToken ct = default);
 }
 
@@ -84,6 +85,61 @@ internal sealed class SuspendVendorHandler(IVendorRepository repo)
         repo.Update(vendor);
         await repo.SaveChangesAsync(ct);
         return Result.Success();
+    }
+}
+
+public sealed record UpdateVendorCommand(
+    Guid VendorId, string CompanyName, string? TaxId, string? PhoneNumber, decimal CommissionRate)
+    : ICommand;
+
+internal sealed class UpdateVendorHandler(IVendorRepository repo)
+    : ICommandHandler<UpdateVendorCommand>
+{
+    public async Task<Result> Handle(UpdateVendorCommand request, CancellationToken ct)
+    {
+        var vendor = await repo.GetByIdAsync(request.VendorId, ct);
+        if (vendor is null)
+            return Result.Failure(Error.NotFound("Vendors.NotFound", "Vendor not found."));
+        vendor.Update(request.CompanyName, request.TaxId, request.PhoneNumber, request.CommissionRate);
+        repo.Update(vendor);
+        await repo.SaveChangesAsync(ct);
+        return Result.Success();
+    }
+}
+
+public sealed record DeleteVendorCommand(Guid VendorId) : ICommand;
+
+internal sealed class DeleteVendorHandler(IVendorRepository repo)
+    : ICommandHandler<DeleteVendorCommand>
+{
+    public async Task<Result> Handle(DeleteVendorCommand request, CancellationToken ct)
+    {
+        var vendor = await repo.GetByIdAsync(request.VendorId, ct);
+        if (vendor is null)
+            return Result.Failure(Error.NotFound("Vendors.NotFound", "Vendor not found."));
+        await repo.DeleteAsync(request.VendorId, ct);
+        return Result.Success();
+    }
+}
+
+public sealed record AdminCreateVendorCommand(
+    Guid UserId, string CompanyName, string? TaxId, string? PhoneNumber, decimal CommissionRate)
+    : ICommand<Guid>;
+
+internal sealed class AdminCreateVendorHandler(IVendorRepository repo)
+    : ICommandHandler<AdminCreateVendorCommand, Guid>
+{
+    public async Task<Result<Guid>> Handle(AdminCreateVendorCommand request, CancellationToken ct)
+    {
+        var existing = await repo.GetByUserIdAsync(request.UserId, ct);
+        if (existing is not null)
+            return Result.Failure<Guid>(Error.Conflict("Vendors.AlreadyRegistered", "User is already registered as a vendor."));
+
+        var vendor = Vendor.Create(request.UserId, request.CompanyName, request.TaxId, request.PhoneNumber);
+        vendor.Update(request.CompanyName, request.TaxId, request.PhoneNumber, request.CommissionRate);
+        repo.Add(vendor);
+        await repo.SaveChangesAsync(ct);
+        return Result.Success(vendor.Id);
     }
 }
 

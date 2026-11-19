@@ -69,6 +69,7 @@ builder.Services.AddIdentityModule(jwtSettings);
 // HotChocolate fails to bind the Marketing Query resolvers ("has no resolver").
 builder.Services.AddMarketingModule(graphql);
 builder.Services.AddCatalogModule(graphql);
+builder.Services.AddIdentityGqlModule(graphql);
 builder.Services.AddCartModule();
 builder.Services.AddCheckoutModule();
 builder.Services.AddOrdersModule();

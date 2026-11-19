@@ -84,6 +84,28 @@ internal static class IdentityEndpoints
                     ? StatusCodes.Status404NotFound
                     : StatusCodes.Status422UnprocessableEntity);
     }
+
+    internal static async Task<IResult> UpdateMyProfileAsync(
+        UpdateMyProfileRequest req, ClaimsPrincipal user, IMediator mediator, CancellationToken ct)
+    {
+        var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await mediator.Send(
+            new UpdateMyProfileCommand(userId, req.FirstName, req.LastName, req.PhoneNumber), ct);
+        return result.IsSuccess ? Results.Ok() : Results.Problem(result.Error.Description,
+            statusCode: StatusCodes.Status422UnprocessableEntity);
+    }
+
+    internal static async Task<IResult> ChangePasswordAsync(
+        ChangePasswordRequest req, ClaimsPrincipal user, IMediator mediator, CancellationToken ct)
+    {
+        var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await mediator.Send(
+            new ChangePasswordCommand(userId, req.CurrentPassword, req.NewPassword), ct);
+        return result.IsSuccess ? Results.Ok() : Results.Problem(result.Error.Description,
+            statusCode: result.Error.Code == "Identity.InvalidCredentials"
+                ? StatusCodes.Status401Unauthorized
+                : StatusCodes.Status422UnprocessableEntity);
+    }
 }
 
 internal sealed record RegisterRequest(string Email, string Password, string FirstName, string LastName);
@@ -92,3 +114,5 @@ internal sealed record AddAddressRequest(
     string Label, string StreetLine1, string? StreetLine2,
     string City, string Governorate, string PostalCode, bool IsDefault = false);
 internal sealed record ChangeRoleRequest(string Role);
+internal sealed record UpdateMyProfileRequest(string FirstName, string LastName, string? PhoneNumber);
+internal sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);

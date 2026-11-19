@@ -44,4 +44,11 @@ public sealed class User : AggregateRoot<Guid>
     public void Activate()   { IsActive = true;  UpdatedAt = DateTime.UtcNow; }
     public void UpdatePassword(string newHash) { PasswordHash = newHash; UpdatedAt = DateTime.UtcNow; }
     public void ChangeRole(UserRole newRole)  { Role = newRole; UpdatedAt = DateTime.UtcNow; }
+    public void Update(string firstName, string lastName, string? phoneNumber)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        PhoneNumber = phoneNumber;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

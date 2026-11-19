@@ -27,6 +27,17 @@ internal sealed class VendorRepository : IVendorRepository
 
     public void Add(Vendor vendor) => _ctx.Set<Vendor>().Add(vendor);
     public void Update(Vendor vendor) => _ctx.Set<Vendor>().Update(vendor);
+
+    public async Task DeleteAsync(Guid vendorId, CancellationToken ct = default)
+    {
+        var vendor = await _ctx.Set<Vendor>().FindAsync([vendorId], ct);
+        if (vendor != null)
+        {
+            _ctx.Set<Vendor>().Remove(vendor);
+            await _ctx.SaveChangesAsync(ct);
+        }
+    }
+
     public Task SaveChangesAsync(CancellationToken ct = default) => _ctx.SaveChangesAsync(ct);
 }
 

@@ -55,6 +55,16 @@ public sealed class IdentityRepository : IIdentityRepository
 
     public void UpdateUser(User user) => _ctx.Set<User>().Update(user);
 
+    public async Task DeleteUserAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await _ctx.Set<User>().FindAsync([userId], ct);
+        if (user != null)
+        {
+            _ctx.Set<User>().Remove(user);
+            await _ctx.SaveChangesAsync(ct);
+        }
+    }
+
     public Task SaveChangesAsync(CancellationToken ct) =>
         _ctx.SaveChangesAsync(ct);
 }

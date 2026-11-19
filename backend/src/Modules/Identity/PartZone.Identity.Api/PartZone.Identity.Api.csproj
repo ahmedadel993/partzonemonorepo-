@@ -3,6 +3,8 @@
   <ItemGroup>
     <ProjectReference Include="..\PartZone.Identity.Application\PartZone.Identity.Application.csproj" />
     <ProjectReference Include="..\..\..\PartZone.Shared.Kernel\PartZone.Shared.Kernel.csproj" />
+    <ProjectReference Include="..\..\Vendors\PartZone.Vendors.Application\PartZone.Vendors.Application.csproj" />
+    <ProjectReference Include="..\..\Catalog\PartZone.Catalog.Api\PartZone.Catalog.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -10,7 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="HotChocolate.AspNetCore" Version="14.3.0" />
     <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Schemas\identity.graphql" />
   </ItemGroup>
 
   <PropertyGroup>

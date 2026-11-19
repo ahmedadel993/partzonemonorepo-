@@ -31,4 +31,11 @@ public sealed class Vendor : AggregateRoot<Guid>
 
     public void Approve() => Status = VendorStatus.Approved;
     public void Suspend() => Status = VendorStatus.Suspended;
+    public void Update(string companyName, string? taxId, string? phoneNumber, decimal commissionRate)
+    {
+        CompanyName = companyName;
+        TaxId = taxId;
+        PhoneNumber = phoneNumber;
+        CommissionRate = commissionRate;
+    }
 }

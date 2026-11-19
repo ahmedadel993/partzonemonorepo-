@@ -1,0 +1,91 @@
+# ── Output types ──────────────────────────────────────────────────────────────
+
+type UserType {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  phoneNumber: String
+  role: String!
+  isActive: Boolean!
+  createdAt: String!
+}
+
+type VendorGqlType {
+  id: ID!
+  userId: ID!
+  companyName: String!
+  taxId: String
+  phoneNumber: String
+  commissionRate: Float!
+  status: String!
+  createdAt: String!
+}
+
+# ── Payloads ──────────────────────────────────────────────────────────────────
+
+type UserPayload {
+  user: UserType
+  errors: [String!]!
+}
+
+type VendorGqlPayload {
+  vendor: VendorGqlType
+  errors: [String!]!
+}
+
+# ── Input types ───────────────────────────────────────────────────────────────
+
+input AdminCreateUserInput {
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  role: String!
+}
+
+input UpdateUserInput {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  phoneNumber: String
+  role: String
+}
+
+input AdminCreateVendorInput {
+  userId: ID!
+  companyName: String!
+  taxId: String
+  phoneNumber: String
+  commissionRate: Float
+}
+
+input UpdateVendorInput {
+  id: ID!
+  companyName: String!
+  taxId: String
+  phoneNumber: String
+  commissionRate: Float!
+}
+
+# ── Queries ───────────────────────────────────────────────────────────────────
+
+extend type Query {
+  users(role: String): [UserType!]!
+  userById(id: ID!): UserType
+  gqlVendors: [VendorGqlType!]!
+  gqlVendorById(id: ID!): VendorGqlType
+}
+
+# ── Mutations ─────────────────────────────────────────────────────────────────
+
+extend type Mutation {
+  adminCreateUser(input: AdminCreateUserInput!): UserPayload!
+  updateUser(input: UpdateUserInput!): UserPayload!
+  deleteUser(id: ID!): DeletePayload!
+  adminCreateVendor(input: AdminCreateVendorInput!): VendorGqlPayload!
+  updateVendor(input: UpdateVendorInput!): VendorGqlPayload!
+  deleteVendor(id: ID!): DeletePayload!
+  approveVendor(id: ID!): VendorGqlPayload!
+  suspendVendor(id: ID!): VendorGqlPayload!
+}

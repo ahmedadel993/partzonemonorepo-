@@ -5,7 +5,8 @@ using PartZone.Shared.Kernel.Results;
 namespace PartZone.Identity.Application.Queries;
 
 public sealed record UserAdminDto(
-    Guid Id, string Email, string FirstName, string LastName, string Role, DateTime CreatedAt);
+    Guid Id, string Email, string FirstName, string LastName, string? PhoneNumber,
+    string Role, bool IsActive, DateTime CreatedAt);
 
 public sealed record GetAllUsersQuery : IQuery<IReadOnlyList<UserAdminDto>>;
 
@@ -16,7 +17,7 @@ internal sealed class GetAllUsersHandler(IIdentityRepository repo)
     {
         var users = await repo.GetAllAsync(ct);
         var dtos = users
-            .Select(u => new UserAdminDto(u.Id, u.Email, u.FirstName, u.LastName, u.Role.ToString(), u.CreatedAt))
+            .Select(u => new UserAdminDto(u.Id, u.Email, u.FirstName, u.LastName, u.PhoneNumber, u.Role.ToString(), u.IsActive, u.CreatedAt))
             .ToList()
             .AsReadOnly();
         return Result.Success<IReadOnlyList<UserAdminDto>>(dtos);
