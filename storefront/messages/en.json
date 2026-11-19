@@ -170,7 +170,20 @@
     "title": "My Account",
     "orders": "My Orders",
     "addresses": "My Addresses",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "editProfile": "Edit Profile",
+    "editProfileTitle": "Edit Profile",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "Your phone number",
+    "currentPasswordLabel": "Current Password",
+    "newPasswordLabel": "New Password",
+    "confirmPasswordLabel": "Confirm New Password",
+    "passwordMismatch": "Passwords do not match",
+    "profileSaved": "Profile saved successfully",
+    "passwordChanged": "Password changed successfully",
+    "saveProfile": "Save Changes",
+    "changePasswordTitle": "Change Password",
+    "changePasswordBtn": "Change Password"
   },
   "orders": {
     "title": "My Orders",

@@ -37,6 +37,13 @@ export async function AccountPageModule({ user, locale, handleLogout }: AccountP
       {/* Quick links */}
       <div className="space-y-2">
         <Link
+          href={`/${locale}/account/profile`}
+          className="flex items-center justify-between bg-surface border border-border rounded-xl px-5 py-4 hover:bg-surface-alt transition-colors group"
+        >
+          <span className="font-medium text-text">{t("editProfile")}</span>
+          <span className="text-text-muted group-hover:text-text transition-colors">→</span>
+        </Link>
+        <Link
           href={`/${locale}/orders`}
           className="flex items-center justify-between bg-surface border border-border rounded-xl px-5 py-4 hover:bg-surface-alt transition-colors group"
         >

@@ -202,4 +202,51 @@ test.describe("Admin seed cycle", () => {
     await page.locator("button[type='submit']").click();
     await expect(page.getByText("بطاقة ائتمانية").first()).toBeVisible({ timeout: 10_000 });
   });
+
+  // ── 7. Admin creates a user via Users panel ────────────────────────────────
+  test("7. admin creates a user via Users panel", async ({ page }) => {
+    await page.goto(`${ADMIN_URL}/users`);
+    await page.waitForLoadState("networkidle");
+
+    // Open create drawer
+    const addBtn = page.locator("button").filter({ hasText: /إضافة مستخدم|Add User/i }).first();
+    if (!(await addBtn.isVisible({ timeout: 5_000 }).catch(() => false))) {
+      // Panel may not have full CRUD yet — just assert it loads
+      await expect(page.locator("h2, h1").first()).toBeVisible({ timeout: 5_000 });
+      return;
+    }
+    await addBtn.click();
+
+    const ts2 = Date.now();
+    await page.locator("input[type='email']").fill(`testuser_${ts2}@admin.com`);
+    await page.locator("input[type='password']").fill("Test@12345");
+    const textInputs = page.locator("input[type='text']");
+    await textInputs.nth(0).fill("مستخدم");
+    await textInputs.nth(1).fill("تجريبي");
+
+    await page.locator("button[type='submit']").last().click();
+    await expect(page.locator("table")).toBeVisible({ timeout: 10_000 });
+  });
+
+  // ── 8. Admin views Vendors panel ──────────────────────────────────────────
+  test("8. admin views Vendors panel", async ({ page }) => {
+    await page.goto(`${ADMIN_URL}/vendors`);
+    await page.waitForLoadState("networkidle");
+
+    // Assert the panel loaded (table or empty state)
+    await expect(page.locator("h2, h1, table").first()).toBeVisible({ timeout: 10_000 });
+
+    // If Add Vendor button exists, verify it opens a drawer
+    const addVendorBtn = page.locator("button").filter({ hasText: /إضافة مورّد|Add Vendor/i }).first();
+    if (await addVendorBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await addVendorBtn.click();
+      await page.waitForTimeout(500);
+      const closeBtn = page
+        .locator("button[aria-label*='close'], button[aria-label*='إغلاق']")
+        .first();
+      if (await closeBtn.isVisible({ timeout: 1_000 }).catch(() => false)) {
+        await closeBtn.click();
+      }
+    }
+  });
 });

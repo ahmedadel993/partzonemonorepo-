@@ -4,6 +4,7 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   role: string;
+  phoneNumber?: string;
 }
 
 export interface LoginInput {

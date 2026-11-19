@@ -141,6 +141,62 @@ export async function deleteAddress(addressId: string): Promise<boolean> {
   }
 }
 
+export async function updateMyProfile(
+  firstName: string,
+  lastName: string,
+  phoneNumber?: string
+): Promise<{ ok: boolean; error?: string }> {
+  const headers = await getAuthHeaders();
+  if (!headers.Authorization) return { ok: false, error: "Not authenticated" };
+  try {
+    const res = await fetch(`${API}/identity/me`, {
+      method: "PUT",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ firstName, lastName, phoneNumber }),
+      cache: "no-store",
+    });
+    if (!res.ok) return { ok: false, error: "Failed to update profile" };
+    const meRes = await fetch(`${API}/identity/me`, { headers, cache: "no-store" });
+    if (meRes.ok) {
+      const user = await meRes.json();
+      const cookieStore = await cookies();
+      cookieStore.set("auth_user", JSON.stringify(user), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "An error occurred" };
+  }
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<{ ok: boolean; error?: string }> {
+  const headers = await getAuthHeaders();
+  if (!headers.Authorization) return { ok: false, error: "Not authenticated" };
+  try {
+    const res = await fetch(`${API}/identity/me/password`, {
+      method: "PUT",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword, newPassword }),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false, error: text || "Failed to change password" };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "An error occurred" };
+  }
+}
+
 export async function cancelOrder(orderId: string): Promise<boolean> {
   const headers = await getAuthHeaders();
   if (!headers.Authorization) return false;

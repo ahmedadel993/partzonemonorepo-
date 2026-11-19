@@ -24,6 +24,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["admin-seed"],
     },
+    {
+      name: "account-checkout",
+      testMatch: "**/account-checkout.spec.ts",
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["admin-seed"],
+    },
   ],
   timeout: 90_000,
 });

@@ -170,7 +170,20 @@
     "title": "حسابي",
     "orders": "طلباتي",
     "addresses": "عناويني",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "editProfile": "تعديل الملف الشخصي",
+    "editProfileTitle": "تعديل الملف الشخصي",
+    "phoneLabel": "رقم الهاتف",
+    "phonePlaceholder": "رقم هاتفك",
+    "currentPasswordLabel": "كلمة المرور الحالية",
+    "newPasswordLabel": "كلمة المرور الجديدة",
+    "confirmPasswordLabel": "تأكيد كلمة المرور",
+    "passwordMismatch": "كلمتا المرور غير متطابقتين",
+    "profileSaved": "تم حفظ الملف الشخصي بنجاح",
+    "passwordChanged": "تم تغيير كلمة المرور بنجاح",
+    "saveProfile": "حفظ التغييرات",
+    "changePasswordTitle": "تغيير كلمة المرور",
+    "changePasswordBtn": "تغيير كلمة المرور"
   },
   "orders": {
     "title": "طلباتي",
