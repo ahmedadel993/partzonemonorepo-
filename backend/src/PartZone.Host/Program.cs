@@ -171,6 +171,24 @@ if (builder.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
     }
 }
 
+// ── Seed payment methods if not present ──────────────────────────────────────
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (!db.Set<PartZone.Marketing.Domain.Entities.PaymentMethod>().Any())
+    {
+        db.Set<PartZone.Marketing.Domain.Entities.PaymentMethod>().AddRange(
+            PartZone.Marketing.Domain.Entities.PaymentMethod.Create(
+                "cash_on_delivery", "الدفع عند الاستلام", "Cash on Delivery",
+                null, isComingSoon: false, sortOrder: 1),
+            PartZone.Marketing.Domain.Entities.PaymentMethod.Create(
+                "visa", "بطاقة فيزا", "Visa Card",
+                null, isComingSoon: true, sortOrder: 2)
+        );
+        await db.SaveChangesAsync();
+    }
+}
+
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 

@@ -20,6 +20,7 @@ public sealed class Order : AggregateRoot<Guid>
     public decimal ShippingFee { get; private set; }
     public decimal Total { get; private set; }
     public DateTime PlacedAt { get; private set; }
+    public string PaymentMethod { get; private set; } = "cash_on_delivery";
 
     private readonly List<OrderItem> _items = [];
     public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
@@ -30,7 +31,8 @@ public sealed class Order : AggregateRoot<Guid>
         ShippingAddress shippingAddress,
         string? couponCode,
         decimal discountAmount,
-        string? notes)
+        string? notes,
+        string paymentMethod = "cash_on_delivery")
     {
         var guidPart = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
         var order = new Order
@@ -43,6 +45,7 @@ public sealed class Order : AggregateRoot<Guid>
             CouponCode = couponCode,
             DiscountAmount = discountAmount,
             Notes = notes,
+            PaymentMethod = paymentMethod,
             PlacedAt = DateTime.UtcNow,
         };
 

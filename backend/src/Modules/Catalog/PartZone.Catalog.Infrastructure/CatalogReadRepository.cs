@@ -27,12 +27,26 @@ internal sealed class CatalogReadRepository(DbContext db) : ICatalogReadReposito
             .Include(c => c.Children)
             .FirstOrDefaultAsync(c => c.Slug == slug, ct);
 
-    public async Task<IReadOnlyList<Category>> GetCategoriesAsync(CancellationToken ct) =>
-        await db.Set<Category>().AsNoTracking()
+    public async Task<IReadOnlyList<Category>> GetCategoriesAsync(Guid? vehicleModelId = null, CancellationToken ct = default)
+    {
+        var query = db.Set<Category>().AsNoTracking()
             .Include(c => c.Children)
             .Where(c => c.ParentId == null)
             .OrderBy(c => c.SortOrder)
-            .ToListAsync(ct);
+            .AsQueryable();
+
+        if (vehicleModelId.HasValue)
+        {
+            var catIds = await db.Set<Product>()
+                .Where(p => p.Fitments.Any(f => f.VehicleModelId == vehicleModelId.Value))
+                .Select(p => p.CategoryId)
+                .Distinct()
+                .ToListAsync(ct);
+            query = query.Where(c => catIds.Contains(c.Id) || c.Children.Any(ch => catIds.Contains(ch.Id)));
+        }
+
+        return await query.ToListAsync(ct);
+    }
 
     public Task<Product?> GetProductBySlugAsync(string slug, CancellationToken ct) =>
         db.Set<Product>().AsNoTracking()

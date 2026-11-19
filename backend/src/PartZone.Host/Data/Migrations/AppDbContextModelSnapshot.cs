@@ -443,6 +443,10 @@ namespace PartZone.Host.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("PlacedAt")
                         .HasColumnType("datetime2");
 

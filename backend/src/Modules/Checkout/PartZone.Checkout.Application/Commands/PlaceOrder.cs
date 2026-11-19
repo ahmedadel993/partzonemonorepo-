@@ -22,7 +22,8 @@ public sealed record PlaceOrderCommand(
     ShippingAddressInput ShippingAddress,
     string? CouponCode,
     decimal DiscountAmount,
-    string? Notes) : ICommand<OrderConfirmationDto>;
+    string? Notes,
+    string PaymentMethod = "cash_on_delivery") : ICommand<OrderConfirmationDto>;
 
 public sealed class PlaceOrderValidator : AbstractValidator<PlaceOrderCommand>
 {
@@ -63,7 +64,8 @@ internal sealed class PlaceOrderHandler(IOrderRepository repo)
             shippingAddress,
             request.CouponCode,
             request.DiscountAmount,
-            request.Notes);
+            request.Notes,
+            request.PaymentMethod);
 
         repo.Add(order);
         await repo.SaveChangesAsync(ct);

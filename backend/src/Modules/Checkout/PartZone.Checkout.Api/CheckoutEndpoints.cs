@@ -23,7 +23,8 @@ internal static class CheckoutEndpoints
                 req.ShippingAddress.City, req.ShippingAddress.Governorate, req.ShippingAddress.PostalCode),
             req.CouponCode,
             req.DiscountAmount,
-            req.Notes);
+            req.Notes,
+            req.PaymentMethod ?? "cash_on_delivery");
         var result = await mediator.Send(command, ct);
         return result.IsSuccess
             ? Results.Ok(result.Value)
@@ -75,4 +76,5 @@ internal sealed record PlaceOrderRequest(
     ShippingAddressRequest ShippingAddress,
     string? CouponCode,
     decimal DiscountAmount,
-    string? Notes);
+    string? Notes,
+    string? PaymentMethod);

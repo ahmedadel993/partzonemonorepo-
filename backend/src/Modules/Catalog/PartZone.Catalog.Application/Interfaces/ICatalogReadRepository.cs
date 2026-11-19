@@ -12,7 +12,7 @@ public interface ICatalogReadRepository
 
     Task<Category?> GetCategoryByIdAsync(Guid id, CancellationToken ct = default);
     Task<Category?> GetCategoryBySlugAsync(string slug, CancellationToken ct = default);
-    Task<IReadOnlyList<Category>> GetCategoriesAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<Category>> GetCategoriesAsync(Guid? vehicleModelId = null, CancellationToken ct = default);
 
     Task<Product?> GetProductBySlugAsync(string slug, CancellationToken ct = default);
     Task<Product?> GetProductByIdAsync(Guid id, CancellationToken ct = default);

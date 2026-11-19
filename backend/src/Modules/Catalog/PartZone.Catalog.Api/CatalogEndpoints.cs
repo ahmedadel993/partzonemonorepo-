@@ -37,9 +37,10 @@ internal static class CatalogEndpoints
         return result.IsSuccess ? Results.NoContent() : Results.Problem(result.Error.Description);
     }
 
-    internal static async Task<IResult> GetCategoriesAsync(IMediator mediator, CancellationToken ct)
+    internal static async Task<IResult> GetCategoriesAsync(
+        Guid? vehicleModelId, IMediator mediator, CancellationToken ct)
     {
-        var result = await mediator.Send(new GetCategoriesQuery(), ct);
+        var result = await mediator.Send(new GetCategoriesQuery(vehicleModelId), ct);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.Problem(result.Error.Description);
     }
 
