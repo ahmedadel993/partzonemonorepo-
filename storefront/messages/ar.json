@@ -91,7 +91,10 @@
     "modelListHeading": "موديلات {make}",
     "noModels": "لا توجد موديلات متاحة",
     "searchVehicle": "قطع غيار لمركبتك",
-    "search": "البحث"
+    "search": "البحث",
+    "vehicleCategories": "فئات {make} {model}",
+    "filteringByVehicle": "يعرض قطع {make} {model}",
+    "clearVehicle": "إلغاء اختيار السيارة"
   },
   "cart": {
     "title": "سلة المشتريات",

@@ -91,7 +91,10 @@
     "modelListHeading": "Models of {make}",
     "noModels": "No models available",
     "searchVehicle": "Parts for your vehicle",
-    "search": "Search"
+    "search": "Search",
+    "vehicleCategories": "{make} {model} Categories",
+    "filteringByVehicle": "Showing parts for {make} {model}",
+    "clearVehicle": "Clear vehicle filter"
   },
   "cart": {
     "title": "Shopping Cart",

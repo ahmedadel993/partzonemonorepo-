@@ -58,7 +58,7 @@ export function VehiclePickerModal({ isOpen, onClose, locale, initialMake }: Pro
       year: 0,
     });
     onClose();
-    router.push(`/${locale}/search?vehicleModelId=${model.id}`);
+    router.push(`/${locale}/search?vehicleModelId=${model.id}&makeName=${encodeURIComponent(selectedMake!.name)}&modelName=${encodeURIComponent(model.name)}`);
   };
 
   if (!isOpen) return null;

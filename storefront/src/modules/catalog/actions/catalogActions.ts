@@ -33,8 +33,11 @@ export async function getBrandBySlug(slug: string): Promise<Brand | null> {
   return apiFetch<Brand>(`/catalog/brands/${slug}`);
 }
 
-export async function getCategories(): Promise<Category[]> {
-  return (await apiFetch<Category[]>("/catalog/categories")) ?? [];
+export async function getCategories(options?: { vehicleModelId?: string }): Promise<Category[]> {
+  const path = options?.vehicleModelId
+    ? `/catalog/categories?vehicleModelId=${options.vehicleModelId}`
+    : "/catalog/categories";
+  return (await apiFetch<Category[]>(path)) ?? [];
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {

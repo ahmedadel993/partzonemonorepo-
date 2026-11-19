@@ -7,6 +7,9 @@ interface CategoryPageModuleProps {
   paged: PagedResult<ProductSummary>;
   page: number;
   condition: string | undefined;
+  vehicleModelId?: string;
+  makeName?: string;
+  modelName?: string;
   locale: string;
 }
 
@@ -15,6 +18,9 @@ export async function CategoryPageModule({
   paged,
   page,
   condition,
+  vehicleModelId,
+  makeName,
+  modelName,
   locale,
 }: CategoryPageModuleProps) {
   const [t, tCommon] = await Promise.all([
@@ -49,37 +55,48 @@ export async function CategoryPageModule({
       {/* Subcategories */}
       {category.children.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-8">
-          {category.children.map((child) => (
-            <a
-              key={child.id}
-              href={`/${locale}/categories/${child.slug}`}
-              className="px-4 py-2 text-sm rounded-full border border-border text-text-muted hover:border-accent hover:text-text transition-colors"
-            >
-              {child.name}
-            </a>
-          ))}
+          {category.children.map((child) => {
+            const childParams = new URLSearchParams();
+            if (vehicleModelId) childParams.set("vehicleModelId", vehicleModelId);
+            if (makeName) childParams.set("makeName", makeName);
+            if (modelName) childParams.set("modelName", modelName);
+            const childQs = childParams.toString();
+            return (
+              <a
+                key={child.id}
+                href={`/${locale}/categories/${child.slug}${childQs ? `?${childQs}` : ""}`}
+                className="px-4 py-2 text-sm rounded-full border border-border text-text-muted hover:border-accent hover:text-text transition-colors"
+              >
+                {child.name}
+              </a>
+            );
+          })}
         </div>
       )}
 
       {/* Condition filter tabs */}
       <div className="flex gap-2 mb-8 border-b border-border pb-4">
-        {conditionTabs.map(({ value, label }) => (
-          <a
-            key={label}
-            href={`?${new URLSearchParams({
-              ...(value ? { condition: value } : {}),
-              page: "1",
-            }).toString()}`}
-            className={[
-              "px-4 py-2 text-sm rounded transition-colors",
-              condition === value || (!condition && !value)
-                ? "bg-accent text-accent-fg font-medium"
-                : "text-text-muted hover:text-text",
-            ].join(" ")}
-          >
-            {label}
-          </a>
-        ))}
+        {conditionTabs.map(({ value, label }) => {
+          const tabParams = new URLSearchParams({ page: "1" });
+          if (value) tabParams.set("condition", value);
+          if (vehicleModelId) tabParams.set("vehicleModelId", vehicleModelId);
+          if (makeName) tabParams.set("makeName", makeName);
+          if (modelName) tabParams.set("modelName", modelName);
+          return (
+            <a
+              key={label}
+              href={`?${tabParams.toString()}`}
+              className={[
+                "px-4 py-2 text-sm rounded transition-colors",
+                condition === value || (!condition && !value)
+                  ? "bg-accent text-accent-fg font-medium"
+                  : "text-text-muted hover:text-text",
+              ].join(" ")}
+            >
+              {label}
+            </a>
+          );
+        })}
       </div>
 
       {/* Product grid */}
@@ -96,25 +113,36 @@ export async function CategoryPageModule({
       {/* Pagination */}
       {paged.totalPages > 1 && (
         <nav className="flex justify-center gap-2 mt-10" aria-label="pages" dir="ltr">
-          {page > 1 && (
-            <a
-              href={`?page=${page - 1}${condition ? `&condition=${condition}` : ""}`}
-              className="px-4 py-2 text-sm border border-border rounded hover:bg-surface-alt text-text transition-colors"
-            >
-              ←
-            </a>
-          )}
-          <span className="px-4 py-2 text-sm text-text-muted">
-            {page} / {paged.totalPages}
-          </span>
-          {page < paged.totalPages && (
-            <a
-              href={`?page=${page + 1}${condition ? `&condition=${condition}` : ""}`}
-              className="px-4 py-2 text-sm border border-border rounded hover:bg-surface-alt text-text transition-colors"
-            >
-              →
-            </a>
-          )}
+          {(() => {
+            const baseParams: Record<string, string> = { page: "1" };
+            if (condition) baseParams.condition = condition;
+            if (vehicleModelId) baseParams.vehicleModelId = vehicleModelId;
+            if (makeName) baseParams.makeName = makeName;
+            if (modelName) baseParams.modelName = modelName;
+            return (
+              <>
+                {page > 1 && (
+                  <a
+                    href={`?${new URLSearchParams({ ...baseParams, page: String(page - 1) }).toString()}`}
+                    className="px-4 py-2 text-sm border border-border rounded hover:bg-surface-alt text-text transition-colors"
+                  >
+                    ←
+                  </a>
+                )}
+                <span className="px-4 py-2 text-sm text-text-muted">
+                  {page} / {paged.totalPages}
+                </span>
+                {page < paged.totalPages && (
+                  <a
+                    href={`?${new URLSearchParams({ ...baseParams, page: String(page + 1) }).toString()}`}
+                    className="px-4 py-2 text-sm border border-border rounded hover:bg-surface-alt text-text transition-colors"
+                  >
+                    →
+                  </a>
+                )}
+              </>
+            );
+          })()}
         </nav>
       )}
     </main>
