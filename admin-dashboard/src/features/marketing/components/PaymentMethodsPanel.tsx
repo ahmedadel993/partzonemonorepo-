@@ -55,8 +55,8 @@ const pmSchema = z.object({
   labelAr:     z.string().min(1, zm.required),
   labelEn:     z.string().min(1, zm.required),
   iconUrl:     z.string().url(zm.urlInvalid).or(z.literal("")).optional(),
-  isComingSoon: z.boolean().default(false),
-  sortOrder:   z.coerce.number().int().min(0).default(0),
+  isComingSoon: z.boolean(),
+  sortOrder:   z.coerce.number().int().min(0),
 });
 type PmForm = z.infer<typeof pmSchema>;
 
@@ -212,9 +212,9 @@ export function PaymentMethodsPanel() {
     const targetIdx = idx + dir;
     if (targetIdx < 0 || targetIdx >= sorted.length) return;
     const reordered = [...sorted];
-    [reordered[idx], reordered[targetIdx]] = [reordered[targetIdx], reordered[idx]];
+    [reordered[idx], reordered[targetIdx]] = [reordered[targetIdx]!, reordered[idx]!];
     const input = reordered.map((m, i) => ({ id: m.id, sortOrder: i }));
-    setBusyId(sorted[idx].id);
+    setBusyId(sorted[idx]!.id);
     try {
       await reorderPm({ variables: { input } });
     } finally {

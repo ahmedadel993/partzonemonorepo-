@@ -48,6 +48,6 @@ function getCurrentLang(): Lang {
   return "ar";
 }
 
-export function getZodMessages(): (typeof messages)["en"] {
+export function getZodMessages() {
   return messages[getCurrentLang()];
 }

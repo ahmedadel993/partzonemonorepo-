@@ -233,7 +233,6 @@ export const translations = {
     roleUpdating: "جارٍ…",
     userStatusActive: "نشط",
     userStatusInactive: "معطّل",
-    tableStatus: "الحالة",
 
     // ── Vendors ────────────────────────────────────────────────────
     vendorsHeading: "الموردون",
@@ -253,6 +252,15 @@ export const translations = {
     actionSuspend: "تعليق",
     actionReactivate: "إعادة تفعيل",
     noVendors: "لا يوجد موردون في هذه الفئة",
+    notFound: "غير موجود",
+    view: "عرض",
+    modelsHeading: "الموديلات",
+    createdAt: "تاريخ الإنشاء",
+    vendorTaxId: "الرقم الضريبي",
+    vendorPhone: "الهاتف",
+    vendorCommission: "معدل العمولة",
+    vendorApprove: "موافقة",
+    vendorSuspend: "تعليق",
 
     // ── ERP ────────────────────────────────────────────────────────
     erpHeading: "إدارة المخزون",
@@ -684,7 +692,6 @@ export const translations = {
     roleUpdating: "Updating…",
     userStatusActive: "Active",
     userStatusInactive: "Inactive",
-    tableStatus: "Status",
 
     // ── Vendors ────────────────────────────────────────────────────
     vendorsHeading: "Vendors",
@@ -704,6 +711,15 @@ export const translations = {
     actionSuspend: "Suspend",
     actionReactivate: "Reactivate",
     noVendors: "No vendors in this category",
+    notFound: "Not found",
+    view: "View",
+    modelsHeading: "Models",
+    createdAt: "Created At",
+    vendorTaxId: "Tax ID",
+    vendorPhone: "Phone",
+    vendorCommission: "Commission Rate",
+    vendorApprove: "Approve",
+    vendorSuspend: "Suspend",
 
     // ── ERP ────────────────────────────────────────────────────────
     erpHeading: "Inventory Management",

@@ -80,7 +80,7 @@ export function PageBlocksPanel() {
     setSaveError(null);
     try {
       const errors = await saveBlock(vals);
-      if (errors?.length) { setSaveError(errors[0]); return; }
+      if (errors?.length) { setSaveError(errors[0]!); return; }
       await refetch();
       closeDrawer();
     } catch (e) {
@@ -132,7 +132,7 @@ export function PageBlocksPanel() {
     setBusyId(id);
     try {
       const payload = await action();
-      if (payload?.errors?.length) setListError(payload.errors[0]);
+      if (payload?.errors?.length) setListError(payload.errors[0]!);
       await refetch();
     } catch (e) {
       setListError(e instanceof Error ? e.message : t("errorUnknown"));
@@ -163,7 +163,7 @@ export function PageBlocksPanel() {
     const targetIdx = idx + dir;
     if (targetIdx < 0 || targetIdx >= sorted.length) return;
     const reordered = [...sorted];
-    [reordered[idx], reordered[targetIdx]] = [reordered[targetIdx], reordered[idx]];
+    [reordered[idx], reordered[targetIdx]] = [reordered[targetIdx]!, reordered[idx]!];
     const input = reordered.map((b, i) => ({ id: b.id, sortOrder: i }));
     await runRowAction(sorted[idx].id, async () => {
       await reorderBlocks({ variables: { input } });

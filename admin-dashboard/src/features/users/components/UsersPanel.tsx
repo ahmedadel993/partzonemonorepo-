@@ -56,7 +56,7 @@ function UserFormDrawer({
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<
     CreateUserForm | UpdateUserForm
   >({
-    resolver: zodResolver(isEdit ? updateUserSchema : createUserSchema) as never,
+    resolver: zodResolver((isEdit ? updateUserSchema : createUserSchema) as any),
     defaultValues: isEdit
       ? {
           firstName: editing.firstName,

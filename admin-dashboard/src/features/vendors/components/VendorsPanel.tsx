@@ -56,7 +56,7 @@ function VendorFormDrawer({
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<
     CreateVendorForm | UpdateVendorForm
   >({
-    resolver: zodResolver(isEdit ? updateVendorSchema : createVendorSchema) as never,
+    resolver: zodResolver((isEdit ? updateVendorSchema : createVendorSchema) as any),
     defaultValues: isEdit
       ? {
           companyName: editing.companyName,
