@@ -30,6 +30,18 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["admin-seed"],
     },
+    {
+      name: "admin-operations",
+      testMatch: "**/admin-operations.spec.ts",
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["admin-seed"],
+    },
+    {
+      name: "storefront-account-mgmt",
+      testMatch: "**/storefront-account-mgmt.spec.ts",
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["admin-seed"],
+    },
   ],
   timeout: 90_000,
 });

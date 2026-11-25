@@ -186,7 +186,13 @@
     "passwordChanged": "تم تغيير كلمة المرور بنجاح",
     "saveProfile": "حفظ التغييرات",
     "changePasswordTitle": "تغيير كلمة المرور",
-    "changePasswordBtn": "تغيير كلمة المرور"
+    "changePasswordBtn": "تغيير كلمة المرور",
+    "deleteAccountTitle": "حذف الحساب",
+    "deleteAccountWarning": "سيتم حذف حسابك وجميع بياناتك بشكل نهائي، ولا يمكن التراجع عن هذه العملية.",
+    "deleteAccountBtn": "حذف الحساب",
+    "deleteAccountConfirm": "نعم، احذف حسابي",
+    "deleting": "جارٍ الحذف...",
+    "cancel": "إلغاء"
   },
   "orders": {
     "title": "طلباتي",
