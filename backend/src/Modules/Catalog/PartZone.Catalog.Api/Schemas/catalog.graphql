@@ -9,7 +9,9 @@ extend type Query {
   product(slug: String!): ProductDetailType
   productById(id: ID!): ProductDetailType
   vehicleMakes: [VehicleMakeType!]!
+  vehicleMakeById(id: ID!): VehicleMakeType
   vehicleModels(makeId: ID!): [VehicleModelType!]!
+  vehicleModelById(id: ID!): VehicleModelType
   vehicleYears(modelId: ID!): [VehicleYearRangeType!]!
 }
 

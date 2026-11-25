@@ -155,3 +155,10 @@ export const DELETE_PAYMENT_METHOD = gql`
     deletePaymentMethod(id: $id) { errors }
   }
 `;
+
+export const REORDER_PAYMENT_METHODS = gql`
+  ${PAYMENT_METHOD_FRAGMENT}
+  mutation ReorderPaymentMethods($input: [ReorderItemInput!]!) {
+    reorderPaymentMethods(input: $input) { ...PaymentMethodFields }
+  }
+`;

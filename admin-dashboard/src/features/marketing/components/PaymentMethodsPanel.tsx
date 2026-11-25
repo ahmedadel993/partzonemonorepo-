@@ -11,6 +11,7 @@ import {
   ACTIVATE_PAYMENT_METHOD,
   DEACTIVATE_PAYMENT_METHOD,
   DELETE_PAYMENT_METHOD,
+  REORDER_PAYMENT_METHODS,
 } from "../graphql/marketingApi";
 import { getZodMessages } from "@/i18n/zodMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -194,6 +195,10 @@ export function PaymentMethodsPanel() {
   const [activatePm] = useMutation(ACTIVATE_PAYMENT_METHOD);
   const [deactivatePm] = useMutation(DEACTIVATE_PAYMENT_METHOD);
   const [deletePm] = useMutation(DELETE_PAYMENT_METHOD);
+  const [reorderPm] = useMutation(REORDER_PAYMENT_METHODS, {
+    refetchQueries: [{ query: GET_ALL_PAYMENT_METHODS }],
+    awaitRefetchQueries: true,
+  });
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<PaymentMethod | null>(null);
@@ -201,6 +206,21 @@ export function PaymentMethodsPanel() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const methods = data?.paymentMethods ?? [];
+  const sorted = [...methods].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const moveMethod = async (idx: number, dir: -1 | 1) => {
+    const targetIdx = idx + dir;
+    if (targetIdx < 0 || targetIdx >= sorted.length) return;
+    const reordered = [...sorted];
+    [reordered[idx], reordered[targetIdx]] = [reordered[targetIdx], reordered[idx]];
+    const input = reordered.map((m, i) => ({ id: m.id, sortOrder: i }));
+    setBusyId(sorted[idx].id);
+    try {
+      await reorderPm({ variables: { input } });
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const closeDrawer = () => { setDrawerOpen(false); setEditing(null); };
 
@@ -261,7 +281,7 @@ export function PaymentMethodsPanel() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {methods.map((pm) => (
+              {sorted.map((pm, idx) => (
                 <tr key={pm.id} className="group hover:bg-surface-alt/40 transition-colors">
                   <td className="py-3 pe-4">
                     <div className="flex items-center gap-2">
@@ -275,7 +295,25 @@ export function PaymentMethodsPanel() {
                     </div>
                   </td>
                   <td className="py-3 pe-4 font-mono text-text-muted text-xs" dir="ltr">{pm.key}</td>
-                  <td className="py-3 pe-4 text-text-muted" dir="ltr">{pm.sortOrder}</td>
+                  <td className="py-3 pe-4" dir="ltr">
+                    <div className="flex items-center gap-1">
+                      <div className="flex flex-col gap-0.5">
+                        <button
+                          onClick={() => moveMethod(idx, -1)}
+                          disabled={idx === 0 || busyId !== null}
+                          className="text-text-muted hover:text-text text-xs disabled:opacity-20 px-1 leading-none"
+                          aria-label={t("ariaReorderUp")}
+                        >▲</button>
+                        <button
+                          onClick={() => moveMethod(idx, 1)}
+                          disabled={idx === sorted.length - 1 || busyId !== null}
+                          className="text-text-muted hover:text-text text-xs disabled:opacity-20 px-1 leading-none"
+                          aria-label={t("ariaReorderDown")}
+                        >▼</button>
+                      </div>
+                      <span className="text-xs text-text-muted w-5 text-center">{pm.sortOrder}</span>
+                    </div>
+                  </td>
                   <td className="py-3 pe-4">
                     <button
                       type="button"

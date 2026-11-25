@@ -25,6 +25,7 @@ extend type Mutation {
   activatePaymentMethod(id: ID!): PaymentMethodPayload!
   deactivatePaymentMethod(id: ID!): PaymentMethodPayload!
   deletePaymentMethod(id: ID!): PaymentMethodPayload!
+  reorderPaymentMethods(input: [ReorderItemInput!]!): [PaymentMethodType!]!
 }
 
 type PageBlockType {

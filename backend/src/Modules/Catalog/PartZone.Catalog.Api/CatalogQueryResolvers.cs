@@ -101,12 +101,28 @@ public sealed class CatalogQueryResolvers
         return result.IsSuccess ? result.Value! : [];
     }
 
+    public async Task<VehicleMakeDto?> GetVehicleMakeByIdAsync(
+        Guid id,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetVehicleMakeByIdQuery(id), ct);
+        return result.IsSuccess ? result.Value : null;
+    }
+
     public async Task<IReadOnlyList<VehicleModelDto>> GetVehicleModelsAsync(
         Guid makeId,
         [Service] IMediator mediator, CancellationToken ct)
     {
         var result = await mediator.Send(new GetVehicleModelsByMakeQuery(makeId), ct);
         return result.IsSuccess ? result.Value! : [];
+    }
+
+    public async Task<VehicleModelDto?> GetVehicleModelByIdAsync(
+        Guid id,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetVehicleModelByIdQuery(id), ct);
+        return result.IsSuccess ? result.Value : null;
     }
 
     public async Task<IReadOnlyList<VehicleYearRangeDto>> GetVehicleYearsAsync(

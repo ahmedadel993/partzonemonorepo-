@@ -32,9 +32,11 @@ const SettingsPage        = lazy(() => import("@/features/settings/components/Se
 const VendorsPage         = lazy(() => import("@/features/vendors/components/VendorsPanel"));
 const ErpPage             = lazy(() => import("@/features/erp/components/ErpStub"));
 // Phase 4 – catalog detail pages
-const ProductDetailPage   = lazy(() => import("@/features/catalog/components/ProductDetailPage"));
-const CategoryDetailPage  = lazy(() => import("@/features/catalog/components/CategoryDetailPage"));
-const BrandDetailPage     = lazy(() => import("@/features/catalog/components/BrandDetailPage"));
+const ProductDetailPage        = lazy(() => import("@/features/catalog/components/ProductDetailPage"));
+const CategoryDetailPage       = lazy(() => import("@/features/catalog/components/CategoryDetailPage"));
+const BrandDetailPage          = lazy(() => import("@/features/catalog/components/BrandDetailPage"));
+const VehicleMakeDetailPage    = lazy(() => import("@/features/catalog/components/VehicleMakeDetailPage"));
+const VehicleModelDetailPage   = lazy(() => import("@/features/catalog/components/VehicleModelDetailPage"));
 
 const wrap = (Component: React.LazyExoticComponent<() => JSX.Element>) => () => (
   <Suspense fallback={<div className="p-8 text-text-muted">Loading...</div>}>
@@ -61,9 +63,11 @@ const settingsRoute       = createRoute({ getParentRoute: () => layoutRoute, pat
 const vendorsRoute        = createRoute({ getParentRoute: () => layoutRoute, path: "/vendors",   component: wrap(VendorsPage as React.LazyExoticComponent<() => JSX.Element>) });
 const erpRoute            = createRoute({ getParentRoute: () => layoutRoute, path: "/erp",      component: wrap(ErpPage) });
 // Phase 4 – catalog detail routes
-const productDetailRoute  = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/products/$productId",  component: wrap(ProductDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
-const categoryDetailRoute = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/categories/$categoryId", component: wrap(CategoryDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
-const brandDetailRoute    = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/brands/$brandId",      component: wrap(BrandDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
+const productDetailRoute       = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/products/$productId",   component: wrap(ProductDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
+const categoryDetailRoute      = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/categories/$categoryId", component: wrap(CategoryDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
+const brandDetailRoute         = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/brands/$brandId",       component: wrap(BrandDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
+const vehicleMakeDetailRoute   = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/makes/$makeId",         component: wrap(VehicleMakeDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
+const vehicleModelDetailRoute  = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/models/$modelId",       component: wrap(VehicleModelDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
@@ -71,6 +75,7 @@ const routeTree = rootRoute.addChildren([
     indexRoute, catalogRoute, marketingRoute, ordersRoute,
     usersRoute, customersRoute, settingsRoute, vendorsRoute, erpRoute,
     productDetailRoute, categoryDetailRoute, brandDetailRoute,
+    vehicleMakeDetailRoute, vehicleModelDetailRoute,
   ]),
 ]);
 

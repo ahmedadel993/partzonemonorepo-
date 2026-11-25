@@ -182,6 +182,16 @@ public sealed class MarketingMutationResolvers
             ? new PaymentMethodPayloadDto(null, [])
             : new PaymentMethodPayloadDto(null, [result.Error.Description]);
     }
+
+    public async Task<IReadOnlyList<PaymentMethodDto>> ReorderPaymentMethodsAsync(
+        IReadOnlyList<ReorderItemInputGql> input,
+        [Service] IMediator mediator, CancellationToken ct)
+    {
+        var items = input.Select(i => new ReorderItem(i.Id, i.SortOrder)).ToList();
+        await mediator.Send(new ReorderPaymentMethodsCommand(items), ct);
+        var result = await mediator.Send(new GetAllPaymentMethodsQuery(), ct);
+        return result.IsSuccess ? result.Value! : [];
+    }
 }
 
 // ── GQL input records ─────────────────────────────────────────────────────────

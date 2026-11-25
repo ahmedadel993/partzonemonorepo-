@@ -55,9 +55,21 @@ export const GET_VEHICLE_MAKES = gql`
   }
 `;
 
+export const GET_VEHICLE_MAKE_BY_ID = gql`
+  query GetVehicleMakeById($id: ID!) {
+    vehicleMakeById(id: $id) { id name slug logoUrl }
+  }
+`;
+
 export const GET_VEHICLE_MODELS = gql`
   query GetVehicleModels($makeId: ID!) {
     vehicleModels(makeId: $makeId) { id name slug vehicleMakeId }
+  }
+`;
+
+export const GET_VEHICLE_MODEL_BY_ID = gql`
+  query GetVehicleModelById($id: ID!) {
+    vehicleModelById(id: $id) { id name slug vehicleMakeId }
   }
 `;
 
