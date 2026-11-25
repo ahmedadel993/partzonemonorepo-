@@ -125,4 +125,28 @@ public sealed class IdentityMutationResolvers
         var vendor = vendors.IsSuccess ? vendors.Value!.FirstOrDefault(v => v.Id == id) : null;
         return new VendorGqlPayloadDto(vendor, []);
     }
+
+    public async Task<UserPayloadDto> ActivateUserAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ActivateUserCommand(id), ct);
+        if (!result.IsSuccess)
+            return new UserPayloadDto(null, [result.Error.Description]);
+
+        var users = await mediator.Send(new GetAllUsersQuery(), ct);
+        var user = users.IsSuccess ? users.Value!.FirstOrDefault(u => u.Id == id) : null;
+        return new UserPayloadDto(user, []);
+    }
+
+    public async Task<UserPayloadDto> DeactivateUserAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeactivateUserCommand(id), ct);
+        if (!result.IsSuccess)
+            return new UserPayloadDto(null, [result.Error.Description]);
+
+        var users = await mediator.Send(new GetAllUsersQuery(), ct);
+        var user = users.IsSuccess ? users.Value!.FirstOrDefault(u => u.Id == id) : null;
+        return new UserPayloadDto(user, []);
+    }
 }

@@ -95,6 +95,19 @@ export const DEACTIVATE_COUPON = gql`
   }
 `;
 
+export const ACTIVATE_COUPON = gql`
+  ${COUPON_FRAGMENT}
+  mutation ActivateCoupon($id: ID!) {
+    activateCoupon(id: $id) { coupon { ...CouponFields } errors }
+  }
+`;
+
+export const DELETE_COUPON = gql`
+  mutation DeleteCoupon($id: ID!) {
+    deleteCoupon(id: $id) { errors }
+  }
+`;
+
 // Phase 6 – payment methods
 export const PAYMENT_METHOD_FRAGMENT = gql`
   fragment PaymentMethodFields on PaymentMethodType {

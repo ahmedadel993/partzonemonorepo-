@@ -231,6 +231,9 @@ export const translations = {
     tableRegDate: "تاريخ التسجيل",
     noUsers: "لا توجد نتائج",
     roleUpdating: "جارٍ…",
+    userStatusActive: "نشط",
+    userStatusInactive: "معطّل",
+    tableStatus: "الحالة",
 
     // ── Vendors ────────────────────────────────────────────────────
     vendorsHeading: "الموردون",
@@ -306,6 +309,9 @@ export const translations = {
     couponInactive: "معطّل",
     actionEdit: "تعديل",
     actionDisable: "تعطيل",
+    actionActivate: "تفعيل",
+    actionDeactivate: "تعطيل",
+    actionDeletePermanent: "حذف نهائي",
     drawerEditCoupon: "تعديل كوبون",
     drawerNewCoupon: "إضافة كوبون جديد",
     discTypeFixed: "مبلغ ثابت",
@@ -673,6 +679,9 @@ export const translations = {
     tableRegDate: "Registration Date",
     noUsers: "No results",
     roleUpdating: "Updating…",
+    userStatusActive: "Active",
+    userStatusInactive: "Inactive",
+    tableStatus: "Status",
 
     // ── Vendors ────────────────────────────────────────────────────
     vendorsHeading: "Vendors",
@@ -748,6 +757,9 @@ export const translations = {
     couponInactive: "Inactive",
     actionEdit: "Edit",
     actionDisable: "Disable",
+    actionActivate: "Activate",
+    actionDeactivate: "Deactivate",
+    actionDeletePermanent: "Delete",
     drawerEditCoupon: "Edit Coupon",
     drawerNewCoupon: "Add New Coupon",
     discTypeFixed: "Fixed Amount",

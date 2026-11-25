@@ -91,6 +91,24 @@ public sealed class CatalogMutationResolvers
         return result.IsSuccess ? new DeletePayloadDto([]) : new DeletePayloadDto([result.Error.Description]);
     }
 
+    public async Task<CategoryPayloadDto> ActivateCategoryAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ActivateCategoryCommand(id), ct);
+        if (!result.IsSuccess) return new CategoryPayloadDto(null, [result.Error.Description]);
+        var category = await mediator.Send(new GetCategoryByIdQuery(id), ct);
+        return new CategoryPayloadDto(category.IsSuccess ? category.Value : null, []);
+    }
+
+    public async Task<CategoryPayloadDto> DeactivateCategoryAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeactivateCategoryCommand(id), ct);
+        if (!result.IsSuccess) return new CategoryPayloadDto(null, [result.Error.Description]);
+        var category = await mediator.Send(new GetCategoryByIdQuery(id), ct);
+        return new CategoryPayloadDto(category.IsSuccess ? category.Value : null, []);
+    }
+
     public async Task<DeletePayloadDto> DeleteCategoryAsync(
         Guid id,
         [Service] IMediator mediator, CancellationToken ct)

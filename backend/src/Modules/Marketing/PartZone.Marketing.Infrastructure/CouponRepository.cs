@@ -20,6 +20,7 @@ internal sealed class CouponRepository(DbContext db) : ICouponRepository
 
     public void Add(Coupon coupon) => Set.Add(coupon);
     public void Update(Coupon coupon) => Set.Update(coupon);
+    public void Remove(Coupon coupon) => Set.Remove(coupon);
     public void AddUsage(CouponUsage usage) => Usages.Add(usage);
 
     public async Task<int> GetUserUsageCountAsync(Guid couponId, Guid userId, CancellationToken ct) =>

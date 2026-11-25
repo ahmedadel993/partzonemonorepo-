@@ -116,6 +116,25 @@ public sealed class MarketingMutationResolvers
         return new CouponPayloadDto(dto, []);
     }
 
+    public async Task<CouponPayloadDto> ActivateCouponAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new ActivateCouponCommand(id), ct);
+        if (!result.IsSuccess) return new CouponPayloadDto(null, [result.Error.Description]);
+        var allResult = await mediator.Send(new GetAllCouponsQuery(), ct);
+        var dto = allResult.Value!.FirstOrDefault(c => c.Id == id);
+        return new CouponPayloadDto(dto, []);
+    }
+
+    public async Task<CouponPayloadDto> DeleteCouponAsync(
+        Guid id, [Service] IMediator mediator, CancellationToken ct)
+    {
+        var result = await mediator.Send(new DeleteCouponCommand(id), ct);
+        return result.IsSuccess
+            ? new CouponPayloadDto(null, [])
+            : new CouponPayloadDto(null, [result.Error.Description]);
+    }
+
     // Phase 6 – payment methods
     public async Task<PaymentMethodPayloadDto> CreatePaymentMethodAsync(
         CreatePaymentMethodInputGql input, [Service] IMediator mediator, CancellationToken ct)

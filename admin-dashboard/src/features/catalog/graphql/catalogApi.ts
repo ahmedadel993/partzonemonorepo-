@@ -283,6 +283,26 @@ export const DELETE_CATEGORY = gql`
   }
 `;
 
+export const ACTIVATE_CATEGORY = gql`
+  ${CATEGORY_FIELDS}
+  mutation ActivateCategory($id: ID!) {
+    activateCategory(id: $id) {
+      category { ...CategoryFields }
+      errors
+    }
+  }
+`;
+
+export const DEACTIVATE_CATEGORY = gql`
+  ${CATEGORY_FIELDS}
+  mutation DeactivateCategory($id: ID!) {
+    deactivateCategory(id: $id) {
+      category { ...CategoryFields }
+      errors
+    }
+  }
+`;
+
 export const DELETE_PRODUCT = gql`
   mutation DeleteProduct($id: ID!) {
     deleteProduct(id: $id) {

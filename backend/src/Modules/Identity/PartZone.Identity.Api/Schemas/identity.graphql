@@ -88,4 +88,6 @@ extend type Mutation {
   deleteVendor(id: ID!): DeletePayload!
   approveVendor(id: ID!): VendorGqlPayload!
   suspendVendor(id: ID!): VendorGqlPayload!
+  activateUser(id: ID!): UserPayload!
+  deactivateUser(id: ID!): UserPayload!
 }

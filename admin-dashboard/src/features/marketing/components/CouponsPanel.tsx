@@ -5,6 +5,8 @@ import {
   CREATE_COUPON,
   UPDATE_COUPON,
   DEACTIVATE_COUPON,
+  ACTIVATE_COUPON,
+  DELETE_COUPON,
 } from "../graphql/marketingApi";
 import type { Coupon } from "../types/marketing.types";
 import type { CouponFormValues } from "../schemas/marketing.schemas";
@@ -38,10 +40,13 @@ export function CouponsPanel() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Coupon | null>(null);
 
-  const { data, loading, refetch } = useQuery<{ coupons: Coupon[] }>(GET_ALL_COUPONS);
-  const [createCoupon, { loading: creating }] = useMutation(CREATE_COUPON);
-  const [updateCoupon, { loading: updating }] = useMutation(UPDATE_COUPON);
-  const [deactivateCoupon] = useMutation(DEACTIVATE_COUPON);
+  const { data, loading } = useQuery<{ coupons: Coupon[] }>(GET_ALL_COUPONS);
+  const refetchOpts = { refetchQueries: [{ query: GET_ALL_COUPONS }], awaitRefetchQueries: true };
+  const [createCoupon, { loading: creating }] = useMutation(CREATE_COUPON, refetchOpts);
+  const [updateCoupon, { loading: updating }] = useMutation(UPDATE_COUPON, refetchOpts);
+  const [deactivateCoupon] = useMutation(DEACTIVATE_COUPON, { refetchQueries: [{ query: GET_ALL_COUPONS }] });
+  const [activateCoupon] = useMutation(ACTIVATE_COUPON, { refetchQueries: [{ query: GET_ALL_COUPONS }] });
+  const [deleteCoupon] = useMutation(DELETE_COUPON, { refetchQueries: [{ query: GET_ALL_COUPONS }], awaitRefetchQueries: true });
 
   const coupons = data?.coupons ?? [];
 
@@ -82,7 +87,6 @@ export function CouponsPanel() {
         },
       });
     }
-    await refetch();
     closeDrawer();
   };
 
@@ -136,16 +140,31 @@ export function CouponsPanel() {
                     {c.isActive ? t("couponActive") : t("couponInactive")}
                   </span>
                 </td>
-                <td className="py-2 px-3 flex gap-2 justify-end">
-                  <button onClick={() => openEdit(c)} className="text-xs text-accent hover:underline">{t("actionEdit")}</button>
-                  {c.isActive && (
+                <td className="py-2 px-3">
+                  <div className="flex gap-2 justify-end">
+                    <button onClick={() => openEdit(c)} className="text-xs text-accent hover:underline">{t("actionEdit")}</button>
+                    {c.isActive ? (
+                      <button
+                        onClick={() => deactivateCoupon({ variables: { id: c.id } })}
+                        className="text-xs text-text-muted hover:text-danger"
+                      >
+                        {t("actionDeactivate")}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => activateCoupon({ variables: { id: c.id } })}
+                        className="text-xs text-text-muted hover:text-success"
+                      >
+                        {t("actionActivate")}
+                      </button>
+                    )}
                     <button
-                      onClick={async () => { await deactivateCoupon({ variables: { id: c.id } }); refetch(); }}
+                      onClick={async () => { if (confirm(t("deleteCouponConfirm"))) await deleteCoupon({ variables: { id: c.id } }); }}
                       className="text-xs text-danger hover:underline"
                     >
-                      {t("actionDisable")}
+                      {t("actionDeletePermanent")}
                     </button>
-                  )}
+                  </div>
                 </td>
               </tr>
             ))}

@@ -44,6 +44,7 @@ public sealed class Coupon : AggregateRoot<Guid>
             CreatedAt = DateTime.UtcNow,
         };
 
+    public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
 
     public void IncrementUsage() => UsedCount++;

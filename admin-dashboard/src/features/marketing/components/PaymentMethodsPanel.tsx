@@ -102,7 +102,7 @@ function PmFormDrawer({
               sortOrder: vals.sortOrder,
             },
           },
-          refetchQueries: ["GetAllPaymentMethods"],
+          refetchQueries: [{ query: GET_ALL_PAYMENT_METHODS }],
         });
         const errs = res.data?.updatePaymentMethod?.errors ?? [];
         if (errs.length) { setServerError(errs[0]); return; }
@@ -118,7 +118,7 @@ function PmFormDrawer({
               sortOrder: vals.sortOrder,
             },
           },
-          refetchQueries: ["GetAllPaymentMethods"],
+          refetchQueries: [{ query: GET_ALL_PAYMENT_METHODS }],
         });
         const errs = res.data?.createPaymentMethod?.errors ?? [];
         if (errs.length) { setServerError(errs[0]); return; }
@@ -188,7 +188,7 @@ function PmFormDrawer({
 
 export function PaymentMethodsPanel() {
   const { t, dir } = useLanguage();
-  const { data, loading, refetch } = useQuery<{ paymentMethods: PaymentMethod[] }>(
+  const { data, loading } = useQuery<{ paymentMethods: PaymentMethod[] }>(
     GET_ALL_PAYMENT_METHODS
   );
   const [activatePm] = useMutation(ACTIVATE_PAYMENT_METHOD);
@@ -204,11 +204,13 @@ export function PaymentMethodsPanel() {
 
   const closeDrawer = () => { setDrawerOpen(false); setEditing(null); };
 
+  const pmRefetch = { refetchQueries: [{ query: GET_ALL_PAYMENT_METHODS }] };
+
   const toggleActive = async (pm: PaymentMethod) => {
     setBusyId(pm.id);
     try {
       const mutation = pm.isActive ? deactivatePm : activatePm;
-      await mutation({ variables: { id: pm.id }, refetchQueries: ["GetAllPaymentMethods"] });
+      await mutation({ variables: { id: pm.id }, ...pmRefetch });
     } finally {
       setBusyId(null);
     }
@@ -217,7 +219,7 @@ export function PaymentMethodsPanel() {
   const handleDelete = async (id: string) => {
     setBusyId(id);
     try {
-      await deletePm({ variables: { id }, refetchQueries: ["GetAllPaymentMethods"] });
+      await deletePm({ variables: { id }, ...pmRefetch, awaitRefetchQueries: true });
       setConfirmDeleteId(null);
     } finally {
       setBusyId(null);
@@ -339,7 +341,7 @@ export function PaymentMethodsPanel() {
           <PmFormDrawer
             editing={editing}
             onClose={closeDrawer}
-            onDone={() => { closeDrawer(); refetch(); }}
+            onDone={closeDrawer}
           />
         )}
       </Drawer>

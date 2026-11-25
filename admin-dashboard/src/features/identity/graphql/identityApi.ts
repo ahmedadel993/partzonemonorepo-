@@ -108,6 +108,30 @@ export const DELETE_VENDOR = gql`
   }
 `;
 
+export const ACTIVATE_USER = gql`
+  mutation ActivateUser($id: ID!) {
+    activateUser(id: $id) {
+      user {
+        ...UserFields
+      }
+      errors
+    }
+  }
+  ${USER_FIELDS}
+`;
+
+export const DEACTIVATE_USER = gql`
+  mutation DeactivateUser($id: ID!) {
+    deactivateUser(id: $id) {
+      user {
+        ...UserFields
+      }
+      errors
+    }
+  }
+  ${USER_FIELDS}
+`;
+
 export const APPROVE_VENDOR = gql`
   mutation ApproveVendor($id: ID!) {
     approveVendor(id: $id) {
