@@ -165,7 +165,7 @@ export function PageBlocksPanel() {
     const reordered = [...sorted];
     [reordered[idx], reordered[targetIdx]] = [reordered[targetIdx]!, reordered[idx]!];
     const input = reordered.map((b, i) => ({ id: b.id, sortOrder: i }));
-    await runRowAction(sorted[idx].id, async () => {
+    await runRowAction(sorted[idx]!.id, async () => {
       await reorderBlocks({ variables: { input } });
       return null;
     });
