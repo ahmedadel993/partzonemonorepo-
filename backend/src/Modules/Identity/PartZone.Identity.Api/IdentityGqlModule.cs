@@ -1,6 +1,5 @@
 using HotChocolate.Execution.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PartZone.Catalog.Api;
 using PartZone.Identity.Application.Queries;
 using PartZone.Vendors.Application;
 
@@ -21,7 +20,7 @@ public static class IdentityGqlModule
 
         graphql
             .AddDocumentFromString(sdl)
-            .AddResolver<IdentityQueryResolvers>("Query")
+            .AddType<IdentityQueryResolvers>()
             .AddResolver<IdentityMutationResolvers>("Mutation")
             // Output types
             .BindRuntimeType<UserAdminDto>("UserType")
@@ -34,8 +33,6 @@ public static class IdentityGqlModule
             .BindRuntimeType<UpdateUserGqlInput>("UpdateUserInput")
             .BindRuntimeType<AdminCreateVendorGqlInput>("AdminCreateVendorInput")
             .BindRuntimeType<UpdateVendorGqlInput>("UpdateVendorInput")
-            // VendorDto field: status is an enum string, createdAt is DateTime — HC serializes these fine
-            // UserAdminDto: map createdAt DateTime → String field in SDL
             .AddResolver("UserType", "createdAt",
                 ctx => ctx.Parent<UserAdminDto>().CreatedAt.ToString("O"))
             .AddResolver("VendorGqlType", "createdAt",
