@@ -25,6 +25,15 @@ public sealed class OrderRepository : IOrderRepository
         return list.AsReadOnly();
     }
 
+    public async Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken ct)
+    {
+        var list = await _ctx.Set<Order>()
+            .Include(o => o.Items)
+            .OrderByDescending(o => o.PlacedAt)
+            .ToListAsync(ct);
+        return list.AsReadOnly();
+    }
+
     public void Add(Order order) => _ctx.Set<Order>().Add(order);
 
     public void Update(Order order) => _ctx.Set<Order>().Update(order);
