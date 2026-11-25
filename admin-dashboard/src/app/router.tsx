@@ -31,6 +31,7 @@ const CustomersPage       = lazy(() => import("@/features/customers/components/C
 const SettingsPage        = lazy(() => import("@/features/settings/components/SettingsStub"));
 const VendorsPage         = lazy(() => import("@/features/vendors/components/VendorsPanel"));
 const ErpPage             = lazy(() => import("@/features/erp/components/ErpStub"));
+const VendorDetailPage         = lazy(() => import("@/features/vendors/components/VendorDetailPage"));
 // Phase 4 – catalog detail pages
 const ProductDetailPage        = lazy(() => import("@/features/catalog/components/ProductDetailPage"));
 const CategoryDetailPage       = lazy(() => import("@/features/catalog/components/CategoryDetailPage"));
@@ -61,6 +62,7 @@ const usersRoute          = createRoute({ getParentRoute: () => layoutRoute, pat
 const customersRoute      = createRoute({ getParentRoute: () => layoutRoute, path: "/customers", component: wrap(CustomersPage as React.LazyExoticComponent<() => JSX.Element>) });
 const settingsRoute       = createRoute({ getParentRoute: () => layoutRoute, path: "/settings",  component: wrap(SettingsPage) });
 const vendorsRoute        = createRoute({ getParentRoute: () => layoutRoute, path: "/vendors",   component: wrap(VendorsPage as React.LazyExoticComponent<() => JSX.Element>) });
+const vendorDetailRoute   = createRoute({ getParentRoute: () => layoutRoute, path: "/vendors/$vendorId", component: wrap(VendorDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
 const erpRoute            = createRoute({ getParentRoute: () => layoutRoute, path: "/erp",      component: wrap(ErpPage) });
 // Phase 4 – catalog detail routes
 const productDetailRoute       = createRoute({ getParentRoute: () => layoutRoute, path: "/catalog/products/$productId",   component: wrap(ProductDetailPage as React.LazyExoticComponent<() => JSX.Element>) });
@@ -73,7 +75,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   layoutRoute.addChildren([
     indexRoute, catalogRoute, marketingRoute, ordersRoute,
-    usersRoute, customersRoute, settingsRoute, vendorsRoute, erpRoute,
+    usersRoute, customersRoute, settingsRoute, vendorsRoute, vendorDetailRoute, erpRoute,
     productDetailRoute, categoryDetailRoute, brandDetailRoute,
     vehicleMakeDetailRoute, vehicleModelDetailRoute,
   ]),

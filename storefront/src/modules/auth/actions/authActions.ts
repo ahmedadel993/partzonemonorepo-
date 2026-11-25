@@ -231,3 +231,20 @@ export async function changePassword(
   }
 }
 
+export async function deleteAccount(): Promise<{ ok: boolean; error?: string }> {
+  "use server";
+  const headers = await getAuthHeaders();
+  if (!headers.Authorization) return { ok: false, error: "يجب تسجيل الدخول أولاً" };
+  try {
+    const res = await fetch(`${API}/identity/me`, {
+      method: "DELETE",
+      headers,
+      cache: "no-store",
+    });
+    if (!res.ok) return { ok: false, error: "فشل حذف الحساب" };
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "فشل حذف الحساب" };
+  }
+}
+

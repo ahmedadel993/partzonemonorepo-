@@ -6,8 +6,10 @@ import {
   getCurrentUser,
   updateMyProfile,
   changePassword,
+  deleteAccount,
 } from "@/modules/auth/actions/authActions";
 import { EditProfileModule } from "@/modules/auth/EditProfileModule";
+import { DeleteAccountSection } from "@/modules/auth/DeleteAccountSection";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -35,6 +37,11 @@ export default async function ProfilePage({ params }: Props) {
     return changePassword(currentPassword, newPassword);
   }
 
+  async function handleDeleteAccount(): Promise<{ ok: boolean; error?: string }> {
+    "use server";
+    return deleteAccount();
+  }
+
   return (
     <>
       <Header />
@@ -45,6 +52,7 @@ export default async function ProfilePage({ params }: Props) {
           updateProfile={handleUpdateProfile}
           changePassword={handleChangePassword}
         />
+        <DeleteAccountSection deleteAccount={handleDeleteAccount} locale={locale} />
       </main>
     </>
   );

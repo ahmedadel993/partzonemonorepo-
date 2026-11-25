@@ -25,6 +25,7 @@ public static class IdentityApiModule
 
         group.MapPut("/me", IdentityEndpoints.UpdateMyProfileAsync).RequireAuthorization();
         group.MapPut("/me/password", IdentityEndpoints.ChangePasswordAsync).RequireAuthorization();
+        group.MapDelete("/me", IdentityEndpoints.DeleteMeAsync).RequireAuthorization();
 
         return app;
     }

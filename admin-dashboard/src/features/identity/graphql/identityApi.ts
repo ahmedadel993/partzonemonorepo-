@@ -155,3 +155,17 @@ export const SUSPEND_VENDOR = gql`
   }
   ${VENDOR_FIELDS}
 `;
+
+export const GET_VENDOR_BY_ID = gql`
+  ${VENDOR_FIELDS}
+  query GetVendorById($id: ID!) {
+    gqlVendorById(id: $id) { ...VendorFields }
+  }
+`;
+
+export const GET_USER_BY_ID = gql`
+  ${USER_FIELDS}
+  query GetUserById($id: ID!) {
+    userById(id: $id) { ...UserFields }
+  }
+`;

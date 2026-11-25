@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useCartStore } from "@/shared/stores/useCartStore";
@@ -14,6 +17,11 @@ import type { PaymentMethodOption } from "@/modules/checkout/actions/checkoutAct
 
 const SHIPPING_THRESHOLD = 500;
 const SHIPPING_FEE = 15;
+
+const checkoutSchema = z.object({
+  notes: z.string().max(500).optional(),
+});
+type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 interface Props {
   addresses: Address[];
@@ -43,9 +51,17 @@ export function CheckoutForm({ addresses, paymentMethods = [] }: Props) {
   const [selectedPaymentKey, setSelectedPaymentKey] = useState<string>(
     paymentMethods.find((m) => !m.isComingSoon)?.key ?? "cash_on_delivery"
   );
-  const [notes, setNotes] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const {
+    register,
+    handleSubmit: rhfHandleSubmit,
+    setError: setFieldError,
+    formState: { errors },
+  } = useForm<CheckoutFormValues>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: { notes: "" },
+  });
 
   const currency = tCommon("currency");
   const subTotal = cart?.subTotal ?? 0;
@@ -53,11 +69,15 @@ export function CheckoutForm({ addresses, paymentMethods = [] }: Props) {
   const shippingFee = afterDiscount >= SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
   const total = afterDiscount + shippingFee;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!shippingAddress) { setError(t("errorNoAddress")); return; }
-    if (!cart || cart.items.length === 0) { setError(t("errorEmptyCart")); return; }
-    setError(null);
+  const onSubmit = (vals: CheckoutFormValues) => {
+    if (!shippingAddress) {
+      setFieldError("root", { message: t("errorNoAddress") });
+      return;
+    }
+    if (!cart || cart.items.length === 0) {
+      setFieldError("root", { message: t("errorEmptyCart") });
+      return;
+    }
 
     startTransition(async () => {
       const result = await placeOrder({
@@ -65,7 +85,7 @@ export function CheckoutForm({ addresses, paymentMethods = [] }: Props) {
         couponCode,
         discountAmount,
         paymentMethod: selectedPaymentKey,
-        notes: notes.trim() || undefined,
+        notes: vals.notes?.trim() || undefined,
         items: cart.items.map((i) => ({
           productId: i.productId,
           sku: i.sku,
@@ -77,7 +97,7 @@ export function CheckoutForm({ addresses, paymentMethods = [] }: Props) {
       });
 
       if ("error" in result) {
-        setError(result.error);
+        setFieldError("root", { message: result.error });
         return;
       }
 
@@ -88,7 +108,7 @@ export function CheckoutForm({ addresses, paymentMethods = [] }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <form onSubmit={rhfHandleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Main column */}
       <div className="lg:col-span-2 space-y-8">
         {/* Shipping address */}
@@ -192,12 +212,12 @@ export function CheckoutForm({ addresses, paymentMethods = [] }: Props) {
         <section className="space-y-3">
           <h2 className="text-base font-semibold text-text border-b border-border pb-3">{t("stepNotes")}</h2>
           <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            {...register("notes")}
             rows={3}
             placeholder={t("notesPlaceholder")}
             className="w-full px-3 py-2 rounded-md bg-bg border border-border text-text text-sm placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-none"
           />
+          {errors.notes && <p className="text-xs text-danger">{errors.notes.message}</p>}
         </section>
       </div>
 
@@ -233,7 +253,7 @@ export function CheckoutForm({ addresses, paymentMethods = [] }: Props) {
             <span className="text-accent" dir="ltr">{total.toFixed(2)} {currency}</span>
           </div>
 
-          {error && <p role="alert" className="text-xs text-danger bg-danger/10 px-3 py-2 rounded">{error}</p>}
+          {errors.root && <p role="alert" className="text-xs text-danger bg-danger/10 px-3 py-2 rounded">{errors.root.message}</p>}
 
           <button
             type="submit"

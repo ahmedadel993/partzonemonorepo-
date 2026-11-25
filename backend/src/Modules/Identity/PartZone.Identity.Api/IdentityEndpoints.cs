@@ -125,6 +125,14 @@ internal static class IdentityEndpoints
                 ? StatusCodes.Status401Unauthorized
                 : StatusCodes.Status422UnprocessableEntity);
     }
+
+    internal static async Task<IResult> DeleteMeAsync(
+        ClaimsPrincipal user, IMediator mediator, CancellationToken ct)
+    {
+        var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await mediator.Send(new DeleteUserCommand(userId), ct);
+        return result.IsSuccess ? Results.NoContent() : Results.Problem(result.Error.Description);
+    }
 }
 
 internal sealed record RegisterRequest(string Email, string Password, string FirstName, string LastName);
