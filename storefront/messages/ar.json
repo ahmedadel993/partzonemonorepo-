@@ -234,6 +234,8 @@
     "saveButton": "حفظ العنوان",
     "fullNamePlaceholder": "الاسم الكامل",
     "phonePlaceholder": "رقم الهاتف",
-    "back": "→ حسابي"
+    "back": "→ حسابي",
+    "edit": "تعديل",
+    "cancel": "إلغاء"
   }
 }

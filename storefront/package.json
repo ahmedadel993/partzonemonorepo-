@@ -8,11 +8,13 @@
     "start": "next start"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.2",
     "@partzone/shared": "workspace:*",
     "next": "16.4.3",
     "next-intl": "^4.14.9",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-hook-form": "^7.91.0",
     "swiper": "^11.2.10",
     "zod": "^4.6.7",
     "zustand": "^5.0.16"

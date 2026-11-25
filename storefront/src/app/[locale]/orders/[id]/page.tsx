@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { Header } from "@/shared/ui/Header";
 import { CartDrawer } from "@/modules/cart/components/CartDrawer";
-import { getCurrentUser, cancelOrder } from "@/modules/auth/actions/authActions";
-import { getOrderById } from "@/modules/checkout/actions/checkoutActions";
+import { getCurrentUser } from "@/modules/auth/actions/authActions";
+import { getOrderById, cancelOrder } from "@/modules/checkout/actions/checkoutActions";
 import { OrderDetailPageModule } from "@/modules/checkout/OrderDetailPageModule";
 
 type Props = {

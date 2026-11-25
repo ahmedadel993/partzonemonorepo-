@@ -234,6 +234,8 @@
     "saveButton": "Save Address",
     "fullNamePlaceholder": "Full Name",
     "phonePlaceholder": "Phone Number",
-    "back": "→ My Account"
+    "back": "→ My Account",
+    "edit": "Edit",
+    "cancel": "Cancel"
   }
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import type { Address } from "@/modules/auth/types";
+import type { Address } from "@/modules/auth/types/index";
+import { AddressListClient } from "./AddressListClient";
 
 interface AddressesPageModuleProps {
   addresses: Address[];
@@ -8,6 +9,8 @@ interface AddressesPageModuleProps {
   errorParam: string | undefined;
   handleDelete: (formData: FormData) => Promise<void>;
   handleAdd: (formData: FormData) => Promise<void>;
+  handleUpdate: (formData: FormData) => Promise<void>;
+  handleSetDefault: (formData: FormData) => Promise<void>;
 }
 
 export async function AddressesPageModule({
@@ -16,6 +19,8 @@ export async function AddressesPageModule({
   errorParam,
   handleDelete,
   handleAdd,
+  handleUpdate,
+  handleSetDefault,
 }: AddressesPageModuleProps) {
   const t = await getTranslations({ locale, namespace: "address" });
 
@@ -31,40 +36,31 @@ export async function AddressesPageModule({
         <h1 className="text-2xl font-bold text-text">{t("title")}</h1>
       </div>
 
-      {/* Saved addresses */}
       {addresses.length > 0 ? (
-        <div className="space-y-3">
-          {addresses.map((addr) => (
-            <div
-              key={addr.id}
-              className="bg-surface border border-border rounded-xl p-5 space-y-1"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-semibold text-text">{addr.label}</p>
-                <div className="flex items-center gap-2">
-                  {addr.isDefault && (
-                    <span className="text-xs bg-accent/15 text-accent px-2 py-0.5 rounded-full font-medium">
-                      {t("default")}
-                    </span>
-                  )}
-                  <form action={handleDelete}>
-                    <input type="hidden" name="addressId" value={addr.id} />
-                    <button
-                      type="submit"
-                      className="text-xs text-danger/70 hover:text-danger transition-colors"
-                    >
-                      {t("delete")}
-                    </button>
-                  </form>
-                </div>
-              </div>
-              <p className="text-sm text-text-muted">{addr.streetLine1}
-                {addr.streetLine2 ? `، ${addr.streetLine2}` : ""}
-              </p>
-              <p className="text-sm text-text-muted">{addr.city}، {addr.governorate} {addr.postalCode}</p>
-            </div>
-          ))}
-        </div>
+        <AddressListClient
+          addresses={addresses}
+          handleDelete={handleDelete}
+          handleUpdate={handleUpdate}
+          handleSetDefault={handleSetDefault}
+          labels={{
+            default: t("default"),
+            delete: t("delete"),
+            edit: t("edit"),
+            setDefault: t("setDefault"),
+            save: t("saveButton"),
+            cancel: t("cancel"),
+            descLabel: t("descLabel"),
+            descPlaceholder: t("descPlaceholder"),
+            line1Label: t("line1Label"),
+            line1Placeholder: t("line1Placeholder"),
+            line2Label: t("line2Label"),
+            line2Placeholder: t("line2Placeholder"),
+            cityLabel: t("cityLabel"),
+            cityPlaceholder: t("cityPlaceholder"),
+            governorateLabel: t("governorateLabel"),
+            postalCodeLabel: t("postalCodeLabel"),
+          }}
+        />
       ) : (
         <p className="text-sm text-text-muted text-center py-6">{t("empty")}</p>
       )}

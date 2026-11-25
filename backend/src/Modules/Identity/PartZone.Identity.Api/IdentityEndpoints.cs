@@ -59,6 +59,25 @@ internal static class IdentityEndpoints
         return Results.Created($"/api/v1/identity/me/addresses/{address.Id}", address);
     }
 
+    internal static async Task<IResult> UpdateAddressAsync(
+        Guid id, ClaimsPrincipal user, UpdateAddressRequest req,
+        IIdentityRepository repo, CancellationToken ct)
+    {
+        var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var updated = await repo.UpdateAddressAsync(
+            id, userId, req.Label, req.StreetLine1, req.StreetLine2,
+            req.City, req.Governorate, req.PostalCode, ct);
+        return updated ? Results.NoContent() : Results.NotFound();
+    }
+
+    internal static async Task<IResult> SetDefaultAddressAsync(
+        Guid id, ClaimsPrincipal user, IIdentityRepository repo, CancellationToken ct)
+    {
+        var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var ok = await repo.SetDefaultAddressAsync(id, userId, ct);
+        return ok ? Results.NoContent() : Results.NotFound();
+    }
+
     internal static async Task<IResult> DeleteAddressAsync(
         Guid id, ClaimsPrincipal user, IIdentityRepository repo, CancellationToken ct)
     {
@@ -113,6 +132,9 @@ internal sealed record LoginRequest(string Email, string Password);
 internal sealed record AddAddressRequest(
     string Label, string StreetLine1, string? StreetLine2,
     string City, string Governorate, string PostalCode, bool IsDefault = false);
+internal sealed record UpdateAddressRequest(
+    string Label, string StreetLine1, string? StreetLine2,
+    string City, string Governorate, string PostalCode);
 internal sealed record ChangeRoleRequest(string Role);
 internal sealed record UpdateMyProfileRequest(string FirstName, string LastName, string? PhoneNumber);
 internal sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);

@@ -1,8 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import {
+  updateProfileSchema,
+  changePasswordSchema,
+  type UpdateProfileForm,
+  type ChangePasswordForm,
+} from "@/modules/auth/schemas";
 
 interface Props {
   user: { firstName: string; lastName: string; phoneNumber?: string };
@@ -25,93 +33,93 @@ export function EditProfileModule({ user, updateProfile, changePassword }: Props
   const tAuth = useTranslations("auth");
   const router = useRouter();
 
-  const [firstName, setFirstName] = useState(user.firstName);
-  const [lastName, setLastName] = useState(user.lastName);
-  const [phone, setPhone] = useState(user.phoneNumber ?? "");
-  const [profileStatus, setProfileStatus] = useState<{ ok: boolean; msg: string } | null>(null);
-  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingProfile, startProfileTransition] = useTransition();
+  const [savingPw, startPwTransition] = useTransition();
 
-  const [currentPw, setCurrentPw] = useState("");
-  const [newPw, setNewPw] = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
-  const [pwStatus, setPwStatus] = useState<{ ok: boolean; msg: string } | null>(null);
-  const [savingPw, setSavingPw] = useState(false);
+  const {
+    register: regProfile,
+    handleSubmit: handleProfileSubmit,
+    setError: setProfileError,
+    formState: { errors: profileErrors },
+  } = useForm<UpdateProfileForm>({
+    resolver: zodResolver(updateProfileSchema),
+    defaultValues: {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phoneNumber: user.phoneNumber ?? "",
+    },
+  });
 
-  const handleProfileSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingProfile(true);
-    setProfileStatus(null);
-    const res = await updateProfile(firstName, lastName, phone || undefined);
-    setProfileStatus({
-      ok: res.ok,
-      msg: res.ok ? t("profileSaved") : (res.error ?? "Error"),
+  const {
+    register: regPw,
+    handleSubmit: handlePwSubmit,
+    reset: resetPw,
+    setError: setPwError,
+    formState: { errors: pwErrors },
+  } = useForm<ChangePasswordForm>({ resolver: zodResolver(changePasswordSchema) });
+
+  const onProfileSave = (vals: UpdateProfileForm) => {
+    startProfileTransition(async () => {
+      const res = await updateProfile(vals.firstName, vals.lastName, vals.phoneNumber || undefined);
+      if (!res.ok) {
+        setProfileError("root", { message: res.error ?? "Error" });
+      } else {
+        router.refresh();
+      }
     });
-    if (res.ok) router.refresh();
-    setSavingProfile(false);
   };
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPw !== confirmPw) {
-      setPwStatus({ ok: false, msg: t("passwordMismatch") });
-      return;
-    }
-    setSavingPw(true);
-    setPwStatus(null);
-    const res = await changePassword(currentPw, newPw);
-    setPwStatus({
-      ok: res.ok,
-      msg: res.ok ? t("passwordChanged") : (res.error ?? "Error"),
+  const onPasswordChange = (vals: ChangePasswordForm) => {
+    startPwTransition(async () => {
+      const res = await changePassword(vals.currentPassword, vals.newPassword);
+      if (!res.ok) {
+        setPwError("root", { message: res.error ?? "Error" });
+      } else {
+        resetPw();
+      }
     });
-    if (res.ok) {
-      setCurrentPw("");
-      setNewPw("");
-      setConfirmPw("");
-    }
-    setSavingPw(false);
   };
 
   return (
     <div className="space-y-8 max-w-lg">
       {/* Profile info form */}
-      <form onSubmit={handleProfileSave} className="space-y-4">
+      <form onSubmit={handleProfileSubmit(onProfileSave)} className="space-y-4">
         <h2 className="text-base font-semibold text-text">{t("editProfileTitle")}</h2>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs text-text-muted mb-1">{tAuth("firstNameLabel")}</label>
             <input
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
               placeholder={tAuth("firstNamePlaceholder")}
               className={field}
-              required
+              {...regProfile("firstName")}
             />
+            {profileErrors.firstName && (
+              <p className="text-xs text-danger mt-1">{profileErrors.firstName.message}</p>
+            )}
           </div>
           <div>
             <label className="block text-xs text-text-muted mb-1">{tAuth("lastNameLabel")}</label>
             <input
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
               placeholder={tAuth("lastNamePlaceholder")}
               className={field}
-              required
+              {...regProfile("lastName")}
             />
+            {profileErrors.lastName && (
+              <p className="text-xs text-danger mt-1">{profileErrors.lastName.message}</p>
+            )}
           </div>
         </div>
         <div>
           <label className="block text-xs text-text-muted mb-1">{t("phoneLabel")}</label>
           <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
             placeholder={t("phonePlaceholder")}
             className={field}
             dir="ltr"
+            {...regProfile("phoneNumber")}
           />
         </div>
-        {profileStatus && (
-          <p className={`text-sm ${profileStatus.ok ? "text-green-600" : "text-red-500"}`}>
-            {profileStatus.msg}
-          </p>
+        {profileErrors.root && (
+          <p className="text-sm text-danger">{profileErrors.root.message}</p>
         )}
         <button
           type="submit"
@@ -125,43 +133,31 @@ export function EditProfileModule({ user, updateProfile, changePassword }: Props
       <hr className="border-border" />
 
       {/* Change password form */}
-      <form onSubmit={handlePasswordChange} className="space-y-4">
+      <form onSubmit={handlePwSubmit(onPasswordChange)} className="space-y-4">
         <h2 className="text-base font-semibold text-text">{t("changePasswordTitle")}</h2>
         <div>
           <label className="block text-xs text-text-muted mb-1">{t("currentPasswordLabel")}</label>
-          <input
-            type="password"
-            value={currentPw}
-            onChange={(e) => setCurrentPw(e.target.value)}
-            className={field}
-            required
-          />
+          <input type="password" className={field} {...regPw("currentPassword")} />
+          {pwErrors.currentPassword && (
+            <p className="text-xs text-danger mt-1">{pwErrors.currentPassword.message}</p>
+          )}
         </div>
         <div>
           <label className="block text-xs text-text-muted mb-1">{t("newPasswordLabel")}</label>
-          <input
-            type="password"
-            value={newPw}
-            onChange={(e) => setNewPw(e.target.value)}
-            className={field}
-            required
-            minLength={8}
-          />
+          <input type="password" className={field} {...regPw("newPassword")} />
+          {pwErrors.newPassword && (
+            <p className="text-xs text-danger mt-1">{pwErrors.newPassword.message}</p>
+          )}
         </div>
         <div>
           <label className="block text-xs text-text-muted mb-1">{t("confirmPasswordLabel")}</label>
-          <input
-            type="password"
-            value={confirmPw}
-            onChange={(e) => setConfirmPw(e.target.value)}
-            className={field}
-            required
-          />
+          <input type="password" className={field} {...regPw("confirmPassword")} />
+          {pwErrors.confirmPassword && (
+            <p className="text-xs text-danger mt-1">{pwErrors.confirmPassword.message}</p>
+          )}
         </div>
-        {pwStatus && (
-          <p className={`text-sm ${pwStatus.ok ? "text-green-600" : "text-red-500"}`}>
-            {pwStatus.msg}
-          </p>
+        {pwErrors.root && (
+          <p className="text-sm text-danger">{pwErrors.root.message}</p>
         )}
         <button
           type="submit"

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Header } from "@/shared/ui/Header";
 import { CartDrawer } from "@/modules/cart/components/CartDrawer";
-import { getCurrentUser, getMyAddresses, addAddress, deleteAddress } from "@/modules/auth/actions/authActions";
+import { getCurrentUser, getMyAddresses, addAddress, deleteAddress, updateAddress, setDefaultAddress } from "@/modules/auth/actions/authActions";
 import type { Address } from "@/modules/auth/types";
 import { AddressesPageModule } from "@/modules/auth/AddressesPageModule";
 
@@ -42,6 +42,29 @@ export default async function AddressesPage({ params, searchParams }: Props) {
     redirect(`/${locale}/account/addresses`);
   }
 
+  async function handleUpdate(formData: FormData) {
+    "use server";
+    const addressId = formData.get("addressId") as string;
+    if (!addressId) return;
+    const input = {
+      label:       (formData.get("label")       as string).trim(),
+      streetLine1: (formData.get("streetLine1") as string).trim(),
+      streetLine2: (formData.get("streetLine2") as string | null)?.trim() || undefined,
+      city:        (formData.get("city")        as string).trim(),
+      governorate: (formData.get("governorate") as string).trim(),
+      postalCode:  (formData.get("postalCode")  as string).trim(),
+    };
+    await updateAddress(addressId, input);
+    redirect(`/${locale}/account/addresses`);
+  }
+
+  async function handleSetDefault(formData: FormData) {
+    "use server";
+    const addressId = formData.get("addressId") as string;
+    if (addressId) await setDefaultAddress(addressId);
+    redirect(`/${locale}/account/addresses`);
+  }
+
   return (
     <>
       <Header />
@@ -52,6 +75,8 @@ export default async function AddressesPage({ params, searchParams }: Props) {
         errorParam={errorParam}
         handleDelete={handleDelete}
         handleAdd={handleAdd}
+        handleUpdate={handleUpdate}
+        handleSetDefault={handleSetDefault}
       />
     </>
   );
