@@ -40,8 +40,14 @@ var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
     ?? throw new InvalidOperationException("Jwt settings are not configured.");
 
 // ── Database ─────────────────────────────────────────────────────────────────
+var connStr = builder.Configuration.GetConnectionString("Default") ?? "";
 builder.Services.AddDbContext<AppDbContext>(opts =>
-    opts.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+{
+    if (connStr.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
+        opts.UseSqlite(connStr);
+    else
+        opts.UseSqlServer(connStr);
+});
 
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
@@ -65,11 +71,11 @@ var graphql = builder.Services
 
 // ── Modules ───────────────────────────────────────────────────────────────────
 builder.Services.AddIdentityModule(jwtSettings);
-// NOTE: Marketing must be registered before Catalog. With Catalog first,
-// HotChocolate fails to bind the Marketing Query resolvers ("has no resolver").
+// NOTE: Registration order matters for HotChocolate SDL-first resolver binding.
+// Identity must be registered first, then Marketing, then Catalog.
+builder.Services.AddIdentityGqlModule(graphql);
 builder.Services.AddMarketingModule(graphql);
 builder.Services.AddCatalogModule(graphql);
-builder.Services.AddIdentityGqlModule(graphql);
 builder.Services.AddCartModule();
 builder.Services.AddCheckoutModule();
 builder.Services.AddOrdersModule();
@@ -146,11 +152,13 @@ if (builder.Environment.IsDevelopment())
 var app = builder.Build();
 
 // ── Migrations on startup (dev / feature-flag) ───────────────────────────────
-if (builder.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    if (connStr.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
+        await db.Database.EnsureCreatedAsync();
+    else if (builder.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
+        await db.Database.MigrateAsync();
 }
 
 // ── Seed admin user if not present ───────────────────────────────────────────

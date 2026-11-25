@@ -107,6 +107,7 @@ function UserFormDrawer({
             </label>
             <input
               {...register("email" as keyof (CreateUserForm & UpdateUserForm))}
+              type="email"
               placeholder="user@example.com"
               className={fieldCls}
               dir="ltr"
@@ -132,14 +133,14 @@ function UserFormDrawer({
           <label className="block text-xs font-medium text-text-muted mb-1">
             {t("fieldFirstName")}
           </label>
-          <input {...register("firstName")} className={fieldCls} />
+          <input {...register("firstName")} type="text" className={fieldCls} />
           {e.firstName && <p className="text-xs text-danger mt-1">{e.firstName.message}</p>}
         </div>
         <div>
           <label className="block text-xs font-medium text-text-muted mb-1">
             {t("fieldLastName")}
           </label>
-          <input {...register("lastName")} className={fieldCls} />
+          <input {...register("lastName")} type="text" className={fieldCls} />
           {e.lastName && <p className="text-xs text-danger mt-1">{e.lastName.message}</p>}
         </div>
       </div>

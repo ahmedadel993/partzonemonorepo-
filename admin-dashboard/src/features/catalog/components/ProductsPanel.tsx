@@ -25,7 +25,6 @@ import { CONDITION_COLORS } from "../products/utils";
 import { Drawer } from "../shared/Drawer";
 import { Field } from "../shared/Field";
 import { inputCls } from "../shared/styles";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 function CreateProductDrawer({
   onClose, onDone, brands, categories, filter,

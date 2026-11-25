@@ -12,7 +12,7 @@ internal sealed class PageBlockConfiguration : IEntityTypeConfiguration<PageBloc
         builder.HasKey(b => b.Id);
         builder.Property(b => b.Type).HasConversion<string>().HasMaxLength(50).IsRequired();
         builder.Property(b => b.BindingType).HasConversion<string>().HasMaxLength(50).IsRequired();
-        builder.Property(b => b.Config).HasColumnType("nvarchar(max)").IsRequired();
+        builder.Property(b => b.Config).IsRequired();
         builder.Property(b => b.TargetUrl).HasMaxLength(500);
         builder.HasIndex(b => new { b.IsActive, b.SortOrder });
     }
