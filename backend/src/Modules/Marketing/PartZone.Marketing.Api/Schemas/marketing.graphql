@@ -17,12 +17,15 @@ extend type Mutation {
   createCoupon(input: CreateCouponInput!): CouponPayload!
   updateCoupon(input: UpdateCouponInput!): CouponPayload!
   deactivateCoupon(id: ID!): CouponPayload!
+  activateCoupon(id: ID!): CouponPayload!
+  deleteCoupon(id: ID!): CouponPayload!
   # Phase 6 – payment methods
   createPaymentMethod(input: CreatePaymentMethodInput!): PaymentMethodPayload!
   updatePaymentMethod(input: UpdatePaymentMethodInput!): PaymentMethodPayload!
   activatePaymentMethod(id: ID!): PaymentMethodPayload!
   deactivatePaymentMethod(id: ID!): PaymentMethodPayload!
   deletePaymentMethod(id: ID!): PaymentMethodPayload!
+  reorderPaymentMethods(input: [ReorderItemInput!]!): [PaymentMethodType!]!
 }
 
 type PageBlockType {

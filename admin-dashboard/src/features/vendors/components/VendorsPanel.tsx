@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
+import { Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -338,6 +339,13 @@ export function VendorsPanel() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2 flex-wrap">
+                      <Link
+                        to="/vendors/$vendorId"
+                        params={{ vendorId: v.id }}
+                        className="text-xs text-text-muted hover:text-accent"
+                      >
+                        ↗
+                      </Link>
                       <button
                         onClick={() => openEdit(v)}
                         className="text-xs text-accent hover:underline"

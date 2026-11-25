@@ -29,19 +29,31 @@ const VENDOR_FIELDS = gql`
 export const GET_USERS = gql`
   query GetUsers($role: String) {
     users(role: $role) {
-      ...UserFields
+      id
+      email
+      firstName
+      lastName
+      phoneNumber
+      role
+      isActive
+      createdAt
     }
   }
-  ${USER_FIELDS}
 `;
 
 export const GET_VENDORS = gql`
   query GetVendors {
     gqlVendors {
-      ...VendorFields
+      id
+      userId
+      companyName
+      taxId
+      phoneNumber
+      commissionRate
+      status
+      createdAt
     }
   }
-  ${VENDOR_FIELDS}
 `;
 
 export const ADMIN_CREATE_USER = gql`
@@ -108,6 +120,30 @@ export const DELETE_VENDOR = gql`
   }
 `;
 
+export const ACTIVATE_USER = gql`
+  mutation ActivateUser($id: ID!) {
+    activateUser(id: $id) {
+      user {
+        ...UserFields
+      }
+      errors
+    }
+  }
+  ${USER_FIELDS}
+`;
+
+export const DEACTIVATE_USER = gql`
+  mutation DeactivateUser($id: ID!) {
+    deactivateUser(id: $id) {
+      user {
+        ...UserFields
+      }
+      errors
+    }
+  }
+  ${USER_FIELDS}
+`;
+
 export const APPROVE_VENDOR = gql`
   mutation ApproveVendor($id: ID!) {
     approveVendor(id: $id) {
@@ -130,4 +166,34 @@ export const SUSPEND_VENDOR = gql`
     }
   }
   ${VENDOR_FIELDS}
+`;
+
+export const GET_VENDOR_BY_ID = gql`
+  query GetVendorById($id: ID!) {
+    gqlVendorById(id: $id) {
+      id
+      userId
+      companyName
+      taxId
+      phoneNumber
+      commissionRate
+      status
+      createdAt
+    }
+  }
+`;
+
+export const GET_USER_BY_ID = gql`
+  query GetUserById($id: ID!) {
+    userById(id: $id) {
+      id
+      email
+      firstName
+      lastName
+      phoneNumber
+      role
+      isActive
+      createdAt
+    }
+  }
 `;

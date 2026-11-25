@@ -9,6 +9,8 @@ import {
   ADMIN_CREATE_USER,
   UPDATE_USER,
   DELETE_USER,
+  ACTIVATE_USER,
+  DEACTIVATE_USER,
 } from "@/features/identity/graphql/identityApi";
 import {
   createUserSchema,
@@ -105,6 +107,7 @@ function UserFormDrawer({
             </label>
             <input
               {...register("email" as keyof (CreateUserForm & UpdateUserForm))}
+              type="email"
               placeholder="user@example.com"
               className={fieldCls}
               dir="ltr"
@@ -130,14 +133,14 @@ function UserFormDrawer({
           <label className="block text-xs font-medium text-text-muted mb-1">
             {t("fieldFirstName")}
           </label>
-          <input {...register("firstName")} className={fieldCls} />
+          <input {...register("firstName")} type="text" className={fieldCls} />
           {e.firstName && <p className="text-xs text-danger mt-1">{e.firstName.message}</p>}
         </div>
         <div>
           <label className="block text-xs font-medium text-text-muted mb-1">
             {t("fieldLastName")}
           </label>
-          <input {...register("lastName")} className={fieldCls} />
+          <input {...register("lastName")} type="text" className={fieldCls} />
           {e.lastName && <p className="text-xs text-danger mt-1">{e.lastName.message}</p>}
         </div>
       </div>
@@ -203,7 +206,10 @@ export function UsersPanel() {
   const { data, loading, error } = useQuery<{ users: User[] }>(GET_USERS);
   const [deleteUser, { loading: deleting }] = useMutation(DELETE_USER, {
     refetchQueries: [{ query: GET_USERS }],
+    awaitRefetchQueries: true,
   });
+  const [activateUser] = useMutation(ACTIVATE_USER, { refetchQueries: [{ query: GET_USERS }] });
+  const [deactivateUser] = useMutation(DEACTIVATE_USER, { refetchQueries: [{ query: GET_USERS }] });
 
   const users = (data?.users ?? []).filter(
     (u) =>
@@ -255,6 +261,7 @@ export function UsersPanel() {
                 <th className="px-4 py-3 text-start text-text-muted font-medium">{t("tableEmail")}</th>
                 <th className="px-4 py-3 text-start text-text-muted font-medium">{t("tableFullName")}</th>
                 <th className="px-4 py-3 text-start text-text-muted font-medium">{t("fieldRole")}</th>
+                <th className="px-4 py-3 text-start text-text-muted font-medium">{t("tableStatus")}</th>
                 <th className="px-4 py-3 text-start text-text-muted font-medium">{t("tableRegDate")}</th>
                 <th className="px-4 py-3 text-start text-text-muted font-medium">{t("tableActions")}</th>
               </tr>
@@ -262,7 +269,7 @@ export function UsersPanel() {
             <tbody className="divide-y divide-border">
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-text-muted">
+                  <td colSpan={6} className="px-4 py-8 text-center text-text-muted">
                     {t("noUsers")}
                   </td>
                 </tr>
@@ -284,6 +291,11 @@ export function UsersPanel() {
                       {u.role}
                     </span>
                   </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${u.isActive ? "bg-success/15 text-success" : "bg-surface-alt text-text-muted"}`}>
+                      {u.isActive ? t("userStatusActive") : t("userStatusInactive")}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-text-muted text-xs" dir="ltr">
                     {new Date(u.createdAt).toLocaleDateString()}
                   </td>
@@ -295,6 +307,21 @@ export function UsersPanel() {
                       >
                         {t("edit")}
                       </button>
+                      {u.isActive ? (
+                        <button
+                          onClick={() => deactivateUser({ variables: { id: u.id } })}
+                          className="text-xs text-text-muted hover:text-danger"
+                        >
+                          {t("actionDeactivate")}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => activateUser({ variables: { id: u.id } })}
+                          className="text-xs text-text-muted hover:text-success"
+                        >
+                          {t("actionActivate")}
+                        </button>
+                      )}
                       <button
                         onClick={() => setConfirmDelete(u)}
                         className="text-xs text-danger hover:underline"

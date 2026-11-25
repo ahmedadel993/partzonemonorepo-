@@ -14,7 +14,7 @@ internal sealed class PageBlockTranslationConfiguration : IEntityTypeConfigurati
         builder.Property(t => t.Title).HasMaxLength(300);
         builder.Property(t => t.Subtitle).HasMaxLength(500);
         builder.Property(t => t.CtaText).HasMaxLength(100);
-        builder.Property(t => t.ConfigOverride).HasColumnType("nvarchar(max)");
+        builder.Property(t => t.ConfigOverride);
         builder.HasIndex(t => new { t.PageBlockId, t.Locale }).IsUnique();
         builder.HasOne<PageBlock>()
             .WithMany(b => b.Translations)

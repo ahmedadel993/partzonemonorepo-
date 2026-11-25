@@ -9,7 +9,9 @@ extend type Query {
   product(slug: String!): ProductDetailType
   productById(id: ID!): ProductDetailType
   vehicleMakes: [VehicleMakeType!]!
+  vehicleMakeById(id: ID!): VehicleMakeType
   vehicleModels(makeId: ID!): [VehicleModelType!]!
+  vehicleModelById(id: ID!): VehicleModelType
   vehicleYears(modelId: ID!): [VehicleYearRangeType!]!
 }
 
@@ -21,6 +23,8 @@ extend type Mutation {
   deleteBrand(id: ID!): DeletePayload!
   createCategory(input: CreateCategoryInput!): CategoryPayload!
   updateCategory(input: UpdateCategoryInput!): CategoryPayload!
+  activateCategory(id: ID!): CategoryPayload!
+  deactivateCategory(id: ID!): CategoryPayload!
   deleteCategory(id: ID!): DeletePayload!
   createVehicleMake(input: CreateVehicleMakeInput!): VehicleMakePayload!
   updateVehicleMake(input: UpdateVehicleMakeInput!): VehicleMakePayload!

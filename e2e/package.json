@@ -8,6 +8,6 @@
     "test:storefront": "playwright test tests/storefront-journey.spec.ts"
   },
   "devDependencies": {
-    "@playwright/test": "^1.48.0"
+    "@playwright/test": "1.63.0"
   }
 }

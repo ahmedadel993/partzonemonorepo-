@@ -41,6 +41,8 @@ public sealed class PaymentMethod : AggregateRoot<Guid>
         SortOrder   = sortOrder;
     }
 
+    public void Reorder(int sortOrder) => SortOrder = sortOrder;
+
     public void Activate()   => IsActive = true;
     public void Deactivate() => IsActive = false;
 }

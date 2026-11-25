@@ -8,6 +8,8 @@ import {
   CREATE_CATEGORY,
   UPDATE_CATEGORY,
   DELETE_CATEGORY,
+  ACTIVATE_CATEGORY,
+  DEACTIVATE_CATEGORY,
 } from "../graphql/catalogApi";
 import { Category } from "../categories/types";
 import { categorySchema, CategoryForm } from "../categories/validation";
@@ -98,7 +100,9 @@ export function CategoriesPanel() {
   const { data, loading, error } = useQuery(GET_CATEGORIES);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
-  const [deleteCategory] = useMutation(DELETE_CATEGORY, { refetchQueries: [{ query: GET_CATEGORIES }] });
+  const [deleteCategory] = useMutation(DELETE_CATEGORY, { refetchQueries: [{ query: GET_CATEGORIES }], awaitRefetchQueries: true });
+  const [activateCategory] = useMutation(ACTIVATE_CATEGORY, { refetchQueries: [{ query: GET_CATEGORIES }] });
+  const [deactivateCategory] = useMutation(DEACTIVATE_CATEGORY, { refetchQueries: [{ query: GET_CATEGORIES }] });
 
   const categories: Category[] = data?.categories ?? [];
 
@@ -133,6 +137,7 @@ export function CategoriesPanel() {
               <th className="pb-3 font-medium pe-4">{t("fieldName")}</th>
               <th className="pb-3 font-medium pe-4">Slug</th>
               <th className="pb-3 font-medium pe-4">{t("fieldSortOrder")}</th>
+              <th className="pb-3 font-medium pe-4">{t("tableStatus")}</th>
               <th className="pb-3" />
             </tr>
           </thead>
@@ -142,6 +147,11 @@ export function CategoriesPanel() {
                 <td className="py-3 pe-4 font-medium text-text">{c.name}</td>
                 <td className="py-3 pe-4 text-text-muted font-mono" dir="ltr">{c.slug}</td>
                 <td className="py-3 pe-4 text-text-muted">{c.sortOrder}</td>
+                <td className="py-3 pe-4">
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${c.isActive ? "bg-success/15 text-success" : "bg-surface-alt text-text-muted"}`}>
+                    {c.isActive ? t("userStatusActive") : t("userStatusInactive")}
+                  </span>
+                </td>
                 <td className="py-3 text-end">
                   <div className="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 transition-all">
                     <button
@@ -157,6 +167,21 @@ export function CategoriesPanel() {
                     >
                       {t("details")}
                     </Link>
+                    {c.isActive ? (
+                      <button
+                        onClick={() => deactivateCategory({ variables: { id: c.id } })}
+                        className="text-xs text-text-muted hover:text-danger transition-colors"
+                      >
+                        {t("actionDeactivate")}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => activateCategory({ variables: { id: c.id } })}
+                        className="text-xs text-text-muted hover:text-success transition-colors"
+                      >
+                        {t("actionActivate")}
+                      </button>
+                    )}
                     <button
                       onClick={() => handleDelete(c.id)}
                       className="text-xs text-danger hover:text-danger/70 transition-colors"

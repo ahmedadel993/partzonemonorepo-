@@ -43,6 +43,29 @@ public sealed class IdentityRepository : IIdentityRepository
     public async Task AddAddressAsync(Address address, CancellationToken ct) =>
         await _ctx.Set<Address>().AddAsync(address, ct);
 
+    public async Task<bool> UpdateAddressAsync(Guid addressId, Guid userId, string label, string streetLine1, string? streetLine2, string city, string governorate, string postalCode, CancellationToken ct = default)
+    {
+        var address = await _ctx.Set<Address>()
+            .FirstOrDefaultAsync(a => a.Id == addressId && a.UserId == userId, ct);
+        if (address is null) return false;
+        address.Update(label, streetLine1, streetLine2, city, governorate, postalCode);
+        await _ctx.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<bool> SetDefaultAddressAsync(Guid addressId, Guid userId, CancellationToken ct = default)
+    {
+        var addresses = await _ctx.Set<Address>()
+            .Where(a => a.UserId == userId)
+            .ToListAsync(ct);
+        var target = addresses.FirstOrDefault(a => a.Id == addressId);
+        if (target is null) return false;
+        foreach (var a in addresses) a.ClearDefault();
+        target.MakeDefault();
+        await _ctx.SaveChangesAsync(ct);
+        return true;
+    }
+
     public async Task<bool> DeleteAddressAsync(Guid addressId, Guid userId, CancellationToken ct = default)
     {
         var address = await _ctx.Set<Address>()

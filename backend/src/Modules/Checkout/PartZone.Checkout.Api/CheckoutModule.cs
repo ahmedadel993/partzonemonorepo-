@@ -21,6 +21,12 @@ public static class CheckoutModule
         group.MapGet("/my-orders", CheckoutEndpoints.GetMyOrdersAsync);
         group.MapGet("/my-orders/{id}", CheckoutEndpoints.GetOrderByIdAsync);
         group.MapPost("/my-orders/{id:guid}/cancel", CheckoutEndpoints.CancelOrderAsync);
+        group.MapPost("/my-orders/{id:guid}/reorder", CheckoutEndpoints.ReorderOrderAsync);
+
+        var admin = app.MapGroup("/api/v1/admin/orders").RequireAuthorization("Admin");
+        admin.MapGet("", AdminOrdersEndpoints.GetAllOrdersAsync);
+        admin.MapGet("/{id:guid}", AdminOrdersEndpoints.GetOrderByIdAsync);
+        admin.MapPut("/{id:guid}/status", AdminOrdersEndpoints.UpdateOrderStatusAsync);
 
         return app;
     }

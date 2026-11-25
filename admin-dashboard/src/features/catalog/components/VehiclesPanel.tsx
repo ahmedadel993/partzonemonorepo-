@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
+import { Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -267,6 +268,14 @@ export function VehiclesPanel() {
                 >
                   {m.name}
                 </button>
+                <Link
+                  to="/catalog/makes/$makeId"
+                  params={{ makeId: m.id }}
+                  className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-text-muted hover:text-accent transition-colors rounded"
+                  title={t("view")}
+                >
+                  ↗
+                </Link>
                 <button
                   onClick={() => setEditMake(m)}
                   className="opacity-0 group-hover:opacity-100 px-2 py-1 text-xs text-text-muted hover:text-text transition-colors rounded"
@@ -315,7 +324,15 @@ export function VehiclesPanel() {
                 <tbody className="divide-y divide-border">
                   {models.map((m) => (
                     <tr key={m.id} className="hover:bg-surface-alt transition-colors group">
-                      <td className="py-2.5 pe-4 text-text">{m.name}</td>
+                      <td className="py-2.5 pe-4 text-text">
+                        <Link
+                          to="/catalog/models/$modelId"
+                          params={{ modelId: m.id }}
+                          className="hover:text-accent hover:underline transition-colors"
+                        >
+                          {m.name}
+                        </Link>
+                      </td>
                       <td className="py-2.5 pe-4 text-text-muted font-mono" dir="ltr">{m.slug}</td>
                       <td className="py-2.5">
                         <div className="flex items-center gap-1">

@@ -38,4 +38,18 @@ public sealed class Address : Entity<Guid>
             IsDefault = isDefault,
         };
     }
+
+    public void Update(string label, string streetLine1, string? streetLine2,
+        string city, string governorate, string postalCode)
+    {
+        Label = label;
+        StreetLine1 = streetLine1;
+        StreetLine2 = streetLine2;
+        City = city;
+        Governorate = governorate;
+        PostalCode = postalCode;
+    }
+
+    public void MakeDefault() => IsDefault = true;
+    public void ClearDefault() => IsDefault = false;
 }

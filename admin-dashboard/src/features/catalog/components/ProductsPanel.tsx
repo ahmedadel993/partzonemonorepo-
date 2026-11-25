@@ -25,20 +25,20 @@ import { CONDITION_COLORS } from "../products/utils";
 import { Drawer } from "../shared/Drawer";
 import { Field } from "../shared/Field";
 import { inputCls } from "../shared/styles";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 function CreateProductDrawer({
-  onClose, onDone, brands, categories,
+  onClose, onDone, brands, categories, filter,
 }: {
   onClose: () => void;
   onDone: () => void;
   brands: { id: string; name: string }[];
   categories: { id: string; name: string }[];
+  filter: object;
 }) {
   const { t } = useLanguage();
   const [serverError, setServerError] = useState<string | null>(null);
   const [createProduct] = useMutation(CREATE_PRODUCT, {
-    refetchQueries: ["GetProducts"],
+    refetchQueries: [{ query: GET_PRODUCTS, variables: { filter } }],
     awaitRefetchQueries: true,
   });
 
@@ -167,12 +167,12 @@ function CreateProductDrawer({
   );
 }
 
-function ProductImagesSection({ productId, images }: { productId: string; images: ProductImage[] }) {
+function ProductImagesSection({ productId, images, filter }: { productId: string; images: ProductImage[]; filter: object }) {
   const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const opts = { refetchQueries: ["GetProducts"] };
+  const opts = { refetchQueries: [{ query: GET_PRODUCTS, variables: { filter } }] };
   const [addImage] = useMutation(ADD_PRODUCT_IMAGE, opts);
   const [removeImage] = useMutation(REMOVE_PRODUCT_IMAGE, opts);
   const [setPrimary] = useMutation(SET_PRIMARY_PRODUCT_IMAGE, opts);
@@ -265,18 +265,19 @@ function ProductImagesSection({ productId, images }: { productId: string; images
 }
 
 function EditProductDrawer({
-  product, onClose, onDone, brands, categories,
+  product, onClose, onDone, brands, categories, filter,
 }: {
   product: ProductSummary;
   onClose: () => void;
   onDone: () => void;
   brands: { id: string; name: string }[];
   categories: { id: string; name: string }[];
+  filter: object;
 }) {
   const { t } = useLanguage();
   const [serverError, setServerError] = useState<string | null>(null);
   const [updateProduct] = useMutation(UPDATE_PRODUCT, {
-    refetchQueries: ["GetProducts"],
+    refetchQueries: [{ query: GET_PRODUCTS, variables: { filter } }],
   });
 
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<EditProductForm>({
@@ -332,7 +333,7 @@ function EditProductDrawer({
 
   return (
     <>
-    <ProductImagesSection productId={product.id} images={detailData?.product?.images ?? []} />
+    <ProductImagesSection productId={product.id} images={detailData?.product?.images ?? []} filter={filter} />
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <Field label={t("fieldSlugProduct")} error={errors.slug?.message}>
         <input {...register("slug")} className={inputCls} dir="ltr" />
@@ -689,6 +690,7 @@ export function ProductsPanel() {
           <CreateProductDrawer
             brands={brandsData?.brands ?? []}
             categories={catsData?.categories ?? []}
+            filter={filter}
             onClose={() => setDrawerOpen(false)}
             onDone={() => {
               setDrawerOpen(false);
@@ -704,6 +706,7 @@ export function ProductsPanel() {
             product={editProduct}
             brands={brandsData?.brands ?? []}
             categories={catsData?.categories ?? []}
+            filter={filter}
             onClose={() => setEditProduct(null)}
             onDone={() => {
               setEditProduct(null);

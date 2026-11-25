@@ -186,7 +186,13 @@
     "passwordChanged": "Password changed successfully",
     "saveProfile": "Save Changes",
     "changePasswordTitle": "Change Password",
-    "changePasswordBtn": "Change Password"
+    "changePasswordBtn": "Change Password",
+    "deleteAccountTitle": "Delete Account",
+    "deleteAccountWarning": "Your account and all data will be permanently deleted. This action cannot be undone.",
+    "deleteAccountBtn": "Delete Account",
+    "deleteAccountConfirm": "Yes, delete my account",
+    "deleting": "Deleting...",
+    "cancel": "Cancel"
   },
   "orders": {
     "title": "My Orders",
@@ -234,6 +240,8 @@
     "saveButton": "Save Address",
     "fullNamePlaceholder": "Full Name",
     "phonePlaceholder": "Phone Number",
-    "back": "→ My Account"
+    "back": "→ My Account",
+    "edit": "Edit",
+    "cancel": "Cancel"
   }
 }

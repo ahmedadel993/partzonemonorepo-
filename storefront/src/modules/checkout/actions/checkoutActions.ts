@@ -66,6 +66,41 @@ export async function getOrderById(id: string): Promise<OrderDetail | null> {
 export { getAddresses as getMyAddresses, addAddr as addAddress };
 export type { Address };
 
+export async function cancelOrder(orderId: string): Promise<boolean> {
+  const headers = await getAuthHeaders();
+  if (!("Authorization" in headers)) return false;
+  try {
+    const res = await fetch(`${API}/checkout/my-orders/${orderId}/cancel`, {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function reorder(orderId: string): Promise<{ newOrderId?: string; error?: string }> {
+  const headers = await getAuthHeaders();
+  if (!("Authorization" in headers)) return { error: "يجب تسجيل الدخول أولاً" };
+  try {
+    const res = await fetch(`${API}/checkout/my-orders/${orderId}/reorder`, {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { error: text || "فشل إعادة الطلب" };
+    }
+    const data = await res.json();
+    return { newOrderId: data.orderId ?? data.id };
+  } catch {
+    return { error: "فشل الاتصال بالخادم" };
+  }
+}
+
 // Phase 6 – fetch active payment methods for checkout page
 export interface PaymentMethodOption {
   id: string;

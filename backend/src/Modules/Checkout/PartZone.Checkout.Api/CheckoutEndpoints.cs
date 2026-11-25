@@ -59,6 +59,19 @@ internal static class CheckoutEndpoints
                 statusCode: StatusCodes.Status422UnprocessableEntity);
     }
 
+    internal static async Task<IResult> ReorderOrderAsync(
+        Guid id, ClaimsPrincipal user, IMediator mediator, CancellationToken ct)
+    {
+        var userId = GetUserId(user);
+        var result = await mediator.Send(new ReorderOrderCommand(id, userId), ct);
+        return result.IsSuccess
+            ? Results.Ok(new { orderId = result.Value })
+            : result.Error.Code == "Checkout.OrderNotFound" ? Results.NotFound()
+            : result.Error.Type == ErrorType.Unauthorized ? Results.Forbid()
+            : Results.Problem(result.Error.Description,
+                statusCode: StatusCodes.Status422UnprocessableEntity);
+    }
+
     private static Guid GetUserId(ClaimsPrincipal user) =>
         Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
 }

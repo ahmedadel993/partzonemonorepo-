@@ -9,6 +9,7 @@ public interface ICouponRepository
     Task<Coupon?> GetByIdAsync(Guid id, CancellationToken ct);
     void Add(Coupon coupon);
     void Update(Coupon coupon);
+    void Remove(Coupon coupon);
     void AddUsage(CouponUsage usage);
     Task<int> GetUserUsageCountAsync(Guid couponId, Guid userId, CancellationToken ct);
     Task SaveChangesAsync(CancellationToken ct);

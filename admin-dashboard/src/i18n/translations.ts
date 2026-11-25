@@ -231,6 +231,9 @@ export const translations = {
     tableRegDate: "تاريخ التسجيل",
     noUsers: "لا توجد نتائج",
     roleUpdating: "جارٍ…",
+    userStatusActive: "نشط",
+    userStatusInactive: "معطّل",
+    tableStatus: "الحالة",
 
     // ── Vendors ────────────────────────────────────────────────────
     vendorsHeading: "الموردون",
@@ -306,6 +309,9 @@ export const translations = {
     couponInactive: "معطّل",
     actionEdit: "تعديل",
     actionDisable: "تعطيل",
+    actionActivate: "تفعيل",
+    actionDeactivate: "تعطيل",
+    actionDeletePermanent: "حذف نهائي",
     drawerEditCoupon: "تعديل كوبون",
     drawerNewCoupon: "إضافة كوبون جديد",
     discTypeFixed: "مبلغ ثابت",
@@ -427,7 +433,10 @@ export const translations = {
     customersHeading: "العملاء",
     customers: "العملاء",
     drawerEditCustomer: "تعديل العميل",
+    drawerNewCustomer: "إضافة عميل جديد",
+    addCustomer: "إضافة عميل",
     deleteConfirmCustomer: "هل تريد حذف هذا العميل؟",
+    deleteCouponConfirm: "هل تريد حذف هذا الكوبون نهائياً؟",
     noCustomers: "لا يوجد عملاء",
     customersError: "تعذّر تحميل العملاء",
 
@@ -673,6 +682,9 @@ export const translations = {
     tableRegDate: "Registration Date",
     noUsers: "No results",
     roleUpdating: "Updating…",
+    userStatusActive: "Active",
+    userStatusInactive: "Inactive",
+    tableStatus: "Status",
 
     // ── Vendors ────────────────────────────────────────────────────
     vendorsHeading: "Vendors",
@@ -748,6 +760,9 @@ export const translations = {
     couponInactive: "Inactive",
     actionEdit: "Edit",
     actionDisable: "Disable",
+    actionActivate: "Activate",
+    actionDeactivate: "Deactivate",
+    actionDeletePermanent: "Delete",
     drawerEditCoupon: "Edit Coupon",
     drawerNewCoupon: "Add New Coupon",
     discTypeFixed: "Fixed Amount",
@@ -869,7 +884,10 @@ export const translations = {
     customersHeading: "Customers",
     customers: "Customers",
     drawerEditCustomer: "Edit Customer",
+    drawerNewCustomer: "New Customer",
+    addCustomer: "Add Customer",
     deleteConfirmCustomer: "Are you sure you want to delete this customer?",
+    deleteCouponConfirm: "Permanently delete this coupon?",
     noCustomers: "No customers found",
     customersError: "Failed to load customers",
 

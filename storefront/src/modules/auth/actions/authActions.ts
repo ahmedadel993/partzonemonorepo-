@@ -141,6 +141,40 @@ export async function deleteAddress(addressId: string): Promise<boolean> {
   }
 }
 
+export async function updateAddress(
+  addressId: string,
+  input: Omit<Address, "id" | "userId" | "isDefault">
+): Promise<boolean> {
+  const headers = await getAuthHeaders();
+  if (!headers.Authorization) return false;
+  try {
+    const res = await fetch(`${API}/identity/me/addresses/${addressId}`, {
+      method: "PUT",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      cache: "no-store",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function setDefaultAddress(addressId: string): Promise<boolean> {
+  const headers = await getAuthHeaders();
+  if (!headers.Authorization) return false;
+  try {
+    const res = await fetch(`${API}/identity/me/addresses/${addressId}/default`, {
+      method: "PATCH",
+      headers,
+      cache: "no-store",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function updateMyProfile(
   firstName: string,
   lastName: string,
@@ -197,17 +231,20 @@ export async function changePassword(
   }
 }
 
-export async function cancelOrder(orderId: string): Promise<boolean> {
+export async function deleteAccount(): Promise<{ ok: boolean; error?: string }> {
+  "use server";
   const headers = await getAuthHeaders();
-  if (!headers.Authorization) return false;
+  if (!headers.Authorization) return { ok: false, error: "يجب تسجيل الدخول أولاً" };
   try {
-    const res = await fetch(`${API}/checkout/my-orders/${orderId}/cancel`, {
-      method: "POST",
+    const res = await fetch(`${API}/identity/me`, {
+      method: "DELETE",
       headers,
       cache: "no-store",
     });
-    return res.ok;
+    if (!res.ok) return { ok: false, error: "فشل حذف الحساب" };
+    return { ok: true };
   } catch {
-    return false;
+    return { ok: false, error: "فشل حذف الحساب" };
   }
 }
+

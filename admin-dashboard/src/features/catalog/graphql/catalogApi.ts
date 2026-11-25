@@ -55,9 +55,21 @@ export const GET_VEHICLE_MAKES = gql`
   }
 `;
 
+export const GET_VEHICLE_MAKE_BY_ID = gql`
+  query GetVehicleMakeById($id: ID!) {
+    vehicleMakeById(id: $id) { id name slug logoUrl }
+  }
+`;
+
 export const GET_VEHICLE_MODELS = gql`
   query GetVehicleModels($makeId: ID!) {
     vehicleModels(makeId: $makeId) { id name slug vehicleMakeId }
+  }
+`;
+
+export const GET_VEHICLE_MODEL_BY_ID = gql`
+  query GetVehicleModelById($id: ID!) {
+    vehicleModelById(id: $id) { id name slug vehicleMakeId }
   }
 `;
 
@@ -278,6 +290,26 @@ export const DELETE_BRAND = gql`
 export const DELETE_CATEGORY = gql`
   mutation DeleteCategory($id: ID!) {
     deleteCategory(id: $id) {
+      errors
+    }
+  }
+`;
+
+export const ACTIVATE_CATEGORY = gql`
+  ${CATEGORY_FIELDS}
+  mutation ActivateCategory($id: ID!) {
+    activateCategory(id: $id) {
+      category { ...CategoryFields }
+      errors
+    }
+  }
+`;
+
+export const DEACTIVATE_CATEGORY = gql`
+  ${CATEGORY_FIELDS}
+  mutation DeactivateCategory($id: ID!) {
+    deactivateCategory(id: $id) {
+      category { ...CategoryFields }
       errors
     }
   }
