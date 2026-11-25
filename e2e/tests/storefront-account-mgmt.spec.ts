@@ -99,11 +99,13 @@ test.describe("Storefront account management", () => {
   });
 
   // ── 3. Set default address ─────────────────────────────────────────────────
-  test("3. set default address", async ({ page }) => {
+  test("3. set default address", async ({ page, request }) => {
     await injectAuth(page);
 
     // Add a second address via API so we can set it as default
-    const addRes = await page.request.post(`${API_BASE}/identity/me/addresses`, {
+    // Use `request` (clean context) instead of `page.request` to avoid sending browser cookies
+    // that contain Arabic characters (invalid HTTP header values)
+    const addRes = await request.post(`${API_BASE}/identity/me/addresses`, {
       headers: { Authorization: `Bearer ${savedAccessToken}`, "Content-Type": "application/json" },
       data: {
         label: "العمل",
@@ -136,7 +138,7 @@ test.describe("Storefront account management", () => {
     if (addRes.ok()) {
       const addr = await addRes.json().catch(() => null);
       if (addr?.id) {
-        await page.request.delete(`${API_BASE}/identity/me/addresses/${addr.id}`, {
+        await request.delete(`${API_BASE}/identity/me/addresses/${addr.id}`, {
           headers: { Authorization: `Bearer ${savedAccessToken}` },
         });
       }
@@ -144,15 +146,19 @@ test.describe("Storefront account management", () => {
   });
 
   // ── 4. Delete address ──────────────────────────────────────────────────────
-  test("4. delete address", async ({ page }) => {
+  test("4. delete address", async ({ page, request }) => {
     await injectAuth(page);
 
+    // Use a unique street name so stale addresses from previous failed runs don't interfere
+    const uniqueStreet = `شارع مؤقت ${Date.now()}`;
+
     // Add a temporary address via API to delete via UI
-    const addRes = await page.request.post(`${API_BASE}/identity/me/addresses`, {
+    // Use `request` (clean context) to avoid browser cookies with Arabic chars in header
+    await request.post(`${API_BASE}/identity/me/addresses`, {
       headers: { Authorization: `Bearer ${savedAccessToken}`, "Content-Type": "application/json" },
       data: {
         label: "مؤقت للحذف",
-        streetLine1: "شارع مؤقت 99",
+        streetLine1: uniqueStreet,
         city: "القاهرة",
         governorate: "القاهرة",
         postalCode: "00000",
@@ -163,19 +169,25 @@ test.describe("Storefront account management", () => {
     await page.goto(`${BASE}/ar/account/addresses`);
     await page.waitForLoadState("networkidle");
 
-    // Find the temp address card
-    const tempCard = page.locator("div").filter({ hasText: "شارع مؤقت 99" }).first();
+    // Find the temp address card by unique street name.
+    // Use .last() to get the innermost (most specific) div that also contains a delete button,
+    // avoiding matching a broad wrapper div that spans all addresses.
+    const tempCard = page
+      .locator("div")
+      .filter({ has: page.getByText(uniqueStreet) })
+      .filter({ has: page.locator("button[type='submit']", { hasText: "حذف" }) })
+      .last();
     await expect(tempCard).toBeVisible({ timeout: 10_000 });
 
     // Click the "حذف" button inside that card
-    const deleteBtn = tempCard.locator("button[type='submit']").filter({ hasText: "حذف" });
+    const deleteBtn = tempCard.locator("button[type='submit']").filter({ hasText: "حذف" }).first();
     await expect(deleteBtn).toBeVisible({ timeout: 5_000 });
     await deleteBtn.click();
 
     // Server Action redirects back; address should be gone
     await page.waitForURL(`${BASE}/ar/account/addresses`, { timeout: 15_000 });
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("شارع مؤقت 99")).not.toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(uniqueStreet)).not.toBeVisible({ timeout: 10_000 });
   });
 
   // ── 5. Place order then cancel it ─────────────────────────────────────────
@@ -203,7 +215,7 @@ test.describe("Storefront account management", () => {
     if (await saveAddrBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await page.getByPlaceholder("الاسم الكامل").fill("إدارة حساب");
       await page.getByPlaceholder("رقم الهاتف").fill("01000000003");
-      await page.getByPlaceholder("العنوان (السطر الأول)").fill("شارع الطلباء 5");
+      await page.getByPlaceholder("العنوان السطر الأول").fill("شارع الطلباء 5");
       await page.getByPlaceholder("المدينة").fill("القاهرة");
       await page.getByPlaceholder("المحافظة").fill("القاهرة");
       await page.getByPlaceholder("الرمز البريدي").fill("12345");
@@ -233,17 +245,20 @@ test.describe("Storefront account management", () => {
     await expect(cancelBtn).toBeVisible({ timeout: 10_000 });
     await cancelBtn.click();
 
-    // After cancel, the page reloads via redirect and status changes to "ملغي"
-    await page.waitForLoadState("networkidle");
+    // After cancel, the page reloads via redirect and status changes to "ملغي".
+    // Use domcontentloaded — networkidle can hang when Next.js dev tools poll in background.
+    await page.waitForLoadState("domcontentloaded");
     await expect(page.getByText("ملغي")).toBeVisible({ timeout: 15_000 });
   });
 
   // ── 6. Reorder from cancelled order (via API — no UI button yet) ──────────
-  test("6. reorder via API produces a new order", async ({ page }) => {
+  // Use `request` fixture (clean context, no browser cookies) to avoid "Invalid character in
+  // header content" error from Arabic characters in the auth_user browser cookie.
+  test("6. reorder via API produces a new order", async ({ page, request }) => {
     if (!cancelledOrderId) {
       // Previous test was skipped or failed — test via API with any existing order
       const token = await injectAuth(page);
-      const ordersRes = await page.request.get(`${API_BASE}/checkout/my-orders`, {
+      const ordersRes = await request.get(`${API_BASE}/checkout/my-orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!ordersRes.ok()) {
@@ -260,7 +275,7 @@ test.describe("Storefront account management", () => {
 
     const token = savedAccessToken || (await injectAuth(page));
 
-    const reorderRes = await page.request.post(
+    const reorderRes = await request.post(
       `${API_BASE}/checkout/my-orders/${cancelledOrderId}/reorder`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -274,7 +289,7 @@ test.describe("Storefront account management", () => {
     if (body?.orderId) {
       await injectAuth(page);
       await page.goto(`${BASE}/ar/orders/${body.orderId}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       // The new order detail page should load (Pending status)
       await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
     }

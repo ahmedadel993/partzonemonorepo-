@@ -126,41 +126,56 @@ test.describe("Storefront journey", () => {
     }
     await expect(addBtn).toBeVisible({ timeout: 10_000 });
     await addBtn.click();
+    // Wait for server action to complete before navigating away
+    await expect(page.locator("button", { hasText: "تمت الإضافة" })).toBeVisible({ timeout: 10_000 });
 
-    // 4b. Navigate to checkout
-    await page.goto(`${BASE}/ar/checkout`);
-    await expect(page.getByRole("heading", { name: /عنوان الشحن/i })).toBeVisible({ timeout: 10_000 });
-
-    // 4c. Add shipping address if the form is showing (new customer with no addresses)
-    const saveAddrBtn = page.getByRole("button", { name: "حفظ العنوان" });
-    if (await saveAddrBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await page.getByPlaceholder("الاسم الكامل").fill("Test Customer");
-      await page.getByPlaceholder("رقم الهاتف").fill("01000000000");
-      await page.getByPlaceholder("العنوان (السطر الأول)").fill("123 Test Street");
-      await page.getByPlaceholder("المدينة").fill("Cairo");
-      await page.getByPlaceholder("المحافظة").fill("Cairo");
-      await page.getByPlaceholder("الرمز البريدي").fill("12345");
-      await saveAddrBtn.click();
-      // Wait for the address to be saved and form to close
-      await expect(page.locator("input[name='address']").first()).toBeVisible({ timeout: 10_000 });
-    } else {
-      // Address already exists; ensure one is selected
-      const firstAddressRadio = page.locator("input[name='address']").first();
-      if (await firstAddressRadio.isVisible({ timeout: 3_000 }).catch(() => false)) {
-        await firstAddressRadio.check();
+    // 4b. Ensure user has a shipping address before navigating to checkout.
+    // We retrieve the token from the cookie to call the API directly — this is more
+    // reliable than filling the client-side form (which requires a live server action round-trip).
+    const loginRes2 = await page.request.post(`${API_BASE}/identity/auth/login`, {
+      data: { email: USER_EMAIL, password: USER_PASS },
+    });
+    if (loginRes2.ok()) {
+      const { accessToken: token2 } = await loginRes2.json();
+      const addrsRes = await page.request.get(`${API_BASE}/identity/me/addresses`, {
+        headers: { Authorization: `Bearer ${token2}` },
+      });
+      const existingAddrs = addrsRes.ok() ? await addrsRes.json().catch(() => []) : [];
+      if (!Array.isArray(existingAddrs) || existingAddrs.length === 0) {
+        await page.request.post(`${API_BASE}/identity/me/addresses`, {
+          headers: { Authorization: `Bearer ${token2}`, "Content-Type": "application/json" },
+          data: {
+            label: "Test Customer",
+            streetLine1: "123 Test Street",
+            city: "Cairo",
+            governorate: "Cairo",
+            postalCode: "12345",
+            isDefault: true,
+          },
+        });
       }
     }
 
-    // 4d. Payment method — verify at least one radio is visible and auto-selected
+    // 4c. Navigate to checkout — server component will now fetch the saved address
+    await page.goto(`${BASE}/ar/checkout`);
+    await expect(page.getByRole("heading", { name: /عنوان الشحن/i })).toBeVisible({ timeout: 10_000 });
+
+    // 4d. Select first address radio if visible (triggers onSelect which also sets shippingAddress)
+    const firstAddressRadio = page.locator("input[name='address']").first();
+    if (await firstAddressRadio.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await firstAddressRadio.check();
+    }
+
+    // 4e. Payment method — verify at least one radio is visible and auto-selected
     const paymentRadios = page.locator("input[type='radio'][name='payment']");
     await expect(paymentRadios.first()).toBeVisible({ timeout: 10_000 });
 
-    // 4e. Submit checkout — wait for cart to hydrate (getCart() async useEffect)
+    // 4f. Submit checkout — wait for cart to hydrate (getCart() async useEffect)
     const submitBtn = page.getByRole("button", { name: "تأكيد الطلب" });
     await expect(submitBtn).toBeEnabled({ timeout: 20_000 });
     await submitBtn.click();
 
-    // 4f. Assert redirect to order confirmation page with success message
+    // 4g. Assert redirect to order confirmation page with success message
     await page.waitForURL(/\/ar\/orders\/.+\?new=1/, { timeout: 30_000 });
     await expect(page.getByRole("heading", { name: "شكراً لطلبك!" })).toBeVisible({ timeout: 10_000 });
   });

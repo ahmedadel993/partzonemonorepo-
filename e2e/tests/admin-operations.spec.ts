@@ -55,13 +55,13 @@ test.describe("Admin operations", () => {
     await expect(deactivateBtn).toBeVisible({ timeout: 5_000 });
     await deactivateBtn.click();
     // Status badge should change to inactive (not active)
-    await expect(couponRow.locator("span").filter({ hasText: /تعطيل|غير نشط/i }).first()).toBeVisible({ timeout: 10_000 });
+    await expect(couponRow.locator("span").filter({ hasText: /معطّل|غير نشط/i }).first()).toBeVisible({ timeout: 10_000 });
 
     // ── Activate ──
     const activateBtn = couponRow.getByRole("button", { name: /تفعيل/i });
     await expect(activateBtn).toBeVisible({ timeout: 5_000 });
     await activateBtn.click();
-    await expect(couponRow.locator("span").filter({ hasText: /نشط|active/i }).first()).toBeVisible({ timeout: 10_000 });
+    await expect(couponRow.locator("span").filter({ hasText: /مفعّل|نشط|active/i }).first()).toBeVisible({ timeout: 10_000 });
 
     // ── Delete (uses window.confirm) ──
     page.once("dialog", (dialog) => dialog.accept());

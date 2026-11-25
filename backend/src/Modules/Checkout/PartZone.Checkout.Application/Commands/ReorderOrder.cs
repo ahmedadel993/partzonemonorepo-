@@ -1,5 +1,6 @@
 using PartZone.Checkout.Application.Interfaces;
 using PartZone.Checkout.Domain.Entities;
+using PartZone.Checkout.Domain.ValueObjects;
 using PartZone.Shared.Kernel.Abstractions;
 using PartZone.Shared.Kernel.Results;
 
@@ -21,8 +22,15 @@ internal sealed class ReorderOrderHandler(IOrderRepository repo) : ICommandHandl
         var items = original.Items.Select(i =>
             (i.ProductId, i.SKU, i.Name, i.UnitPrice, i.Quantity, i.ImageUrl));
 
+        // Create a fresh ShippingAddress instance — the original is an EF-tracked owned entity
+        // whose OrderId (a key property) cannot be reassigned to a new Order.
+        var addr = original.ShippingAddress;
+        var freshAddress = ShippingAddress.Create(
+            addr.FullName, addr.Phone, addr.AddressLine1, addr.AddressLine2,
+            addr.City, addr.Governorate, addr.PostalCode);
+
         var newOrder = Order.Create(
-            req.UserId, items, original.ShippingAddress,
+            req.UserId, items, freshAddress,
             null, 0m, null, original.PaymentMethod);
 
         repo.Add(newOrder);
