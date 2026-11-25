@@ -29,6 +29,7 @@ using PartZone.Identity.Infrastructure;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Secrets.json", optional: true, reloadOnChange: false);
 
 // ── Serilog ──────────────────────────────────────────────────────────────────
 builder.Host.UseSerilog((ctx, cfg) => cfg
