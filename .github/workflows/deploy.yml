@@ -1,0 +1,113 @@
+name: Deploy to Monster ASP.NET
+
+on:
+  push:
+    branches: [development]
+
+jobs:
+  deploy-backend-admin:
+    name: Backend + Admin → partzoneadmin.runasp.net
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install JS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build admin dashboard
+        run: pnpm --filter admin-dashboard build
+        env:
+          VITE_GRAPHQL_URL: https://partzoneadmin.runasp.net/graphql
+          VITE_API_URL: https://partzoneadmin.runasp.net/api/v1
+
+      - name: Copy admin dist into backend wwwroot
+        run: |
+          mkdir -p backend/src/PartZone.Host/wwwroot/admin
+          cp -r admin-dashboard/dist/. backend/src/PartZone.Host/wwwroot/admin/
+
+      - name: Inject production secrets
+        run: |
+          cat > backend/src/PartZone.Host/appsettings.Secrets.json << 'ENDOFJSON'
+          {
+            "ConnectionStrings": { "Default": "${{ secrets.DB_CONNECTION_STRING }}" },
+            "Jwt": {
+              "SecretKey": "${{ secrets.JWT_SECRET_KEY }}",
+              "Issuer": "https://partzoneadmin.runasp.net",
+              "Audience": "partzone-clients"
+            },
+            "APPLY_MIGRATIONS": true
+          }
+          ENDOFJSON
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish backend
+        run: |
+          dotnet publish backend/src/PartZone.Host/PartZone.Host.csproj \
+            -c Release -o ./publish-backend \
+            --self-contained false
+
+      - name: FTP deploy to site111260
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: site111260.siteasp.net
+          username: site111260
+          password: ${{ secrets.FTP_PASSWORD_ADMIN }}
+          local-dir: ./publish-backend/
+          server-dir: /wwwroot/
+          exclude: |
+            **/.git*
+
+  deploy-storefront:
+    name: Storefront → partzone.runasp.net
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install JS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build storefront (standalone)
+        run: pnpm --filter storefront build
+        env:
+          NEXT_PUBLIC_API_URL: https://partzoneadmin.runasp.net/api/v1
+
+      - name: Package standalone output
+        run: |
+          mkdir -p ./publish-storefront
+          cp -r storefront/.next/standalone/. ./publish-storefront/
+          mkdir -p ./publish-storefront/.next/static
+          cp -r storefront/.next/static/. ./publish-storefront/.next/static/
+          cp -r storefront/public/. ./publish-storefront/public/
+          cp storefront/web.config ./publish-storefront/web.config
+
+      - name: FTP deploy to site111263
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: site111263.siteasp.net
+          username: site111263
+          password: ${{ secrets.FTP_PASSWORD_STOREFRONT }}
+          local-dir: ./publish-storefront/
+          server-dir: /wwwroot/
+          exclude: |
+            **/.git*
