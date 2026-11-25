@@ -139,15 +139,18 @@ builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>("database");
 
-// ── CORS (dev only) ──────────────────────────────────────────────────────────
+// ── CORS ─────────────────────────────────────────────────────────────────────
+var allowedOrigins = builder.Configuration
+    .GetSection("AllowedOrigins").Get<string[]>() ?? [];
 if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddCors(opts =>
-        opts.AddDefaultPolicy(policy =>
-            policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()));
-}
+    allowedOrigins = [..allowedOrigins, "http://localhost:5173", "http://localhost:3000"];
+
+builder.Services.AddCors(opts =>
+    opts.AddDefaultPolicy(policy =>
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials()));
 
 var app = builder.Build();
 
@@ -200,8 +203,7 @@ var app = builder.Build();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 
-if (app.Environment.IsDevelopment())
-    app.UseCors();
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -225,7 +227,18 @@ app.MapVendorsEndpoints();
 app.MapErpEndpoints();
 app.MapUploadEndpoints();
 
-// Serve admin SPA from wwwroot/admin (production — IIS handles SPA fallback)
 app.UseStaticFiles();
+
+// Admin SPA deep-link fallback — TanStack Router handles routing client-side
+app.MapFallback("/admin/{**slug}", async (HttpContext ctx) =>
+{
+    var indexPath = System.IO.Path.Combine(
+        app.Environment.WebRootPath ?? "wwwroot", "admin", "index.html");
+    if (File.Exists(indexPath))
+    {
+        ctx.Response.ContentType = "text/html";
+        await ctx.Response.SendFileAsync(indexPath);
+    }
+});
 
 app.Run();

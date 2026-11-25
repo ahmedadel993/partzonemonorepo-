@@ -19,6 +19,8 @@ backend/**/*.user
 backend/**/*.suo
 backend/.vs/
 *.nupkg
+# Generated at deploy time by GitHub Actions — never commit
+appsettings.Secrets.json
 
 # EF Core migrations snapshot included (not ignored)
 # but not build output from migrations
