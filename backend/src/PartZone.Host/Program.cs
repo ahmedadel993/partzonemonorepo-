@@ -158,10 +158,18 @@ var app = builder.Build();
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (connStr.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
-        await db.Database.EnsureCreatedAsync();
-    else if (builder.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
-        await db.Database.MigrateAsync();
+    try
+    {
+        if (connStr.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
+            await db.Database.EnsureCreatedAsync();
+        else if (builder.Configuration.GetValue<bool>("APPLY_MIGRATIONS"))
+            await db.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        var startupLogger = app.Logger;
+        startupLogger.LogError(ex, "Database migration failed on startup: {Message}", ex.Message);
+    }
 }
 
 // ── Seed admin user if not present ───────────────────────────────────────────
