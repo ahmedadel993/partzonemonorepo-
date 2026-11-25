@@ -433,7 +433,10 @@ export const translations = {
     customersHeading: "العملاء",
     customers: "العملاء",
     drawerEditCustomer: "تعديل العميل",
+    drawerNewCustomer: "إضافة عميل جديد",
+    addCustomer: "إضافة عميل",
     deleteConfirmCustomer: "هل تريد حذف هذا العميل؟",
+    deleteCouponConfirm: "هل تريد حذف هذا الكوبون نهائياً؟",
     noCustomers: "لا يوجد عملاء",
     customersError: "تعذّر تحميل العملاء",
 
@@ -881,7 +884,10 @@ export const translations = {
     customersHeading: "Customers",
     customers: "Customers",
     drawerEditCustomer: "Edit Customer",
+    drawerNewCustomer: "New Customer",
+    addCustomer: "Add Customer",
     deleteConfirmCustomer: "Are you sure you want to delete this customer?",
+    deleteCouponConfirm: "Permanently delete this coupon?",
     noCustomers: "No customers found",
     customersError: "Failed to load customers",
 
