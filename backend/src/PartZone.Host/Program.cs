@@ -178,15 +178,22 @@ var app = builder.Build();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var hasher = scope.ServiceProvider.GetRequiredService<PartZone.Identity.Application.Interfaces.IPasswordHasher>();
     const string adminEmail = "admin@partzone.local";
-    if (!db.Users.Any(u => u.Email == adminEmail))
+    try
     {
-        var admin = PartZone.Identity.Domain.Entities.User.Create(
-            adminEmail,
-            hasher.Hash("Admin@12345"),
-            "Admin", "PartZone",
-            PartZone.Identity.Domain.Entities.UserRole.Admin);
-        db.Users.Add(admin);
-        await db.SaveChangesAsync();
+        if (!db.Users.Any(u => u.Email == adminEmail))
+        {
+            var admin = PartZone.Identity.Domain.Entities.User.Create(
+                adminEmail,
+                hasher.Hash("Admin@12345"),
+                "Admin", "PartZone",
+                PartZone.Identity.Domain.Entities.UserRole.Admin);
+            db.Users.Add(admin);
+            await db.SaveChangesAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Admin seed failed on startup: {Message}", ex.Message);
     }
 }
 
@@ -194,17 +201,24 @@ var app = builder.Build();
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (!db.Set<PartZone.Marketing.Domain.Entities.PaymentMethod>().Any())
+    try
     {
-        db.Set<PartZone.Marketing.Domain.Entities.PaymentMethod>().AddRange(
-            PartZone.Marketing.Domain.Entities.PaymentMethod.Create(
-                "cash_on_delivery", "الدفع عند الاستلام", "Cash on Delivery",
-                null, isComingSoon: false, sortOrder: 1),
-            PartZone.Marketing.Domain.Entities.PaymentMethod.Create(
-                "visa", "بطاقة فيزا", "Visa Card",
-                null, isComingSoon: true, sortOrder: 2)
-        );
-        await db.SaveChangesAsync();
+        if (!db.Set<PartZone.Marketing.Domain.Entities.PaymentMethod>().Any())
+        {
+            db.Set<PartZone.Marketing.Domain.Entities.PaymentMethod>().AddRange(
+                PartZone.Marketing.Domain.Entities.PaymentMethod.Create(
+                    "cash_on_delivery", "الدفع عند الاستلام", "Cash on Delivery",
+                    null, isComingSoon: false, sortOrder: 1),
+                PartZone.Marketing.Domain.Entities.PaymentMethod.Create(
+                    "visa", "بطاقة فيزا", "Visa Card",
+                    null, isComingSoon: true, sortOrder: 2)
+            );
+            await db.SaveChangesAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Payment methods seed failed on startup: {Message}", ex.Message);
     }
 }
 
