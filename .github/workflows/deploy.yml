@@ -56,6 +56,21 @@ jobs:
             -c Release -o ./publish-backend \
             --self-contained false
 
+      - name: Take app offline (release DLL locks)
+        env:
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_ADMIN }}
+        run: |
+          python3 - << 'PY'
+          import ftplib, io, os
+          ftp = ftplib.FTP('site111260.siteasp.net')
+          ftp.login('site111260', os.environ['FTP_PASS'])
+          ftp.storbinary('STOR wwwroot/app_offline.htm',
+                         io.BytesIO(b'<html><body>Deploying update...</body></html>'))
+          ftp.quit()
+          print('app_offline.htm uploaded — app is offline')
+          PY
+          sleep 8
+
       - name: FTP deploy to site111260
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -66,6 +81,23 @@ jobs:
           server-dir: /wwwroot/
           exclude: |
             **/.git*
+
+      - name: Bring app back online
+        if: always()
+        env:
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_ADMIN }}
+        run: |
+          python3 - << 'PY'
+          import ftplib, os
+          ftp = ftplib.FTP('site111260.siteasp.net')
+          ftp.login('site111260', os.environ['FTP_PASS'])
+          try:
+              ftp.delete('wwwroot/app_offline.htm')
+              print('app_offline.htm deleted — app is back online')
+          except ftplib.error_perm as e:
+              print(f'Note: {e}')
+          ftp.quit()
+          PY
 
   deploy-storefront:
     name: Storefront → partzone.runasp.net
