@@ -252,6 +252,8 @@ app.MapUploadEndpoints();
 
 app.UseStaticFiles();
 
+app.MapGet("/", () => Results.Redirect("/admin/"));
+
 // Admin SPA deep-link fallback — TanStack Router handles routing client-side
 app.MapFallback("/admin/{**slug}", async (HttpContext ctx) =>
 {

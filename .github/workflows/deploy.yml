@@ -129,6 +129,21 @@ jobs:
           cp -r storefront/public/. ./publish-storefront/public/
           cp storefront/web.config ./publish-storefront/web.config
 
+      - name: Take storefront offline (release file locks)
+        env:
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_STOREFRONT }}
+        run: |
+          python3 - << 'PY'
+          import ftplib, io, os
+          ftp = ftplib.FTP('site111263.siteasp.net')
+          ftp.login('site111263', os.environ['FTP_PASS'])
+          ftp.storbinary('STOR wwwroot/app_offline.htm',
+                         io.BytesIO(b'<html><body>Deploying update...</body></html>'))
+          ftp.quit()
+          print('app_offline.htm uploaded — storefront is offline')
+          PY
+          sleep 8
+
       - name: FTP deploy to site111263
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -139,3 +154,20 @@ jobs:
           server-dir: /wwwroot/
           exclude: |
             **/.git*
+
+      - name: Bring storefront back online
+        if: always()
+        env:
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_STOREFRONT }}
+        run: |
+          python3 - << 'PY'
+          import ftplib, os
+          ftp = ftplib.FTP('site111263.siteasp.net')
+          ftp.login('site111263', os.environ['FTP_PASS'])
+          try:
+              ftp.delete('wwwroot/app_offline.htm')
+              print('app_offline.htm deleted — storefront is back online')
+          except ftplib.error_perm as e:
+              print(f'Note: {e}')
+          ftp.quit()
+          PY
