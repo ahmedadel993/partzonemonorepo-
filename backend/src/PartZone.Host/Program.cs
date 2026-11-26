@@ -126,6 +126,8 @@ builder.Services
             ValidAudience = jwtSettings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+            // .NET 8 JsonWebTokenHandler does not remap "role" → ClaimTypes.Role
+            RoleClaimType = "role",
         };
     });
 
@@ -220,6 +222,32 @@ var app = builder.Build();
     catch (Exception ex)
     {
         app.Logger.LogError(ex, "Payment methods seed failed on startup: {Message}", ex.Message);
+    }
+}
+
+// ── One-time: normalise legacy https:// image URLs to http:// ─────────────────
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        // Fix page-block configs saved before the HTTP-only hosting fix
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE marketing.PageBlocks SET Config = REPLACE(Config, 'https://partzoneadmin.runasp.net', 'http://partzoneadmin.runasp.net') WHERE Config LIKE '%https://partzoneadmin.runasp.net%'");
+        // Fix product image URLs stored in the ProductImages table
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE catalog.ProductImages SET Url = REPLACE(Url, 'https://partzoneadmin.runasp.net', 'http://partzoneadmin.runasp.net') WHERE Url LIKE '%https://partzoneadmin.runasp.net%'");
+        // Fix brand / category / vehicle logo URLs
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE catalog.Brands SET LogoUrl = REPLACE(LogoUrl, 'https://partzoneadmin.runasp.net', 'http://partzoneadmin.runasp.net') WHERE LogoUrl LIKE '%https://partzoneadmin.runasp.net%'");
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE catalog.Categories SET ImageUrl = REPLACE(ImageUrl, 'https://partzoneadmin.runasp.net', 'http://partzoneadmin.runasp.net') WHERE ImageUrl LIKE '%https://partzoneadmin.runasp.net%'");
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE catalog.VehicleMakes SET LogoUrl = REPLACE(LogoUrl, 'https://partzoneadmin.runasp.net', 'http://partzoneadmin.runasp.net') WHERE LogoUrl LIKE '%https://partzoneadmin.runasp.net%'");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "URL normalisation failed: {Message}", ex.Message);
     }
 }
 
