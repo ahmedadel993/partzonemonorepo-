@@ -462,8 +462,8 @@ export function ProductsPanel() {
     variables: { filter },
     fetchPolicy: "cache-and-network",
   });
-  const { data: brandsData } = useQuery(GET_BRANDS);
-  const { data: catsData } = useQuery(GET_CATEGORIES);
+  const { data: brandsData } = useQuery(GET_BRANDS, { fetchPolicy: "network-only" });
+  const { data: catsData } = useQuery(GET_CATEGORIES, { fetchPolicy: "network-only" });
 
   const [publishProduct] = useMutation(PUBLISH_PRODUCT, {
     refetchQueries: [{ query: GET_PRODUCTS, variables: { filter } }],

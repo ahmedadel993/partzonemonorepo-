@@ -32,6 +32,8 @@ function BrandFormDrawer({
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<BrandForm>({
     resolver: zodResolver(brandSchema),
@@ -40,11 +42,24 @@ function BrandFormDrawer({
       : { name: "", slug: "", logoUrl: "" },
   });
 
+  const nameValue = watch("name");
+  const slugValue = watch("slug");
+  const toSlug = (s: string) =>
+    s.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isEdit && (!slugValue || slugValue === toSlug(nameValue))) {
+      setValue("slug", toSlug(e.target.value), { shouldValidate: false });
+    }
+  };
+
   const [createBrand] = useMutation(CREATE_BRAND, {
     refetchQueries: [{ query: GET_BRANDS }],
+    awaitRefetchQueries: true,
   });
   const [updateBrand] = useMutation(UPDATE_BRAND, {
     refetchQueries: [{ query: GET_BRANDS }],
+    awaitRefetchQueries: true,
   });
 
   const onSubmit = async (data: BrandForm) => {
@@ -73,7 +88,7 @@ function BrandFormDrawer({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-1" dir={dir}>
       <Field label={t("fieldName")} error={errors.name?.message}>
-        <input {...register("name")} className={inputCls} placeholder={t("brandNamePlaceholder")} />
+        <input {...register("name", { onChange: handleNameChange })} className={inputCls} placeholder={t("brandNamePlaceholder")} />
       </Field>
       <Field label={t("fieldSlug")} error={errors.slug?.message}>
         <input
@@ -115,7 +130,7 @@ export function BrandsPanel() {
   const { data, loading, error } = useQuery(GET_BRANDS);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Brand | null>(null);
-  const [deleteBrand] = useMutation(DELETE_BRAND, { refetchQueries: [{ query: GET_BRANDS }] });
+  const [deleteBrand] = useMutation(DELETE_BRAND, { refetchQueries: [{ query: GET_BRANDS }], awaitRefetchQueries: true });
 
   const brands: Brand[] = data?.brands ?? [];
 
