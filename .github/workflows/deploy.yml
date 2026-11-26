@@ -23,8 +23,8 @@ jobs:
       - name: Build admin dashboard
         run: pnpm --filter admin-dashboard build
         env:
-          VITE_GRAPHQL_URL: https://partzoneadmin.runasp.net/graphql
-          VITE_API_URL: https://partzoneadmin.runasp.net/api/v1
+          VITE_GRAPHQL_URL: http://partzoneadmin.runasp.net/graphql
+          VITE_API_URL: http://partzoneadmin.runasp.net/api/v1
 
       - name: Copy admin dist into backend wwwroot
         run: |
