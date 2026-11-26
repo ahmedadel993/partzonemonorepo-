@@ -254,10 +254,10 @@ app.UseStaticFiles();
 
 // Serve admin SPA assets from ContentRootPath/admin/ — deployed alongside DLLs via FTP,
 // not inside the nested wwwroot/ subdirectory, so WebRootPath resolution doesn't apply.
-var adminRoot = Path.Combine(app.Environment.ContentRootPath, "admin");
+var adminRoot = System.IO.Path.Combine(app.Environment.ContentRootPath, "admin");
 if (Directory.Exists(adminRoot))
 {
-    app.UseStaticFiles(new Microsoft.AspNetCore.StaticFiles.StaticFileOptions
+    app.UseStaticFiles(new StaticFileOptions
     {
         FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(adminRoot),
         RequestPath = "/admin"
@@ -276,7 +276,7 @@ app.MapFallback("/admin/{**slug}", async (HttpContext ctx) =>
         ctx.Response.StatusCode = 404;
         return;
     }
-    var indexPath = Path.Combine(app.Environment.ContentRootPath, "admin", "index.html");
+    var indexPath = System.IO.Path.Combine(app.Environment.ContentRootPath, "admin", "index.html");
     if (File.Exists(indexPath))
     {
         ctx.Response.ContentType = "text/html";
