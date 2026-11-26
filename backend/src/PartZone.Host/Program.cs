@@ -47,7 +47,7 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
     if (connStr.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
         opts.UseSqlite(connStr);
     else
-        opts.UseSqlServer(connStr);
+        opts.UseSqlServer(connStr, o => o.CommandTimeout(10));
 });
 
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
