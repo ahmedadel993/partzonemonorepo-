@@ -257,6 +257,13 @@ app.MapGet("/", () => Results.Redirect("/admin/"));
 // Admin SPA deep-link fallback — TanStack Router handles routing client-side
 app.MapFallback("/admin/{**slug}", async (HttpContext ctx) =>
 {
+    // Don't return HTML for Vite asset requests (js, css, images, fonts)
+    var path = ctx.Request.Path.Value ?? "";
+    if (path.StartsWith("/admin/assets/", StringComparison.OrdinalIgnoreCase))
+    {
+        ctx.Response.StatusCode = 404;
+        return;
+    }
     var indexPath = System.IO.Path.Combine(
         app.Environment.WebRootPath ?? "wwwroot", "admin", "index.html");
     if (File.Exists(indexPath))
