@@ -75,7 +75,21 @@ jobs:
           PY
           sleep 8
 
-      - name: FTP deploy to site111260
+      - name: FTP deploy to site111260 (attempt 1)
+        id: ftp_admin_1
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: site111260.siteasp.net
+          username: site111260
+          password: ${{ secrets.FTP_PASSWORD_ADMIN }}
+          local-dir: ./publish-backend/
+          server-dir: /wwwroot/
+          exclude: |
+            **/.git*
+
+      - name: FTP deploy to site111260 (retry)
+        if: steps.ftp_admin_1.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: site111260.siteasp.net
@@ -147,7 +161,21 @@ jobs:
           PY
           sleep 8
 
-      - name: FTP deploy to site111263
+      - name: FTP deploy to site111263 (attempt 1)
+        id: ftp_storefront_1
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: site111263.siteasp.net
+          username: site111263
+          password: ${{ secrets.FTP_PASSWORD_STOREFRONT }}
+          local-dir: ./publish-storefront/
+          server-dir: /wwwroot/
+          exclude: |
+            **/.git*
+
+      - name: FTP deploy to site111263 (retry)
+        if: steps.ftp_storefront_1.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: site111263.siteasp.net
