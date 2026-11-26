@@ -18,13 +18,8 @@ public static class OrdersAdminModule
 
     public static IEndpointRouteBuilder MapOrdersAdminEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/v1/admin/orders")
-            .RequireAuthorization("Admin");
-
-        group.MapGet("/", OrdersAdminEndpoints.GetAllOrdersAsync);
-        group.MapGet("/{id:guid}", OrdersAdminEndpoints.GetOrderDetailAsync);
-        group.MapPut("/{id:guid}/status", OrdersAdminEndpoints.UpdateOrderStatusAsync);
-
+        // Routes for /api/v1/admin/orders are owned by CheckoutModule (CheckoutModule.cs).
+        // This module previously duplicated them, causing AmbiguousMatchException on every request.
         return app;
     }
 }
