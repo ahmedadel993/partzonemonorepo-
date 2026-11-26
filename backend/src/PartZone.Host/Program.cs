@@ -252,36 +252,57 @@ app.MapUploadEndpoints();
 
 app.UseStaticFiles();
 
-// Serve admin SPA assets from ContentRootPath/admin/ — deployed alongside DLLs via FTP,
-// not inside the nested wwwroot/ subdirectory, so WebRootPath resolution doesn't apply.
-var adminRoot = System.IO.Path.Combine(app.Environment.ContentRootPath, "admin");
-if (Directory.Exists(adminRoot))
-{
-    app.UseStaticFiles(new StaticFileOptions
-    {
-        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(adminRoot),
-        RequestPath = "/admin"
-    });
-}
-
 app.MapGet("/", () => Results.Redirect("/admin/"));
 
-// Admin SPA deep-link fallback — TanStack Router handles routing client-side
+// Serve admin SPA assets via explicit endpoint so IIS inprocess hosting
+// doesn't swallow the request before UseStaticFiles middleware runs.
+// Tries ContentRootPath/admin/assets/ (alongside DLLs) then
+// WebRootPath/admin/assets/ (inside wwwroot/) as fallback.
+app.MapGet("/admin/assets/{**file}", async (HttpContext ctx, string file) =>
+{
+    var contentRoot = System.IO.Path.Combine(app.Environment.ContentRootPath, "admin", "assets", file);
+    var webRoot = System.IO.Path.Combine(app.Environment.WebRootPath ?? "", "admin", "assets", file);
+    var filePath = File.Exists(contentRoot) ? contentRoot
+                 : File.Exists(webRoot)     ? webRoot
+                 : null;
+    if (filePath == null) { ctx.Response.StatusCode = 404; return; }
+
+    ctx.Response.ContentType = System.IO.Path.GetExtension(file).ToLowerInvariant() switch
+    {
+        ".js"    => "application/javascript",
+        ".css"   => "text/css",
+        ".svg"   => "image/svg+xml",
+        ".png"   => "image/png",
+        ".ico"   => "image/x-icon",
+        ".woff"  => "font/woff",
+        ".woff2" => "font/woff2",
+        _        => "application/octet-stream"
+    };
+    await ctx.Response.SendFileAsync(filePath);
+});
+
+// Admin SPA deep-link fallback — TanStack Router handles routing client-side.
+// Also covers /admin/ root and any non-asset path.
 app.MapFallback("/admin/{**slug}", async (HttpContext ctx) =>
 {
-    // Don't return HTML for Vite asset requests (js, css, images, fonts)
     var path = ctx.Request.Path.Value ?? "";
     if (path.StartsWith("/admin/assets/", StringComparison.OrdinalIgnoreCase))
     {
         ctx.Response.StatusCode = 404;
         return;
     }
-    var indexPath = System.IO.Path.Combine(app.Environment.ContentRootPath, "admin", "index.html");
-    if (File.Exists(indexPath))
+    var fromContent = System.IO.Path.Combine(app.Environment.ContentRootPath, "admin", "index.html");
+    var fromWeb     = System.IO.Path.Combine(app.Environment.WebRootPath ?? "", "admin", "index.html");
+    var indexPath   = File.Exists(fromContent) ? fromContent
+                    : File.Exists(fromWeb)     ? fromWeb
+                    : null;
+    if (indexPath != null)
     {
         ctx.Response.ContentType = "text/html";
         await ctx.Response.SendFileAsync(indexPath);
+        return;
     }
+    ctx.Response.StatusCode = 404;
 });
 
 app.Run();
