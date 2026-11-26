@@ -122,9 +122,9 @@ jobs:
         run: |
           mkdir -p ./publish-storefront
           cp -rL storefront/.next/standalone/. ./publish-storefront/
-          mkdir -p ./publish-storefront/.next/static
-          cp -r storefront/.next/static/. ./publish-storefront/.next/static/
-          cp -r storefront/public/. ./publish-storefront/public/
+          mkdir -p ./publish-storefront/storefront/.next/static
+          cp -r storefront/.next/static/. ./publish-storefront/storefront/.next/static/
+          cp -r storefront/public/. ./publish-storefront/storefront/public/
           cp storefront/web.config ./publish-storefront/web.config
 
       - name: Take storefront offline (release file locks)
