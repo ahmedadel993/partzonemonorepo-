@@ -121,7 +121,7 @@ jobs:
       - name: Build storefront (standalone)
         run: pnpm --filter storefront build
         env:
-          NEXT_PUBLIC_API_URL: https://partzoneadmin.runasp.net/api/v1
+          NEXT_PUBLIC_API_URL: http://partzoneadmin.runasp.net/api/v1
 
       - name: Package standalone output
         run: |
