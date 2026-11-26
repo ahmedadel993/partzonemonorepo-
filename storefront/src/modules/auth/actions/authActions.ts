@@ -28,14 +28,14 @@ export async function login(
     const cookieStore = await cookies();
     cookieStore.set("auth_token", data.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
       sameSite: "lax",
     });
     cookieStore.set("auth_user", JSON.stringify(me), {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
       sameSite: "lax",
@@ -196,7 +196,7 @@ export async function updateMyProfile(
       const cookieStore = await cookies();
       cookieStore.set("auth_user", JSON.stringify(user), {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: false,
         sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * 24 * 7,

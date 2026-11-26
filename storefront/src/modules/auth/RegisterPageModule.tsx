@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { register } from "@/modules/auth/actions/authActions";
@@ -12,7 +12,6 @@ import { registerSchema, type RegisterForm } from "@/modules/auth/schemas";
 export function RegisterPageModule() {
   const locale = useLocale();
   const t = useTranslations("auth");
-  const router = useRouter();
   const searchParams = useSearchParams();
   const requested = searchParams.get("redirect");
   const redirect =
@@ -35,8 +34,7 @@ export function RegisterPageModule() {
       if (result.error) {
         setError("root", { message: result.error });
       } else {
-        router.push(redirect);
-        router.refresh();
+        window.location.replace(redirect);
       }
     });
   };
