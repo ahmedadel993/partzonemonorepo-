@@ -126,8 +126,6 @@ builder.Services
             ValidAudience = jwtSettings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
-            // .NET 8 JsonWebTokenHandler does not remap "role" → ClaimTypes.Role
-            RoleClaimType = "role",
         };
     });
 
