@@ -123,7 +123,7 @@ jobs:
       - name: Package standalone output
         run: |
           mkdir -p ./publish-storefront
-          cp -r storefront/.next/standalone/. ./publish-storefront/
+          cp -rL storefront/.next/standalone/. ./publish-storefront/
           mkdir -p ./publish-storefront/.next/static
           cp -r storefront/.next/static/. ./publish-storefront/.next/static/
           cp -r storefront/public/. ./publish-storefront/public/
