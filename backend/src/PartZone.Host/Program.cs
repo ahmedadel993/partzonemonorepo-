@@ -252,6 +252,18 @@ app.MapUploadEndpoints();
 
 app.UseStaticFiles();
 
+// Serve admin SPA assets from ContentRootPath/admin/ — deployed alongside DLLs via FTP,
+// not inside the nested wwwroot/ subdirectory, so WebRootPath resolution doesn't apply.
+var adminRoot = Path.Combine(app.Environment.ContentRootPath, "admin");
+if (Directory.Exists(adminRoot))
+{
+    app.UseStaticFiles(new Microsoft.AspNetCore.StaticFiles.StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(adminRoot),
+        RequestPath = "/admin"
+    });
+}
+
 app.MapGet("/", () => Results.Redirect("/admin/"));
 
 // Admin SPA deep-link fallback — TanStack Router handles routing client-side
@@ -264,8 +276,7 @@ app.MapFallback("/admin/{**slug}", async (HttpContext ctx) =>
         ctx.Response.StatusCode = 404;
         return;
     }
-    var indexPath = System.IO.Path.Combine(
-        app.Environment.WebRootPath ?? "wwwroot", "admin", "index.html");
+    var indexPath = Path.Combine(app.Environment.ContentRootPath, "admin", "index.html");
     if (File.Exists(indexPath))
     {
         ctx.Response.ContentType = "text/html";

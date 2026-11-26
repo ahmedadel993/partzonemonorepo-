@@ -55,6 +55,11 @@ jobs:
             -c Release -o ./publish-backend \
             --self-contained false
 
+      - name: Copy admin assets alongside DLLs
+        run: |
+          mkdir -p ./publish-backend/admin
+          cp -r admin-dashboard/dist/. ./publish-backend/admin/
+
       - name: Take app offline (release DLL locks)
         env:
           FTP_PASS: ${{ secrets.FTP_PASSWORD_ADMIN }}
